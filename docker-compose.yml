@@ -1,99 +1,72 @@
 services:
   frontend:
     build: .
-    command: npm run dev -w @princy/frontend
+    command: npm run start -w @princy/frontend
     env_file:
       - .env
     ports:
       - "3400:3400"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   api:
     build: .
-    command: npm run dev -w @princy/api
+    command: npm run start -w @princy/api
     env_file:
       - .env
     ports:
       - "3401:3401"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   agents:
     build: .
-    command: npm run dev -w @princy/agents
+    command: npm run start -w @princy/agents
     env_file:
       - .env
     ports:
       - "3402:3402"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   workspace-service:
     build: .
-    command: npm run dev -w @princy/workspace-service
+    command: npm run start -w @princy/workspace-service
     env_file:
       - .env
     ports:
       - "3403:3403"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   context-graph:
     build: .
-    command: npm run dev -w @princy/context-graph
+    command: npm run start -w @princy/context-graph
     env_file:
       - .env
     ports:
       - "3404:3404"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   memory-service:
     build: .
-    command: npm run dev -w @princy/memory-service
+    command: npm run start -w @princy/memory-service
     env_file:
       - .env
     ports:
       - "3405:3405"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   automation-service:
     build: .
-    command: npm run dev -w @princy/automation-service
+    command: npm run start -w @princy/automation-service
     env_file:
       - .env
     ports:
       - "3406:3406"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   gateway:
     build: .
-    command: npm run dev -w @princy/gateway
+    command: npm run start -w @princy/gateway
     env_file:
       - .env
     ports:
       - "3407:3407"
-    volumes:
-      - .:/app
-      - /app/node_modules
 
   mcp-server:
     build: .
-    command: npm run dev -w @princy/mcp-server
+    command: npm run start -w @princy/mcp-server
     env_file:
       - .env
     ports:
       - "3408:3408"
-    volumes:
-      - .:/app
-      - /app/node_modules

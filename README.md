@@ -149,11 +149,137 @@ Validar saude dos servicos:
 npm run health
 ```
 
-Depois de instalados, os servicos iniciam automaticamente apos reiniciar a VPS. Nesta fase, os backends ainda usam `tsx` no `start`; a Fase 2 deve trocar o runtime para JavaScript compilado em producao.
+Depois de instalados, os servicos iniciam automaticamente apos reiniciar a VPS.
+
+## Producao real
+
+A Fase 2 troca o runtime dos servicos backend de TypeScript direto para JavaScript compilado em `dist/`.
+
+Fluxo de producao:
+
+```powershell
+npm install
+npm run build
+npm run services:restart
+npm run health
+```
+
+Cada backend gera um arquivo de entrada em:
+
+```text
+services/<servico>/dist/index.js
+```
+
+O pacote compartilhado tambem e compilado:
+
+```text
+packages/service-kit/dist/index.js
+```
+
+Os servicos Windows continuam chamando `npm run start -w <workspace>`, mas agora os backends executam `node dist/index.js`.
+
+## Logs
+
+Os servicos usam logs estruturados com Pino. Por padrao, os arquivos ficam em:
+
+```text
+C:\Apps\Princy-Ai-Editor\logs
+```
+
+Arquivos esperados:
+
+```text
+api.log
+agents.log
+workspace-service.log
+context-graph.log
+memory-service.log
+automation-service.log
+gateway.log
+mcp-server.log
+errors.log
+```
+
+Variaveis:
+
+```text
+LOG_LEVEL=info
+PRINCY_LOG_DIR=logs
+```
+
+## Health checks
+
+Cada servico backend expoe:
+
+```text
+/health
+/health/live
+/health/ready
+```
+
+O Gateway tambem expoe:
+
+```text
+/gateway/ready
+```
+
+`npm run health` valida os endpoints locais usando `127.0.0.1`.
+
+## Gateway V2
+
+O Gateway roda na porta `3407` e passa a ser o ponto central para rotas internas.
+
+Rotas iniciais:
+
+| Rota | Destino |
+| --- | --- |
+| `/api/chat` | Agents |
+| `/api/projects` | API |
+| `/api/files` | Workspace Service |
+| `/api/workspace` | Workspace Service |
+| `/api/context` | Context Graph |
+| `/api/memory` | Memory Service |
+| `/api/agents` | Agents |
+| `/api/automation` | Automation Service |
+
+Recursos iniciais:
+
+- Request IDs com header `X-Request-Id`
+- Proxy interno
+- Service discovery em `/services`
+- Timeouts de proxy
+- Rate limiting
+- Logs de requests
+- Error tracking em `errors.log`
+- Circuit breaker simples
+- Readiness agregada em `/gateway/ready`
+
+## Seguranca imediata
+
+O `service-kit` aplica Helmet, CORS configuravel e tratamento global de erros.
+
+Variaveis principais:
+
+```text
+CORS_ORIGINS=http://localhost:3400,http://127.0.0.1:3400
+GATEWAY_RATE_LIMIT_WINDOW_MS=60000
+GATEWAY_RATE_LIMIT_MAX=300
+GATEWAY_PROXY_TIMEOUT_MS=10000
+GATEWAY_HEALTH_TIMEOUT_MS=1500
+GATEWAY_EXPOSE_INTERNAL_URLS=false
+```
+
+Script opcional de firewall na VPS:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/windows/configure-firewall.ps1
+```
+
+Ele mantem publicas as portas `3400` e `3407`, e restringe `3401-3406`, `3408` e `3409` para acesso local/rede interna. Execute apenas depois de validar que o Gateway esta respondendo corretamente.
 
 ## Proximos passos sugeridos
 
-- Definir contratos reais da API e do Gateway.
-- Adicionar persistencia para `memory-service` e `context-graph`.
-- Conectar `agents` ao provedor de modelos.
-- Expandir o `mcp-server` com ferramentas reais.
+- Implementar PostgreSQL e Prisma.
+- Criar autenticacao JWT com RBAC.
+- Transformar `memory-service` em memoria persistente com embeddings.
+- Transformar `context-graph` em indexador real com Tree-sitter.

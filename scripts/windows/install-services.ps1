@@ -47,23 +47,28 @@ $logsPath = Join-Path $AppPath "logs"
 New-Item -ItemType Directory -Force -Path $logsPath | Out-Null
 
 $services = @(
-    @{ Name = "PrincyFrontend"; Workspace = "@princy/frontend" },
-    @{ Name = "PrincyApi"; Workspace = "@princy/api" },
-    @{ Name = "PrincyAgents"; Workspace = "@princy/agents" },
-    @{ Name = "PrincyWorkspace"; Workspace = "@princy/workspace-service" },
-    @{ Name = "PrincyContextGraph"; Workspace = "@princy/context-graph" },
-    @{ Name = "PrincyMemory"; Workspace = "@princy/memory-service" },
-    @{ Name = "PrincyAutomation"; Workspace = "@princy/automation-service" },
-    @{ Name = "PrincyGateway"; Workspace = "@princy/gateway" },
-    @{ Name = "PrincyMCP"; Workspace = "@princy/mcp-server" }
+    @{ Name = "PrincyFrontend"; Workspace = "@princy/frontend"; Dist = "" },
+    @{ Name = "PrincyApi"; Workspace = "@princy/api"; Dist = "services/api/dist/index.js" },
+    @{ Name = "PrincyAgents"; Workspace = "@princy/agents"; Dist = "services/agents/dist/index.js" },
+    @{ Name = "PrincyWorkspace"; Workspace = "@princy/workspace-service"; Dist = "services/workspace-service/dist/index.js" },
+    @{ Name = "PrincyContextGraph"; Workspace = "@princy/context-graph"; Dist = "services/context-graph/dist/index.js" },
+    @{ Name = "PrincyMemory"; Workspace = "@princy/memory-service"; Dist = "services/memory-service/dist/index.js" },
+    @{ Name = "PrincyAutomation"; Workspace = "@princy/automation-service"; Dist = "services/automation-service/dist/index.js" },
+    @{ Name = "PrincyGateway"; Workspace = "@princy/gateway"; Dist = "services/gateway/dist/index.js" },
+    @{ Name = "PrincyMCP"; Workspace = "@princy/mcp-server"; Dist = "services/mcp-server/dist/index.js" }
 )
 
 foreach ($service in $services) {
     $name = $service.Name
     $workspace = $service.Workspace
+    $dist = $service.Dist
     $stdout = Join-Path $logsPath "$name.out.log"
     $stderr = Join-Path $logsPath "$name.err.log"
     $existing = Get-Service -Name $name -ErrorAction SilentlyContinue
+
+    if ($dist -and !(Test-Path (Join-Path $AppPath $dist))) {
+        throw "$name production build was not found at $dist. Run npm run build before installing services."
+    }
 
     if (!$existing) {
         Invoke-Nssm -Nssm $nssm -Arguments @("install", $name, $npm, "run", "start", "-w", $workspace)
