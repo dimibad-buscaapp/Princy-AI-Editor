@@ -92,6 +92,65 @@ powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1
 
 O script assume acesso SSH ao host `108.181.169.40`, Git e Node.js instalados na VPS. Ajuste o usuario com `-RemoteUser` se necessario.
 
+## Producao persistente no Windows
+
+A Fase 1 usa NSSM para manter cada app como um servico automatico do Windows. Instale o `nssm.exe` na VPS e deixe-o disponivel no `PATH`, ou informe o caminho completo com `-NssmPath`.
+
+Servicos criados:
+
+| Servico Windows | Workspace |
+| --- | --- |
+| `PrincyFrontend` | `@princy/frontend` |
+| `PrincyApi` | `@princy/api` |
+| `PrincyAgents` | `@princy/agents` |
+| `PrincyWorkspace` | `@princy/workspace-service` |
+| `PrincyContextGraph` | `@princy/context-graph` |
+| `PrincyMemory` | `@princy/memory-service` |
+| `PrincyAutomation` | `@princy/automation-service` |
+| `PrincyGateway` | `@princy/gateway` |
+| `PrincyMCP` | `@princy/mcp-server` |
+
+Instalar ou atualizar os servicos na VPS:
+
+```powershell
+cd C:\Apps\Princy-Ai-Editor
+npm install
+npm run build
+npm run services:install
+```
+
+Se o NSSM nao estiver no `PATH`:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/windows/install-services.ps1 -NssmPath "C:\Tools\nssm\nssm.exe"
+```
+
+Reiniciar servicos:
+
+```powershell
+npm run services:restart
+```
+
+Remover servicos:
+
+```powershell
+npm run services:remove
+```
+
+Logs:
+
+```text
+C:\Apps\Princy-Ai-Editor\logs
+```
+
+Validar saude dos servicos:
+
+```powershell
+npm run health
+```
+
+Depois de instalados, os servicos iniciam automaticamente apos reiniciar a VPS. Nesta fase, os backends ainda usam `tsx` no `start`; a Fase 2 deve trocar o runtime para JavaScript compilado em producao.
+
 ## Proximos passos sugeridos
 
 - Definir contratos reais da API e do Gateway.

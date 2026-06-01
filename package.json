@@ -8,7 +8,10 @@
     "build": "npm run build --workspaces --if-present",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "lint": "npm run lint --workspaces --if-present",
-    "health": "powershell -ExecutionPolicy Bypass -File scripts/check-health.ps1"
+    "health": "powershell -ExecutionPolicy Bypass -File scripts/check-health.ps1",
+    "services:install": "powershell -ExecutionPolicy Bypass -File scripts/windows/install-services.ps1",
+    "services:remove": "powershell -ExecutionPolicy Bypass -File scripts/windows/remove-services.ps1",
+    "services:restart": "powershell -ExecutionPolicy Bypass -File scripts/windows/restart-services.ps1"
   },
   "workspaces": [
     "apps/*",

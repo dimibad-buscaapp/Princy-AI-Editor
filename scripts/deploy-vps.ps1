@@ -25,6 +25,13 @@ if (!(Test-Path '.env') -and (Test-Path '.env.example')) {
 }
 npm install
 npm run build --if-present
+if (Get-Command nssm.exe -ErrorAction SilentlyContinue) {
+  powershell -NoProfile -ExecutionPolicy Bypass -File 'scripts/windows/install-services.ps1' -AppPath '$RemotePath'
+  powershell -NoProfile -ExecutionPolicy Bypass -File 'scripts/windows/restart-services.ps1'
+}
+else {
+  Write-Host 'NSSM not found. Install NSSM and run npm run services:install on the VPS.'
+}
 "@
 
 $encodedCommand = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($remoteCommand))
