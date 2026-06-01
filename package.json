@@ -1,0 +1,28 @@
+{
+  "name": "princy-ai-editor",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Princy AI Editor monorepo.",
+  "scripts": {
+    "dev": "concurrently -n frontend,api,agents,workspace,graph,memory,automation,gateway,mcp -c blue,green,cyan,magenta,yellow,red,white,gray \"npm run dev -w @princy/frontend\" \"npm run dev -w @princy/api\" \"npm run dev -w @princy/agents\" \"npm run dev -w @princy/workspace-service\" \"npm run dev -w @princy/context-graph\" \"npm run dev -w @princy/memory-service\" \"npm run dev -w @princy/automation-service\" \"npm run dev -w @princy/gateway\" \"npm run dev -w @princy/mcp-server\"",
+    "build": "npm run build --workspaces --if-present",
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "lint": "npm run lint --workspaces --if-present",
+    "health": "powershell -ExecutionPolicy Bypass -File scripts/check-health.ps1"
+  },
+  "workspaces": [
+    "apps/*",
+    "services/*",
+    "packages/*"
+  ],
+  "devDependencies": {
+    "@types/node": "latest",
+    "concurrently": "latest",
+    "tsx": "latest",
+    "typescript": "latest"
+  },
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  }
+}
