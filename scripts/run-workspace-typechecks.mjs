@@ -2,6 +2,7 @@ import { spawnSync } from "node:child_process";
 
 const steps = [
   ["run", "build", "-w", "@princy/service-kit"],
+  ["run", "build", "-w", "@princy/database"],
   ["run", "typecheck", "-w", "@princy/frontend"],
   ["run", "typecheck", "-w", "@princy/api"],
   ["run", "typecheck", "-w", "@princy/agents"],

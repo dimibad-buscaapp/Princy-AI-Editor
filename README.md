@@ -277,6 +277,50 @@ powershell -ExecutionPolicy Bypass -File scripts/windows/configure-firewall.ps1
 
 Ele mantem publicas as portas `3400` e `3407`, e restringe `3401-3406`, `3408` e `3409` para acesso local/rede interna. Execute apenas depois de validar que o Gateway esta respondendo corretamente.
 
+## Database Foundation
+
+A Fase 3.1 adiciona o pacote isolado `@princy/database` com PostgreSQL + Prisma. Nesta fase, o pacote ainda nao e importado por `services/api`, Gateway ou outros servicos.
+
+Estrutura:
+
+```text
+packages/database/
+  prisma/
+    schema.prisma
+    seed.ts
+  src/
+    client.ts
+    index.ts
+    repositories/
+```
+
+Variavel necessaria:
+
+```text
+DATABASE_URL=postgresql://postgres:SENHA@localhost:5432/princy_ai_editor
+```
+
+Comandos:
+
+```powershell
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run db:studio
+```
+
+Uso recomendado nesta fase:
+
+```powershell
+npm install
+npm run db:generate
+npm run build
+npm run typecheck
+npm run lint
+```
+
+Nao rode `npm run db:migrate` ate existir um PostgreSQL configurado com a `DATABASE_URL` real. O seed inicial cria um usuario admin local e os agentes base de forma idempotente.
+
 ## Proximos passos sugeridos
 
 - Implementar PostgreSQL e Prisma.

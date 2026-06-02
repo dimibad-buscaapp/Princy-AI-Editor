@@ -11,6 +11,10 @@
     "typecheck": "node scripts/run-workspace-typechecks.mjs",
     "lint": "npm run lint --workspaces --if-present",
     "health": "powershell -ExecutionPolicy Bypass -File scripts/check-health.ps1",
+    "db:generate": "npm run prisma:generate -w @princy/database",
+    "db:migrate": "npm run prisma:migrate -w @princy/database",
+    "db:seed": "npm run prisma:seed -w @princy/database",
+    "db:studio": "npm run prisma:studio -w @princy/database",
     "services:install": "powershell -ExecutionPolicy Bypass -File scripts/windows/install-services.ps1",
     "services:remove": "powershell -ExecutionPolicy Bypass -File scripts/windows/remove-services.ps1",
     "services:restart": "powershell -ExecutionPolicy Bypass -File scripts/windows/restart-services.ps1"
