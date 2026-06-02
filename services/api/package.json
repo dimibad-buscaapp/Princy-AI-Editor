@@ -12,11 +12,17 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@princy/database": "*",
     "@princy/service-kit": "*",
     "bcryptjs": "latest",
-    "jsonwebtoken": "latest"
+    "express": "latest",
+    "jsonwebtoken": "latest",
+    "zod": "latest"
   },
   "devDependencies": {
-    "@types/jsonwebtoken": "latest"
+    "@types/express": "latest",
+    "@types/jsonwebtoken": "latest",
+    "@types/supertest": "latest",
+    "supertest": "latest"
   }
 }

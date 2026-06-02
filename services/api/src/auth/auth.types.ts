@@ -1,5 +1,14 @@
 export type AuthUserRole = "ADMIN" | "DEVELOPER" | "VIEWER";
 
+export type AuthUser = {
+  id: string;
+  email: string;
+  name: string;
+  role: AuthUserRole;
+};
+
+export type AuthenticatedUser = Omit<AuthUser, "name">;
+
 export type AuthTokenPayload = {
   sub: string;
   email: string;
@@ -20,4 +29,19 @@ export type JwtServiceOptions = {
 
 export type PasswordServiceOptions = {
   rounds?: number;
+};
+
+export type LoginRequest = {
+  email: string;
+  password: string;
+};
+
+export type RefreshRequest = {
+  refreshToken: string;
+};
+
+export type AuthResponse = {
+  accessToken: string;
+  refreshToken: string;
+  user: AuthUser;
 };
