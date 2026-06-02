@@ -1,38 +1,56 @@
-import { AgentKind, UserRole } from "@prisma/client";
+import bcrypt from "bcryptjs";
+import { AgentType, UserRole } from "@prisma/client";
 import { prisma } from "../src/client.js";
 
 const agents = [
-  { kind: AgentKind.AUTO, name: "Auto", description: "Selects the best agent for each task." },
-  { kind: AgentKind.PLANNER, name: "Planner", description: "Breaks requests into actionable implementation plans." },
-  { kind: AgentKind.CODER, name: "Coder", description: "Implements code changes." },
-  { kind: AgentKind.REVIEWER, name: "Reviewer", description: "Reviews code for risks and regressions." },
-  { kind: AgentKind.DEBUGGER, name: "Debugger", description: "Investigates failures and runtime errors." },
-  { kind: AgentKind.ARCHITECT, name: "Architect", description: "Designs technical architecture." },
-  { kind: AgentKind.TERMINAL, name: "Terminal", description: "Runs commands and explains terminal output." }
+  { type: AgentType.AUTO, name: "Auto" },
+  { type: AgentType.PLANNER, name: "Planner" },
+  { type: AgentType.CODER, name: "Coder" },
+  { type: AgentType.REVIEWER, name: "Reviewer" },
+  { type: AgentType.DEBUGGER, name: "Debugger" },
+  { type: AgentType.ARCHITECT, name: "Architect" },
+  { type: AgentType.TERMINAL, name: "Terminal" }
 ];
 
 async function main() {
-  await prisma.user.upsert({
-    where: { email: "admin@princy.local" },
-    update: {},
-    create: {
-      email: "admin@princy.local",
-      name: "Princy Admin",
-      role: UserRole.ADMIN
-    }
+  const existingAdmin = await prisma.user.findUnique({
+    where: { email: "admin@princy.local" }
   });
 
-  for (const agent of agents) {
-    await prisma.agent.upsert({
-      where: { kind: agent.kind },
-      update: {
-        name: agent.name,
-        description: agent.description,
-        enabled: true
-      },
-      create: agent
+  if (existingAdmin) {
+    console.log("Admin user already exists: admin@princy.local");
+  } else {
+    const passwordHash = await bcrypt.hash("princy-admin-change-me", 12);
+
+    await prisma.user.create({
+      data: {
+        email: "admin@princy.local",
+        name: "Princy Admin",
+        passwordHash,
+        role: UserRole.ADMIN
+      }
     });
+
+    console.log("Admin user created: admin@princy.local");
   }
+
+  for (const agent of agents) {
+    const existingAgent = await prisma.agent.findFirst({
+      where: { type: agent.type }
+    });
+
+    if (existingAgent) {
+      await prisma.agent.update({
+        where: { id: existingAgent.id },
+        data: { name: agent.name }
+      });
+      continue;
+    }
+
+    await prisma.agent.create({ data: agent });
+  }
+
+  console.log("Base agents are ready.");
 }
 
 main()

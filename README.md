@@ -279,7 +279,7 @@ Ele mantem publicas as portas `3400` e `3407`, e restringe `3401-3406`, `3408` e
 
 ## Database Foundation
 
-A Fase 3.1 adiciona o pacote isolado `@princy/database` com PostgreSQL + Prisma. Nesta fase, o pacote ainda nao e importado por `services/api`, Gateway ou outros servicos.
+As Fases 3.1 e 3.2 adicionam o pacote isolado `@princy/database` com PostgreSQL + Prisma. Nesta fase, o pacote ainda nao e importado por `services/api`, Gateway ou outros servicos.
 
 Estrutura:
 
@@ -288,6 +288,8 @@ packages/database/
   prisma/
     schema.prisma
     seed.ts
+  prisma.config.ts
+  scripts/
   src/
     client.ts
     index.ts
@@ -305,6 +307,7 @@ Comandos:
 ```powershell
 npm run db:generate
 npm run db:migrate
+npm run db:deploy
 npm run db:seed
 npm run db:studio
 ```
@@ -319,7 +322,49 @@ npm run typecheck
 npm run lint
 ```
 
-Nao rode `npm run db:migrate` ate existir um PostgreSQL configurado com a `DATABASE_URL` real. O seed inicial cria um usuario admin local e os agentes base de forma idempotente.
+`db:migrate` usa `prisma migrate dev` e deve ser usado em desenvolvimento. `db:deploy` usa `prisma migrate deploy` e deve ser usado na VPS/producao depois que migrations existirem.
+
+Prisma 7 usa `packages/database/prisma.config.ts` para carregar `DATABASE_URL`; por isso o datasource no schema nao contem `url`.
+
+Schema inicial:
+
+```text
+User, Project, Workspace, Conversation, Message, Agent, Task,
+MemoryChunk, Embedding, ContextNode, ContextEdge, AuditLog
+```
+
+Seed inicial:
+
+```text
+admin@princy.local
+senha inicial: princy-admin-change-me
+```
+
+A senha e salva apenas como hash `bcryptjs`. O seed tambem cria os agentes base de forma idempotente.
+
+Preparar PostgreSQL na VPS:
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/windows/setup-postgres.ps1
+```
+
+Depois ajuste `C:\Apps\Princy-Ai-Editor\.env` com a senha real:
+
+```text
+DATABASE_URL=postgresql://postgres:<PASSWORD>@localhost:5432/princy_ai_editor
+```
+
+Validacao com banco real:
+
+```powershell
+npm run db:generate
+npm run db:migrate
+npm run db:seed
+npm run build
+npm run typecheck
+npm run lint
+npm run health
+```
 
 ## Proximos passos sugeridos
 

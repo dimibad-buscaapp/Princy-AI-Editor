@@ -12,7 +12,14 @@ enum UserRole {
   VIEWER
 }
 
-enum AgentKind {
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum AgentType {
   AUTO
   PLANNER
   CODER
@@ -22,47 +29,43 @@ enum AgentKind {
   TERMINAL
 }
 
+enum AgentStatus {
+  IDLE
+  RUNNING
+  FAILED
+  COMPLETED
+}
+
 enum TaskStatus {
   PENDING
-  IN_PROGRESS
-  COMPLETED
+  RUNNING
   FAILED
+  COMPLETED
   CANCELLED
 }
 
-enum MessageRole {
-  SYSTEM
-  USER
-  ASSISTANT
-  TOOL
-}
-
 model User {
-  id           String     @id @default(uuid())
+  id           String     @id @default(cuid())
   email        String     @unique
   name         String
-  passwordHash String?
+  passwordHash String
   role         UserRole   @default(DEVELOPER)
   projects     Project[]
-  workspaces   Workspace[]
   auditLogs    AuditLog[]
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 }
 
 model Project {
-  id            String         @id @default(uuid())
+  id            String         @id @default(cuid())
   name          String
   description   String?
-  ownerId       String?
-  owner         User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
+  ownerId       String
+  owner         User           @relation(fields: [ownerId], references: [id])
   workspaces    Workspace[]
   conversations Conversation[]
-  tasks         Task[]
-  memories      MemoryChunk[]
+  memoryChunks  MemoryChunk[]
   contextNodes  ContextNode[]
-  auditLogs     AuditLog[]
-  metadata      Json?
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -70,42 +73,30 @@ model Project {
 }
 
 model Workspace {
-  id            String         @id @default(uuid())
-  name          String
-  rootPath      String?
-  projectId     String?
-  project       Project?       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  ownerId       String?
-  owner         User?          @relation(fields: [ownerId], references: [id], onDelete: SetNull)
-  conversations Conversation[]
-  tasks         Task[]
-  metadata      Json?
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  id        String   @id @default(cuid())
+  projectId String
+  project   Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  path      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
 
   @@index([projectId])
-  @@index([ownerId])
 }
 
 model Conversation {
-  id          String    @id @default(uuid())
-  title       String
-  projectId   String?
-  project     Project?  @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  workspaceId String?
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  messages    Message[]
-  memories    MemoryChunk[]
-  metadata    Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String    @id @default(cuid())
+  projectId String?
+  project   Project?  @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title     String
+  messages  Message[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
 
   @@index([projectId])
-  @@index([workspaceId])
 }
 
 model Message {
-  id             String       @id @default(uuid())
+  id             String       @id @default(cuid())
   conversationId String
   conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
   role           MessageRole
@@ -114,118 +105,108 @@ model Message {
   createdAt      DateTime     @default(now())
 
   @@index([conversationId])
+  @@index([role])
 }
 
 model Agent {
-  id          String    @id @default(uuid())
-  kind        AgentKind @unique
-  name        String
-  description String?
-  enabled     Boolean   @default(true)
-  tasks       Task[]
-  metadata    Json?
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
+  id        String      @id @default(cuid())
+  name      String
+  type      AgentType
+  status    AgentStatus @default(IDLE)
+  tasks     Task[]
+  createdAt DateTime    @default(now())
+  updatedAt DateTime    @updatedAt
+
+  @@index([type])
+  @@index([status])
 }
 
 model Task {
-  id          String     @id @default(uuid())
-  title       String
-  description String?
-  status      TaskStatus @default(PENDING)
-  projectId   String?
-  project     Project?   @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  workspaceId String?
-  workspace   Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  agentId     String?
-  agent       Agent?     @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  metadata    Json?
-  createdAt   DateTime   @default(now())
-  updatedAt   DateTime   @updatedAt
+  id        String     @id @default(cuid())
+  agentId   String?
+  agent     Agent?     @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  title     String
+  status    TaskStatus @default(PENDING)
+  payload   Json?
+  result    Json?
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
 
-  @@index([projectId])
-  @@index([workspaceId])
   @@index([agentId])
+  @@index([status])
 }
 
 model MemoryChunk {
-  id             String        @id @default(uuid())
-  projectId      String?
-  project        Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  conversationId String?
-  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  sourceType     String
-  sourceId       String?
-  content        String
-  metadata       Json?
-  embedding      Embedding?
-  createdAt      DateTime      @default(now())
-  updatedAt      DateTime      @updatedAt
+  id         String      @id @default(cuid())
+  projectId  String?
+  project    Project?    @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  content    String
+  metadata   Json?
+  embeddings Embedding[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
 
   @@index([projectId])
-  @@index([conversationId])
-  @@index([sourceType])
 }
 
 model Embedding {
-  id            String      @id @default(uuid())
-  memoryChunkId String      @unique
+  id                String      @id @default(cuid())
+  memoryChunkId     String
   memoryChunk   MemoryChunk @relation(fields: [memoryChunkId], references: [id], onDelete: Cascade)
+  vectorUnsupported String?
   model         String
   dimensions    Int
-  vector        Float[]
   createdAt     DateTime    @default(now())
-  updatedAt     DateTime    @updatedAt
+
+  @@index([memoryChunkId])
+  @@index([model])
 }
 
 model ContextNode {
-  id          String        @id @default(uuid())
-  projectId   String?
-  project     Project?      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  type        String
-  name        String
-  filePath    String?
-  startLine   Int?
-  endLine     Int?
-  metadata    Json?
-  outgoing    ContextEdge[] @relation("ContextEdgeSource")
-  incoming    ContextEdge[] @relation("ContextEdgeTarget")
-  createdAt   DateTime      @default(now())
-  updatedAt   DateTime      @updatedAt
+  id            String        @id @default(cuid())
+  projectId     String?
+  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  type          String
+  name          String
+  path          String?
+  metadata      Json?
+  outgoingEdges ContextEdge[] @relation("ContextEdgeSource")
+  incomingEdges ContextEdge[] @relation("ContextEdgeTarget")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
 
   @@index([projectId])
   @@index([type])
-  @@index([filePath])
+  @@index([path])
 }
 
 model ContextEdge {
-  id           String      @id @default(uuid())
-  sourceNodeId String
-  sourceNode   ContextNode @relation("ContextEdgeSource", fields: [sourceNodeId], references: [id], onDelete: Cascade)
-  targetNodeId String
-  targetNode   ContextNode @relation("ContextEdgeTarget", fields: [targetNodeId], references: [id], onDelete: Cascade)
-  type         String
+  id           String      @id @default(cuid())
+  sourceId     String
+  targetId     String
+  source       ContextNode @relation("ContextEdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target       ContextNode @relation("ContextEdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  relationship String
   metadata     Json?
   createdAt    DateTime    @default(now())
 
-  @@index([sourceNodeId])
-  @@index([targetNodeId])
-  @@index([type])
+  @@index([sourceId])
+  @@index([targetId])
+  @@index([relationship])
 }
 
 model AuditLog {
-  id        String   @id @default(uuid())
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
   action    String
   entity    String
   entityId  String?
-  userId    String?
-  user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
-  projectId String?
-  project   Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
   metadata  Json?
   createdAt DateTime @default(now())
 
-  @@index([userId])
-  @@index([projectId])
+  @@index([actorId])
   @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
 }
