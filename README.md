@@ -92,6 +92,16 @@ powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1
 
 O script assume acesso SSH ao host `108.181.169.40`, Git e Node.js instalados na VPS. Ajuste o usuario com `-RemoteUser` se necessario.
 
+Ambiente de producao:
+
+```powershell
+Copy-Item .env.production.example .env.production
+Copy-Item .env.production.example .env
+notepad .env
+```
+
+Preencha `DATABASE_URL`, `JWT_SECRET` e `JWT_REFRESH_SECRET` com valores reais na VPS. Arquivos `.env` reais continuam fora do Git.
+
 ## Producao persistente no Windows
 
 A Fase 1 usa NSSM para manter cada app como um servico automatico do Windows. Instale o `nssm.exe` na VPS e deixe-o disponivel no `PATH`, ou informe o caminho completo com `-NssmPath`.
