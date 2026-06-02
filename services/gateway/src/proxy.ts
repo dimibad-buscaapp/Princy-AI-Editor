@@ -51,14 +51,14 @@ export function registerProxyRoutes(app: Express, routes: ProxyRoute[]) {
         changeOrigin: true,
         proxyTimeout: timeout,
         timeout,
-        pathRewrite: (_path, request) => request.originalUrl,
+        pathRewrite: (path) => path,
         on: {
           proxyRes: () => {
             recordSuccess(route.target.key);
           },
           error: (error, _request, response) => {
             recordFailure(route.target.key);
-            if ("headersSent" in response && response.headersSent) {
+            if (!("writeHead" in response) || ("headersSent" in response && response.headersSent)) {
               return;
             }
             response.writeHead(502, { "Content-Type": "application/json" });
