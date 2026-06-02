@@ -34,4 +34,4 @@ else {
 }
 
 Write-Host "Set this in C:\Apps\Princy-Ai-Editor\.env:"
-Write-Host "DATABASE_URL=postgresql://$DatabaseUser:<PASSWORD>@localhost:5432/$DatabaseName"
+Write-Host "DATABASE_URL=postgresql://${DatabaseUser}:<PASSWORD>@localhost:5432/${DatabaseName}"
