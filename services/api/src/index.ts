@@ -1,3 +1,4 @@
+import "dotenv/config";
 import { startService } from "@princy/service-kit";
 import { registerAuthRoutes } from "./routes/auth.routes.js";
 
