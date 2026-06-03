@@ -376,9 +376,53 @@ npm run lint
 npm run health
 ```
 
+## Fases 5–18 (implementadas)
+
+| Fase | Descricao |
+|------|-----------|
+| 5 | Memory Service — CRUD, busca, scopes USER/PROJECT/CONVERSATION/WORKSPACE |
+| 5.5 | Embeddings Ollama `nomic-embed-text` — `/memory/embed`, `/memory/reindex` |
+| 5.6 | RAG hibrido — `/memory/rag` |
+| 6 | Context Graph — indexador, `/context/index`, `/context/search` |
+| 6.5 | Relationship engine — IMPORTS, CALLS, EXTENDS, etc. |
+| 7 | Agents — Planner, Coder, Reviewer, Debugger, Architect, Terminal, Auto |
+| 7.5 | Orchestrator — pipeline Planner → Architect → Coder → Reviewer |
+| 8 | Workspace — read/write/rename/delete, scan, guard |
+| 9 | Patch engine — create/apply/rollback/history |
+| 10 | Chat Princy — SSE `/chat/stream`, projects API |
+| 10.5 | Tool kit — registry, executor, permissions |
+| 11 | Editor layout VS Code-like — `/editor/[projectId]` |
+| 11.5 | Monaco Editor integrado |
+| 12 | Event bus + SSE `/events/stream` |
+| 12.5 | Live terminal — `/terminal/run`, `/terminal/stream` |
+| 13 | MCP — `/mcp/tools`, `/mcp/servers`, `/mcp/discovery` |
+| 14–14.5 | Swarm visual + neural links animados |
+| 15 | GitHub Actions build + deploy |
+| 16 | Prometheus `/metrics`, docker observability |
+| 17–17.5 | Model router + Ollama multi-modelo |
+| 18–18.5 | Autonomous goals + approval workflow |
+
+### Gateway rewrites
+
+| Rota publica | Servico | Prefixo interno |
+|--------------|---------|-----------------|
+| `/api/memory` | Memory | `/memory` |
+| `/api/context` | Context | `/context` |
+| `/api/agents` | Agents | `/agents` |
+| `/api/chat` | Agents | `/chat` |
+| `/api/projects` | API | `/projects` |
+| `/api/workspace`, `/api/files` | Workspace | `/workspace` |
+| `/api/patch` | Workspace | `/patch` |
+| `/api/terminal` | Workspace | `/terminal` |
+| `/api/mcp` | MCP | `/mcp` |
+| `/api/automation` | Automation | `/automation` |
+| `/api/events` | Agents | `/events` |
+
+Relatorios em `docs/reports/`.
+
 ## Proximos passos sugeridos
 
-- Implementar PostgreSQL e Prisma.
-- Criar autenticacao JWT com RBAC.
-- Transformar `memory-service` em memoria persistente com embeddings.
-- Transformar `context-graph` em indexador real com Tree-sitter.
+- Rodar `npm run db:migrate` com PostgreSQL ativo.
+- Configurar `OLLAMA_BASE_URL` (dev local, prod VPS).
+- Rotacionar chaves SSH/JWT expostas em logs.
+- pgvector (Fase 19+) para escala de embeddings.

@@ -3,6 +3,8 @@ import { checkGatewayReadiness } from "./health.js";
 import { registerProxyRoutes } from "./proxy.js";
 import { createGatewayRateLimit } from "./rate-limit.js";
 import { getSanitizedDiscovery, getServiceTargets } from "./services.js";
+import { registerGatewayWhoamiRoute } from "./whoami.js";
+import { registerMetricsRoute } from "./metrics.js";
 
 const port = Number(process.env.GATEWAY_PORT ?? 3407);
 const targets = getServiceTargets();
@@ -11,20 +13,28 @@ const preRoutes: ServiceRouteRegistrar[] = [
   (app) => {
     app.use(createGatewayRateLimit());
     registerProxyRoutes(app, [
-      { path: "/api/chat", target: targets.agents },
-      { path: "/api/projects", target: targets.api },
-      { path: "/api/files", target: targets.workspace },
-      { path: "/api/workspace", target: targets.workspace },
-      { path: "/api/context", target: targets.context },
-      { path: "/api/memory", target: targets.memory },
-      { path: "/api/agents", target: targets.agents },
-      { path: "/api/automation", target: targets.automation }
+      { path: "/api/auth", target: targets.api, rewritePrefix: "/auth" },
+      { path: "/api/chat", target: targets.agents, rewritePrefix: "/chat" },
+      { path: "/api/projects", target: targets.api, rewritePrefix: "/projects" },
+      { path: "/api/files", target: targets.workspace, rewritePrefix: "/workspace" },
+      { path: "/api/workspace", target: targets.workspace, rewritePrefix: "/workspace" },
+      { path: "/api/context", target: targets.context, rewritePrefix: "/context" },
+      { path: "/api/memory", target: targets.memory, rewritePrefix: "/memory" },
+      { path: "/api/agents", target: targets.agents, rewritePrefix: "/agents" },
+      { path: "/api/patch", target: targets.workspace, rewritePrefix: "/patch" },
+      { path: "/api/terminal", target: targets.workspace, rewritePrefix: "/terminal" },
+      { path: "/api/events", target: targets.agents, rewritePrefix: "/events" },
+      { path: "/api/mcp", target: targets.mcp, rewritePrefix: "/mcp" },
+      { path: "/api/automation", target: targets.automation, rewritePrefix: "/automation" }
     ]);
   }
 ];
 
 const routes: ServiceRouteRegistrar[] = [
   (app) => {
+    registerMetricsRoute(app);
+    registerGatewayWhoamiRoute(app);
+
     app.get("/services", (_request, response) => {
       response.json(getSanitizedDiscovery());
     });

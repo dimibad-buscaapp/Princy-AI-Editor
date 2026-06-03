@@ -72,6 +72,15 @@ function parseCorsOrigins() {
   return rawOrigins.split(",").map((origin) => origin.trim()).filter(Boolean);
 }
 
+function parseCorsAllowedHeaders() {
+  const rawHeaders =
+    process.env.CORS_ALLOWED_HEADERS ??
+    process.env.GATEWAY_CORS_ALLOWED_HEADERS ??
+    "Authorization,Content-Type,X-Request-Id,Accept";
+
+  return rawHeaders.split(",").map((header) => header.trim()).filter(Boolean);
+}
+
 function registerProcessHandlers(logger: Logger) {
   if (processHandlersRegistered) {
     return;
@@ -133,7 +142,11 @@ export function startService({
 
   app.disable("x-powered-by");
   app.use(helmet());
-  app.use(cors({ origin: parseCorsOrigins() }));
+  app.use(cors({
+    allowedHeaders: parseCorsAllowedHeaders(),
+    exposedHeaders: ["X-Request-Id"],
+    origin: parseCorsOrigins()
+  }));
   app.use((request: Request, response: Response, next: NextFunction) => {
     const requestId = request.header("x-request-id") ?? randomUUID();
     response.locals.requestId = requestId;

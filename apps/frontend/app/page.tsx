@@ -24,6 +24,13 @@ export default function Home() {
   return (
     <ProtectedRoute>
       <main className="shell">
+        <nav className="quickNav">
+          <a href="/chat">Chat Princy</a>
+          <a href="/editor/demo">Editor</a>
+          <a href="/swarm">Swarm</a>
+          <a href="/observability">Observability</a>
+        </nav>
+
         <header className="dashboardHeader">
           <div>
             <p className="eyebrow">Painel</p>

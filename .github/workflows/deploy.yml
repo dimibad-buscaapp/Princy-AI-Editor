@@ -1,0 +1,22 @@
+name: Deploy
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - run: npm ci
+      - run: npm run build
+      - name: Deploy to VPS
+        env:
+          VPS_HOST: ${{ secrets.VPS_HOST }}
+          VPS_USER: ${{ secrets.VPS_USER }}
+        run: |
+          if (-not $env:VPS_HOST) { Write-Host "VPS_HOST secret not set — skipping SSH deploy"; exit 0 }
+          powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1 -VpsHost $env:VPS_HOST -RemoteUser $env:VPS_USER
