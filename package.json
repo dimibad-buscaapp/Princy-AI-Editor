@@ -20,7 +20,9 @@
     "services:remove": "powershell -ExecutionPolicy Bypass -File scripts/windows/remove-services.ps1",
     "services:restart": "powershell -ExecutionPolicy Bypass -File scripts/windows/restart-services.ps1",
     "deploy:vps": "powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1",
-    "sync:check-vps": "powershell -ExecutionPolicy Bypass -File scripts/compare-vps-sync.ps1"
+    "sync:check-vps": "powershell -ExecutionPolicy Bypass -File scripts/compare-vps-sync.ps1",
+    "env:setup": "powershell -ExecutionPolicy Bypass -File scripts/windows/setup-production-env.ps1",
+    "env:validate": "node scripts/validate-production-env.mjs"
   },
   "workspaces": [
     "apps/*",

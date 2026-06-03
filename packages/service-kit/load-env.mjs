@@ -25,4 +25,7 @@ function findMonorepoRoot(startDir) {
 
 const repoRoot = findMonorepoRoot(process.cwd());
 const envPath = path.join(repoRoot, ".env");
-dotenv.config({ path: envPath, quiet: true });
+const result = dotenv.config({ path: envPath });
+if (!result.parsed || Object.keys(result.parsed).length === 0) {
+  console.error(`[princy] Missing or empty .env at ${envPath}. Run: npm run env:setup`);
+}

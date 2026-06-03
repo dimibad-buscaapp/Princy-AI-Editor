@@ -22,8 +22,15 @@ export class JwtVerifier {
   private readonly accessSecret: string;
 
   constructor(accessSecret = process.env.JWT_SECRET) {
-    if (!accessSecret) {
-      throw new Error("JWT_SECRET is required.");
+    if (!accessSecret || accessSecret.length < 32) {
+      throw new Error(
+        "JWT_SECRET is required (min 32 chars). Run: npm run env:setup on the VPS."
+      );
+    }
+    if (/CHANGE_ME|GERAR_|SUA_SENHA/i.test(accessSecret)) {
+      throw new Error(
+        "JWT_SECRET is still a placeholder. Run: npm run env:setup on the VPS."
+      );
     }
     this.accessSecret = accessSecret;
   }

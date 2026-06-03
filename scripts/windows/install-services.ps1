@@ -41,6 +41,17 @@ if (!(Test-Path (Join-Path $AppPath "package.json"))) {
     throw "package.json not found in $AppPath. Deploy the project before installing services."
 }
 
+Push-Location $AppPath
+try {
+    node scripts/validate-production-env.mjs
+    if ($LASTEXITCODE -ne 0) {
+        throw ".env validation failed. Run: npm run env:setup"
+    }
+}
+finally {
+    Pop-Location
+}
+
 $nssm = Resolve-Executable -Name "nssm.exe" -ExplicitPath $NssmPath
 $npm = Resolve-Executable -Name "npm.cmd"
 $logsPath = Join-Path $AppPath "logs"
@@ -87,7 +98,13 @@ foreach ($service in $services) {
     Invoke-Nssm -Nssm $nssm -Arguments @("set", $name, "AppThrottle", "1500")
     Invoke-Nssm -Nssm $nssm -Arguments @("set", $name, "AppRestartDelay", "5000")
     Invoke-Nssm -Nssm $nssm -Arguments @("set", $name, "Start", "SERVICE_AUTO_START")
-    Invoke-Nssm -Nssm $nssm -Arguments @("set", $name, "AppEnvironmentExtra", "NODE_ENV=$NodeEnv", "HOST=0.0.0.0")
+    $logDir = Join-Path $AppPath "logs"
+    Invoke-Nssm -Nssm $nssm -Arguments @(
+        "set", $name, "AppEnvironmentExtra",
+        "NODE_ENV=$NodeEnv",
+        "HOST=0.0.0.0",
+        "PRINCY_LOG_DIR=$logDir"
+    )
 
     if (!$SkipStart) {
         $current = Get-Service -Name $name -ErrorAction SilentlyContinue

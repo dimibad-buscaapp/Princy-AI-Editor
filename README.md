@@ -139,15 +139,27 @@ npm run sync:check-vps
 
 Requisitos: SSH com chave para `108.181.169.40`, Git, Node.js 22+ e (opcional) NSSM na VPS.
 
-Ambiente de producao:
+Ambiente de producao (VPS):
 
 ```powershell
-Copy-Item .env.production.example .env.production
-Copy-Item .env.production.example .env
-notepad .env
+cd C:\Apps\Princy-Ai-Editor
+git pull origin main
+npm run env:setup
 ```
 
-Preencha `DATABASE_URL`, `JWT_SECRET` e `JWT_REFRESH_SECRET` com valores reais na VPS. Arquivos `.env` reais continuam fora do Git.
+O script pede a senha do PostgreSQL (se ainda for placeholder), gera `JWT_SECRET` / `JWT_REFRESH_SECRET`, grava `.env` e valida.
+
+Manual: `Copy-Item .env.production.example .env` e editar — **nao** deixar `CHANGE_ME_*` nem `GERAR_*`.
+
+```powershell
+npm run env:validate
+npm run build
+npm run services:install
+npm run services:restart
+npm run health
+```
+
+Arquivos `.env` reais continuam fora do Git.
 
 ## Producao persistente no Windows
 
