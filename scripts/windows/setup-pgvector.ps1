@@ -1,5 +1,6 @@
 param(
     [string]$EnvFile = "",
+    [string]$PostgresRoot = "",
     [string]$DatabaseName = "",
     [string]$DatabaseUser = "",
     [string]$PostgresPassword = "",
@@ -47,26 +48,75 @@ function Import-DatabaseUrlConfig {
     return $true
 }
 
-function Resolve-PostgresBin {
-    $psqlCommand = Get-Command psql.exe -ErrorAction SilentlyContinue
-    if ($psqlCommand) {
-        return Split-Path -Parent $psqlCommand.Source
-    }
-    $postgresRoot = Join-Path $env:ProgramFiles "PostgreSQL"
-    if (Test-Path $postgresRoot) {
-        foreach ($versionDirectory in (Get-ChildItem -Path $postgresRoot -Directory | Sort-Object Name -Descending)) {
-            $candidate = Join-Path $versionDirectory.FullName "bin"
-            if ((Test-Path (Join-Path $candidate "psql.exe"))) {
-                return $candidate
+function Get-PostgresInstallCandidates {
+    $seen = @{}
+    $list = New-Object System.Collections.Generic.List[object]
+
+    $base = Join-Path $env:ProgramFiles "PostgreSQL"
+    if (Test-Path $base) {
+        foreach ($dir in (Get-ChildItem -Path $base -Directory | Sort-Object Name -Descending)) {
+            $bin = Join-Path $dir.FullName "bin"
+            $psql = Join-Path $bin "psql.exe"
+            if ((Test-Path $psql) -and !$seen.ContainsKey($dir.FullName)) {
+                $seen[$dir.FullName] = $true
+                $list.Add([pscustomobject]@{ Root = $dir.FullName; Bin = $bin })
             }
         }
     }
-    return $null
+
+    $cmd = Get-Command psql.exe -ErrorAction SilentlyContinue
+    if ($cmd) {
+        $root = Split-Path (Split-Path $cmd.Source -Parent) -Parent
+        if (!$seen.ContainsKey($root)) {
+            $seen[$root] = $true
+            $list.Add([pscustomobject]@{ Root = $root; Bin = Split-Path $cmd.Source -Parent })
+        }
+    }
+
+    return $list
 }
 
-function Get-PostgresRootFromBin {
-    param([string]$Bin)
-    return (Split-Path -Parent $Bin)
+function Resolve-PostgresForDatabase {
+    param(
+        [hashtable]$Config,
+        [string]$ForcedRoot
+    )
+
+    if ($ForcedRoot) {
+        $root = $ForcedRoot.TrimEnd('\')
+        $bin = Join-Path $root "bin"
+        if (!(Test-Path (Join-Path $bin "psql.exe"))) {
+            throw "psql.exe not found under $bin"
+        }
+        return [pscustomobject]@{ Root = $root; Bin = $bin; ServerVersion = "(forced)" }
+    }
+
+    $candidates = Get-PostgresInstallCandidates
+    if ($candidates.Count -eq 0) {
+        throw "No PostgreSQL installs found under Program Files\PostgreSQL"
+    }
+
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    $env:PGPASSWORD = $Config.Password
+    try {
+        foreach ($candidate in $candidates) {
+            $psql = Join-Path $candidate.Bin "psql.exe"
+            $versionLine = & $psql -U $Config.User -h $Config.Host -p $Config.Port -d $Config.Name -tAc "SELECT version();" 2>&1
+            if ($LASTEXITCODE -eq 0 -and $versionLine) {
+                return [pscustomobject]@{
+                    Root           = $candidate.Root
+                    Bin            = $candidate.Bin
+                    ServerVersion  = ($versionLine | Out-String).Trim()
+                }
+            }
+        }
+    }
+    finally {
+        $ErrorActionPreference = $prev
+    }
+
+    throw "Cannot connect to $($Config.Host):$($Config.Port)/$($Config.Name) with any local psql (tried $($candidates.Count) installs)."
 }
 
 function Test-PgvectorControlFile {
@@ -75,20 +125,18 @@ function Test-PgvectorControlFile {
 }
 
 function Throw-PgvectorMissing {
-    param([string]$PostgresRoot, [string]$RepoRoot)
+    param([string]$PostgresRoot, [string]$RepoRoot, [string]$ServerVersion)
+    $major = if ($PostgresRoot -match '\\PostgreSQL\\(\d+)') { $Matches[1] } else { "?" }
     throw @"
-pgvector is NOT installed on PostgreSQL at:
-  $PostgresRoot
+pgvector binaries missing for the PostgreSQL SERVER that owns port 5432:
+  Install path: $PostgresRoot
+  Server: $ServerVersion
 
-The error "vector.control: No such file or directory" means binaries are missing.
+You may have installed pgvector on PostgreSQL 18 while the database service is still PostgreSQL $major.
 
 Fix (PowerShell as Administrator):
-  cd $RepoRoot
-  powershell -ExecutionPolicy Bypass -File scripts\windows\install-pgvector-windows.ps1
-  powershell -ExecutionPolicy Bypass -File scripts\windows\setup-pgvector.ps1
-
-Official build (Visual Studio nmake):
-  powershell -ExecutionPolicy Bypass -File scripts\windows\install-pgvector-windows.ps1 -Method source
+  powershell -ExecutionPolicy Bypass -File scripts\windows\install-pgvector-windows.ps1 -PostgresRoot "$PostgresRoot"
+  powershell -ExecutionPolicy Bypass -File scripts\windows\setup-pgvector.ps1 -PostgresRoot "$PostgresRoot"
 "@
 }
 
@@ -111,7 +159,6 @@ if (Import-DatabaseUrlConfig -Config $db -DatabaseUrl $databaseUrl) {
 }
 else {
     Write-Host "DATABASE_URL not found in: $EnvFile"
-    Write-Host "Add DATABASE_URL=postgresql://user:pass@localhost:5432/princy_ai_editor or pass -PostgresPassword"
 }
 
 if ($DatabaseName) { $db.Name = $DatabaseName }
@@ -120,16 +167,6 @@ if ($DatabaseHost) { $db.Host = $DatabaseHost }
 if ($DatabasePort) { $db.Port = $DatabasePort }
 if ($PostgresPassword) { $db.Password = $PostgresPassword }
 
-$postgresBin = Resolve-PostgresBin
-if (!$postgresBin) {
-    throw "psql.exe not found. Install PostgreSQL first."
-}
-
-$postgresRoot = Get-PostgresRootFromBin -Bin $postgresBin
-if (!(Test-PgvectorControlFile -PostgresRoot $postgresRoot)) {
-    Throw-PgvectorMissing -PostgresRoot $postgresRoot -RepoRoot $repoRoot
-}
-
 if (!$db.Password) {
     $securePassword = Read-Host "PostgreSQL password for user '$($db.User)'" -AsSecureString
     $db.Password = [Runtime.InteropServices.Marshal]::PtrToStringAuto(
@@ -137,22 +174,30 @@ if (!$db.Password) {
     )
 }
 
+$pg = Resolve-PostgresForDatabase -Config $db -ForcedRoot $PostgresRoot
+Write-Host "PostgreSQL server: $($pg.ServerVersion)"
+Write-Host "Install path (must match server): $($pg.Root)"
+
+if (!(Test-PgvectorControlFile -PostgresRoot $pg.Root)) {
+    Throw-PgvectorMissing -PostgresRoot $pg.Root -RepoRoot $repoRoot -ServerVersion $pg.ServerVersion
+}
+
 $env:PGPASSWORD = $db.Password
 $env:DATABASE_URL = "postgresql://$($db.User):$($db.Password)@$($db.Host):$($db.Port)/$($db.Name)"
-$env:Path = "$postgresBin;$env:Path"
-$psql = Join-Path $postgresBin "psql.exe"
+$env:Path = "$($pg.Bin);$env:Path"
+$psql = Join-Path $pg.Bin "psql.exe"
 
 Write-Host "Target: $($db.User)@$($db.Host):$($db.Port)/$($db.Name)"
 Write-Host "Enabling pgvector extension..."
 & $psql -U $db.User -h $db.Host -p $db.Port -d $db.Name -v ON_ERROR_STOP=1 -c "CREATE EXTENSION IF NOT EXISTS vector;"
 if ($LASTEXITCODE -ne 0) {
-    throw "CREATE EXTENSION vector failed (exit $LASTEXITCODE). Check PostgreSQL logs."
+    throw "CREATE EXTENSION vector failed (exit $LASTEXITCODE). Install pgvector on: $($pg.Root)"
 }
 
 $version = & $psql -U $db.User -h $db.Host -p $db.Port -d $db.Name -tAc "SELECT extversion FROM pg_extension WHERE extname = 'vector';"
 $versionText = if ($null -eq $version) { "" } else { $version.ToString().Trim() }
 if (!$versionText) {
-    throw "Extension vector not registered after CREATE EXTENSION. Restart PostgreSQL service and retry."
+    throw "Extension vector not registered. Restart PostgreSQL service for version $($pg.Root) and retry."
 }
 
 Write-Host "pgvector enabled. Version: $versionText"
@@ -161,6 +206,3 @@ Write-Host "Next:"
 Write-Host "  cd $repoRoot\packages\database"
 Write-Host "  npx prisma migrate resolve --rolled-back 20260603120000_pgvector_memory_v2"
 Write-Host "  npx prisma migrate deploy"
-Write-Host "  cd $repoRoot"
-Write-Host "  npm run build"
-Write-Host "  npm run services:restart"
