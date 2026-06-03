@@ -37,7 +37,10 @@ export class OllamaClient {
       signal: AbortSignal.timeout(this.timeoutMs)
     });
     if (!response.ok) {
-      throw new Error(`Ollama embed failed: ${response.status}`);
+      const detail = await response.text().catch(() => "");
+      throw new Error(
+        `Ollama embed failed: ${response.status} (model=${this.embedModel})${detail ? ` — ${detail.slice(0, 200)}` : ""}`
+      );
     }
     const data = (await response.json()) as { embedding?: number[] };
     if (!data.embedding?.length) {
@@ -58,7 +61,10 @@ export class OllamaClient {
       signal: AbortSignal.timeout(this.timeoutMs)
     });
     if (!response.ok) {
-      throw new Error(`Ollama chat failed: ${response.status}`);
+      const detail = await response.text().catch(() => "");
+      throw new Error(
+        `Ollama chat failed: ${response.status} (model=${this.chatModel}, url=${this.baseUrl}/api/chat)${detail ? ` — ${detail.slice(0, 200)}` : ""}`
+      );
     }
     return response;
   }

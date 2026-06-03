@@ -161,6 +161,31 @@ npm run health
 
 Arquivos `.env` reais continuam fora do Git.
 
+### Ollama (chat no frontend)
+
+O chat (`/api/chat/stream`) chama o **Ollama na VPS** (`OLLAMA_BASE_URL=http://127.0.0.1:11434`), nao no seu PC.
+
+Erro `Ollama chat failed: 404` = Ollama parado ou modelo nao instalado.
+
+Na VPS:
+
+```powershell
+ollama --version
+ollama list
+ollama pull qwen3-coder
+ollama pull nomic-embed-text
+curl http://127.0.0.1:11434/api/tags
+Restart-Service PrincyAgents -Force
+```
+
+Se `qwen3-coder` nao existir, use outro modelo e ajuste `.env`:
+
+```text
+OLLAMA_CHAT_MODEL=llama3.2
+```
+
+Depois `npm run build` e `Restart-Service PrincyAgents`.
+
 ## Producao persistente no Windows
 
 A Fase 1 usa NSSM para manter cada app como um servico automatico do Windows. Instale o `nssm.exe` na VPS e deixe-o disponivel no `PATH`, ou informe o caminho completo com `-NssmPath`.
