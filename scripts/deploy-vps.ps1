@@ -19,11 +19,11 @@
   powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1 -RemoteUser "Administrator" -Branch main
 #>
 param(
-    [string]$VpsHost = "108.181.169.40",
-    [string]$RemotePath = "C:\Apps\Princy-Ai-Editor",
-    [string]$Repository = "https://github.com/dimibad-buscaapp/Princy-AI-Editor.git",
-    [string]$RemoteUser = "Administrator",
-    [string]$Branch = "main",
+    [string]$VpsHost,
+    [string]$RemotePath,
+    [string]$Repository,
+    [string]$RemoteUser,
+    [string]$Branch,
     [switch]$FreshClone,
     [switch]$ExactSync,
     [switch]$SkipBuild,
@@ -34,6 +34,12 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "deploy.config.ps1")
+if (!$VpsHost) { $VpsHost = $PrincyDeploy.VpsHost }
+if (!$RemotePath) { $RemotePath = $PrincyDeploy.VpsRepoPath }
+if (!$Repository) { $Repository = $PrincyDeploy.Repository }
+if (!$RemoteUser) { $RemoteUser = $PrincyDeploy.RemoteUser }
+if (!$Branch) { $Branch = $PrincyDeploy.Branch }
 
 function Get-RepoRoot {
     $root = Split-Path -Parent $PSScriptRoot

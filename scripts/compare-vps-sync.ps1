@@ -3,13 +3,19 @@
   Compare Git state between local PC repo and VPS (same commit / dirty files).
 #>
 param(
-    [string]$VpsHost = "108.181.169.40",
-    [string]$RemotePath = "C:\Apps\Princy-Ai-Editor",
-    [string]$RemoteUser = "Administrator",
-    [string]$Branch = "main"
+    [string]$VpsHost,
+    [string]$RemotePath,
+    [string]$RemoteUser,
+    [string]$Branch
 )
 
 $ErrorActionPreference = "Stop"
+. (Join-Path $PSScriptRoot "deploy.config.ps1")
+if (!$VpsHost) { $VpsHost = $PrincyDeploy.VpsHost }
+if (!$RemotePath) { $RemotePath = $PrincyDeploy.VpsRepoPath }
+if (!$RemoteUser) { $RemoteUser = $PrincyDeploy.RemoteUser }
+if (!$Branch) { $Branch = $PrincyDeploy.Branch }
+
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
 git -C $repoRoot fetch origin $Branch 2>$null | Out-Null

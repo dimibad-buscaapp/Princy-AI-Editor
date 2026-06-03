@@ -4,10 +4,18 @@ Monorepo inicial do **Princy AI Editor**, preparado para frontend, API, agentes,
 
 ## Dados do projeto
 
-- GitHub: `https://github.com/dimibad-buscaapp/Princy-AI-Editor.git`
-- Local: `C:\Users\hp\Desktop\Princy-AI-Editor`
-- VPS: `108.181.169.40`
-- Caminho na VPS: `C:\Apps\Princy-Ai-Editor`
+| | Caminho / URL |
+| --- | --- |
+| **PC (dev)** | `C:\Users\hp\Desktop\Princy-AI-Editor` |
+| **VPS (prod)** | `C:\Apps\Princy-Ai-Editor` |
+| **GitHub** | `https://github.com/dimibad-buscaapp/Princy-AI-Editor.git` |
+| **Servidor** | `108.181.169.40` |
+| **Frontend** | `http://108.181.169.40:3400` |
+| **Gateway / API** | `http://108.181.169.40:3407` · `http://108.181.169.40:3407/api` |
+
+Config partilhada dos scripts de deploy: `scripts/deploy.config.ps1`.
+
+`http://108.181.169.40/` sem porta nao abre a app — use a porta **3400** (frontend) ou **3407** (gateway).
 
 ## Portas
 
