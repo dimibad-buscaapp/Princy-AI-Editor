@@ -76,21 +76,60 @@ Copy-Item .env.example .env
 docker compose up --build
 ```
 
-## Deploy na VPS
+## Deploy na VPS (PC → GitHub → VPS)
 
-O destino esperado na VPS Windows e:
+Fluxo recomendado: **commit/push no PC**, depois **deploy via SSH** (a VPS faz `git clone` ou `git pull`, nao copia pasta do PC).
+
+Destino na VPS:
 
 ```text
 C:\Apps\Princy-Ai-Editor
 ```
 
-Script inicial:
+### 1. No PC (antes do deploy)
+
+```powershell
+cd C:\Users\hp\Desktop\Princy-AI-Editor
+git add .
+git commit -m "sua mensagem"
+git push origin main
+```
+
+### 2. Deploy completo (clone/pull + npm install + build + servicos)
+
+```powershell
+npm run deploy:vps
+```
+
+Equivalente:
 
 ```powershell
 powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1
 ```
 
-O script assume acesso SSH ao host `108.181.169.40`, Git e Node.js instalados na VPS. Ajuste o usuario com `-RemoteUser` se necessario.
+Opcoes uteis:
+
+| Parametro | Efeito |
+| --- | --- |
+| `-FreshClone` | Apaga `C:\Apps\Princy-Ai-Editor` e clona de novo (faz backup do `.env`) |
+| `-ExactSync` | `git reset --hard origin/main` + `git clean -fd` na VPS |
+| `-SkipDbDeploy` | Nao roda `npm run db:deploy` |
+| `-SkipServices` | Nao reinicia servicos NSSM |
+| `-RemoteUser` | Utilizador SSH (padrao `Administrator`) |
+
+Exemplo — igualar VPS ao GitHub do zero (mantem `.env`):
+
+```powershell
+powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1 -FreshClone -ExactSync
+```
+
+### 3. Verificar se PC e VPS estao no mesmo commit
+
+```powershell
+npm run sync:check-vps
+```
+
+Requisitos: SSH com chave para `108.181.169.40`, Git, Node.js 22+ e (opcional) NSSM na VPS.
 
 Ambiente de producao:
 

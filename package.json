@@ -18,7 +18,9 @@
     "db:studio": "npm --workspace @princy/database run prisma:studio",
     "services:install": "powershell -ExecutionPolicy Bypass -File scripts/windows/install-services.ps1",
     "services:remove": "powershell -ExecutionPolicy Bypass -File scripts/windows/remove-services.ps1",
-    "services:restart": "powershell -ExecutionPolicy Bypass -File scripts/windows/restart-services.ps1"
+    "services:restart": "powershell -ExecutionPolicy Bypass -File scripts/windows/restart-services.ps1",
+    "deploy:vps": "powershell -ExecutionPolicy Bypass -File scripts/deploy-vps.ps1",
+    "sync:check-vps": "powershell -ExecutionPolicy Bypass -File scripts/compare-vps-sync.ps1"
   },
   "workspaces": [
     "apps/*",
