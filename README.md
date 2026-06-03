@@ -427,10 +427,18 @@ Substitui `Embedding.vectorUnsupported` (JSON em TEXT) por coluna `vector(768)` 
 ### Setup pgvector
 
 ```powershell
-# VPS / Windows (apos PostgreSQL instalado)
-powershell -ExecutionPolicy Bypass -File scripts/windows/setup-pgvector.ps1
-npm run db:deploy
+# VPS — 1) binarios (Admin), 2) CREATE EXTENSION (le .env)
+cd C:\Apps\Princy-Ai-Editor
+git pull
+powershell -ExecutionPolicy Bypass -File scripts\windows\install-pgvector-windows.ps1
+powershell -ExecutionPolicy Bypass -File scripts\windows\setup-pgvector.ps1
+
+# Ou tudo de uma vez (PowerShell como Administrador):
+powershell -ExecutionPolicy Bypass -File scripts\windows\deploy-pgvector-vps.ps1
 ```
+
+Se `vector.control` nao existir, `setup-pgvector.ps1` para antes e indica `install-pgvector-windows.ps1`.
+Build oficial (nmake): `install-pgvector-windows.ps1 -Method source`.
 
 Dev com Docker (opcional):
 
