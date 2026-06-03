@@ -53,7 +53,7 @@ function Test-LocalPushPending {
     param([string]$Root, [string]$BranchName)
     Push-Location $Root
     try {
-        git fetch origin $BranchName 2>$null | Out-Null
+        Invoke-GitQuiet fetch origin $BranchName | Out-Null
         $ahead = git rev-list --count "origin/$BranchName..HEAD" 2>$null
         if ($LASTEXITCODE -ne 0) {
             return $null

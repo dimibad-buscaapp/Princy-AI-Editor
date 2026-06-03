@@ -13,3 +13,16 @@ $PrincyDeploy = @{
     GatewayUrl     = "http://108.181.169.40:3407"
     ApiUrl         = "http://108.181.169.40:3407/api"
 }
+
+function Invoke-GitQuiet {
+    param([Parameter(ValueFromRemainingArguments = $true)][string[]]$GitArgs)
+    $prev = $ErrorActionPreference
+    $ErrorActionPreference = "SilentlyContinue"
+    try {
+        & git @GitArgs 2>&1 | Out-Null
+        return $LASTEXITCODE
+    }
+    finally {
+        $ErrorActionPreference = $prev
+    }
+}

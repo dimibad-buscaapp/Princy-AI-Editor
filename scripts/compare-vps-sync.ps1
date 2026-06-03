@@ -18,7 +18,13 @@ if (!$Branch) { $Branch = $PrincyDeploy.Branch }
 
 $repoRoot = (Resolve-Path (Join-Path $PSScriptRoot "..")).Path
 
-git -C $repoRoot fetch origin $Branch 2>$null | Out-Null
+Push-Location $repoRoot
+try {
+    Invoke-GitQuiet fetch origin $Branch | Out-Null
+}
+finally {
+    Pop-Location
+}
 $pcCommit = (git -C $repoRoot rev-parse HEAD).Trim()
 $pcShort = (git -C $repoRoot rev-parse --short HEAD).Trim()
 $pcDirty = (git -C $repoRoot status --porcelain).Trim()
@@ -61,7 +67,7 @@ else {
 }
 
 if ($vpsCommit -ne $originMain) {
-    Write-Host "VPS is not at origin/$Branch — run: npm run deploy:vps" -ForegroundColor Yellow
+    Write-Host "VPS is not at origin/$Branch - run: npm run deploy:vps" -ForegroundColor Yellow
     $ok = $false
 }
 
