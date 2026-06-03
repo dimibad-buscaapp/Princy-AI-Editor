@@ -4,9 +4,19 @@ param(
     [string]$PostgresRoot = "",
     [ValidateSet("prebuilt", "source")]
     [string]$Method = "prebuilt",
-    [string]$PgVectorTag = "0.8.2_17.6",
+    [string]$PgVectorTag = "",
     [string]$PgVectorVersion = "0.8.2"
 )
+
+# GitHub release tag per PostgreSQL major (andreiramani/pgvector_pgsql_windows)
+$PgvectorReleaseByMajor = @{
+    13 = "0.8.2_13.23"
+    14 = "0.8.2_14.20"
+    15 = "0.8.2_15.14"
+    16 = "0.8.2_16.1"
+    17 = "0.8.2_17.6"
+    18 = "0.8.2_18.0.2"
+}
 
 $ErrorActionPreference = "Stop"
 
@@ -44,6 +54,17 @@ function Get-PostgresMajorVersion {
         return [int]$Matches[1]
     }
     return 17
+}
+
+function Get-PgvectorReleaseTag {
+    param([int]$Major, [string]$OverrideTag)
+    if ($OverrideTag) {
+        return $OverrideTag
+    }
+    if ($PgvectorReleaseByMajor.ContainsKey($Major)) {
+        return $PgvectorReleaseByMajor[$Major]
+    }
+    throw "No prebuilt pgvector mapping for PostgreSQL $Major. Set -PgVectorTag from https://github.com/andreiramani/pgvector_pgsql_windows/releases or use -Method source."
 }
 
 function Install-PrebuiltPgvector {
@@ -158,11 +179,10 @@ if ($Method -eq "source") {
     exit 0
 }
 
-if ($major -ne 17) {
-    Write-Warning "Prebuilt asset defaults to PG 17. For PG $major, check https://github.com/andreiramani/pgvector_pgsql_windows/releases and adjust -PgVectorTag / asset."
-}
+$releaseTag = Get-PgvectorReleaseTag -Major $major -OverrideTag $PgVectorTag
+Write-Host "Using release tag: $releaseTag (PostgreSQL $major)"
 
-Install-PrebuiltPgvector -Root $pgRoot -Major $major -Tag $PgVectorTag -Version $PgVectorVersion
+Install-PrebuiltPgvector -Root $pgRoot -Major $major -Tag $releaseTag -Version $PgVectorVersion
 
 if (!(Test-PgvectorInstalled -Root $pgRoot)) {
     throw "Install finished but vector.control is still missing under $pgRoot\share\extension"
