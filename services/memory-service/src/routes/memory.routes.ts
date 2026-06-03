@@ -19,6 +19,11 @@ export function registerMemoryRoutes(app: Express) {
   const ragService = new RagService();
   const auth = authenticate();
 
+  app.get("/memory/vector/status", auth, asyncHandler(async (_request, response) => {
+    const status = await embeddingService.getVectorStatus();
+    response.json(status);
+  }));
+
   app.post("/memory/create", auth, validateBody(createMemorySchema), asyncHandler(async (request, response) => {
     const user = (request as AuthenticatedRequest).user;
     const chunk = await memoryService.create(request.body, user.id);
@@ -72,15 +77,15 @@ export function registerMemoryRoutes(app: Express) {
       return;
     }
     if (projectId) {
-      const embeddings = await embeddingService.reindex({ projectId });
-      response.json({ embeddings });
+      const result = await embeddingService.reindex({ projectId });
+      response.json(result);
       return;
     }
     response.status(400).json({ error: "validation_error", message: "Provide chunkId, chunkIds, or projectId." });
   }));
 
   app.post("/memory/reindex", auth, validateBody(reindexMemorySchema), asyncHandler(async (request, response) => {
-    const embeddings = await embeddingService.reindex(request.body);
-    response.json({ embeddings, count: embeddings.length });
+    const result = await embeddingService.reindex(request.body);
+    response.json(result);
   }));
 }

@@ -18,7 +18,8 @@
     "build": "npm run prisma:generate && tsc -p tsconfig.json",
     "typecheck": "npm run prisma:generate && tsc --noEmit",
     "lint": "npm run prisma:generate && tsc --noEmit",
-    "clean": "rimraf dist"
+    "clean": "rimraf dist",
+    "test": "node --import tsx --test src/**/*.test.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "latest",

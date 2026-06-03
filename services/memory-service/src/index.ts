@@ -1,6 +1,6 @@
 import "dotenv/config";
 import { createDatabaseReadinessCheck } from "@princy/core";
-import { prisma } from "@princy/database";
+import { assertPgvectorReady, prisma } from "@princy/database";
 import { startService } from "@princy/service-kit";
 import { registerMemoryRoutes } from "./routes/memory.routes.js";
 
@@ -11,5 +11,9 @@ startService({
   description: "Long-term memory and retrieval service.",
   port,
   routes: [registerMemoryRoutes],
-  readinessCheck: createDatabaseReadinessCheck(() => prisma.$queryRaw`SELECT 1`)
+  readinessCheck: createDatabaseReadinessCheck(async () => {
+    await prisma.$queryRaw`SELECT 1`;
+    await assertPgvectorReady();
+    return true;
+  })
 });

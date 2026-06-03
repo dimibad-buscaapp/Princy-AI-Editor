@@ -420,9 +420,51 @@ npm run health
 
 Relatorios em `docs/reports/`.
 
+## Fase 19.1 — PGVector + Memory V2
+
+Substitui `Embedding.vectorUnsupported` (JSON em TEXT) por coluna `vector(768)` com extensao **pgvector**.
+
+### Setup pgvector
+
+```powershell
+# VPS / Windows (apos PostgreSQL instalado)
+powershell -ExecutionPolicy Bypass -File scripts/windows/setup-pgvector.ps1
+npm run db:deploy
+```
+
+Dev com Docker (opcional):
+
+```powershell
+docker compose -f docker-compose.postgres.yml up -d
+```
+
+### Variaveis
+
+```text
+EMBEDDING_DIMENSIONS=768
+MEMORY_HYBRID_VECTOR_WEIGHT=0.7
+MEMORY_HYBRID_TEXT_WEIGHT=0.3
+MEMORY_REINDEX_BATCH=50
+MEMORY_AUTO_EMBED=false
+```
+
+### Rotas novas / alteradas
+
+- `GET /api/memory/vector/status` — status pgvector + pendentes
+- `POST /api/memory/reindex` — retorna `{ embedded, migrated, failed, pendingVectors }`
+- Busca `semantic` / `hybrid` usa similaridade SQL (`<=>`)
+
+### Benchmark
+
+```powershell
+node scripts/benchmark-pgvector.mjs
+```
+
+Relatorio: `docs/reports/phase-19.1.md`
+
 ## Proximos passos sugeridos
 
-- Rodar `npm run db:migrate` com PostgreSQL ativo.
+- Rodar `setup-pgvector.ps1` + `db:deploy` na VPS apos cada deploy.
+- `POST /api/memory/reindex` com JWT apos migracao.
 - Configurar `OLLAMA_BASE_URL` (dev local, prod VPS).
-- Rotacionar chaves SSH/JWT expostas em logs.
-- pgvector (Fase 19+) para escala de embeddings.
+- Tuning HNSW / IVFFlat para grande volume.

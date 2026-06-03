@@ -1,5 +1,10 @@
 import { OllamaClient } from "@princy/ai-client";
-import { prisma } from "@princy/database";
+import {
+  assertPgvectorReady,
+  countEmbeddingsWithoutVector,
+  prisma,
+  upsertEmbeddingVector
+} from "@princy/database";
 import type { EmbeddingProvider } from "../providers/embedding.provider.js";
 import { MemoryRepository } from "../repositories/memory.repository.js";
 
@@ -15,6 +20,14 @@ export class OllamaEmbeddingProvider implements EmbeddingProvider {
   }
 }
 
+export type ReindexResult = {
+  embedded: number;
+  migrated: number;
+  failed: number;
+  pendingVectors: number;
+  errors: string[];
+};
+
 export class EmbeddingService {
   constructor(
     private readonly memoryRepo = new MemoryRepository(),
@@ -29,14 +42,15 @@ export class EmbeddingService {
     const vector = await this.provider.embed(chunk.content);
     const model = this.provider.getModelName();
     await prisma.embedding.deleteMany({ where: { memoryChunkId: chunkId, model } });
-    return prisma.embedding.create({
+    const created = await prisma.embedding.create({
       data: {
         memoryChunkId: chunkId,
         model,
-        dimensions: vector.length,
-        vectorUnsupported: JSON.stringify(vector)
+        dimensions: vector.length
       }
     });
+    await upsertEmbeddingVector(created.id, vector);
+    return prisma.embedding.findUnique({ where: { id: created.id } });
   }
 
   async embedMany(chunkIds: string[]) {
@@ -47,8 +61,47 @@ export class EmbeddingService {
     return results;
   }
 
-  async reindex(filters: { projectId?: string; conversationId?: string }) {
+  async reindex(filters: { projectId?: string; conversationId?: string }): Promise<ReindexResult> {
+    const batchSize = Number(process.env.MEMORY_REINDEX_BATCH ?? 50);
     const chunks = await this.memoryRepo.listForReindex(filters);
-    return this.embedMany(chunks.map((c) => c.id));
+    const result: ReindexResult = {
+      embedded: 0,
+      migrated: 0,
+      failed: 0,
+      pendingVectors: await countEmbeddingsWithoutVector(),
+      errors: []
+    };
+
+    for (let i = 0; i < chunks.length; i += batchSize) {
+      const batch = chunks.slice(i, i + batchSize);
+      for (const chunk of batch) {
+        try {
+          await this.embedChunk(chunk.id);
+          result.embedded += 1;
+        } catch (error) {
+          result.failed += 1;
+          result.errors.push(
+            `${chunk.id}: ${error instanceof Error ? error.message : "embed failed"}`
+          );
+        }
+      }
+    }
+
+    result.pendingVectors = await countEmbeddingsWithoutVector();
+    result.migrated = result.embedded;
+    return result;
+  }
+
+  async getVectorStatus() {
+    const pendingVectors = await countEmbeddingsWithoutVector();
+    let pgvector = false;
+    let version: string | null = null;
+    try {
+      version = await assertPgvectorReady();
+      pgvector = true;
+    } catch {
+      pgvector = false;
+    }
+    return { pgvector, version, pendingVectors };
   }
 }

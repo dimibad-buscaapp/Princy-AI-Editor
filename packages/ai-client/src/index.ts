@@ -1,2 +1,8 @@
 export { OllamaClient, type OllamaClientOptions } from "./ollama.client.js";
-export { cosineSimilarity, parseVector } from "./vector.js";
+export {
+  cosineSimilarity,
+  getEmbeddingDimensions,
+  parseVector,
+  toPgVectorLiteral,
+  validateVector
+} from "./vector.js";

@@ -1,358 +1,360 @@
-generator client {
-  provider = "prisma-client-js"
-}
-
-datasource db {
-  provider = "postgresql"
-}
-
-enum UserRole {
-  ADMIN
-  DEVELOPER
-  VIEWER
-}
-
-enum MessageRole {
-  USER
-  ASSISTANT
-  SYSTEM
-  TOOL
-}
-
-enum AgentType {
-  AUTO
-  PLANNER
-  CODER
-  REVIEWER
-  DEBUGGER
-  ARCHITECT
-  TERMINAL
-}
-
-enum AgentStatus {
-  IDLE
-  RUNNING
-  FAILED
-  COMPLETED
-}
-
-enum TaskStatus {
-  PENDING
-  RUNNING
-  FAILED
-  COMPLETED
-  CANCELLED
-}
-
-enum MemoryScope {
-  USER
-  PROJECT
-  CONVERSATION
-  WORKSPACE
-}
-
-enum PatchStatus {
-  PROPOSED
-  APPLIED
-  ROLLED_BACK
-  FAILED
-}
-
-enum ApprovalStatus {
-  PENDING
-  APPROVED
-  REJECTED
-}
-
-enum AutonomousGoalStatus {
-  PENDING
-  PLANNING
-  EXECUTING
-  AWAITING_APPROVAL
-  COMPLETED
-  FAILED
-  CANCELLED
-}
-
-model User {
-  id           String        @id @default(cuid())
-  email        String        @unique
-  name         String
-  passwordHash String
-  role         UserRole      @default(DEVELOPER)
-  projects     Project[]
-  memoryChunks MemoryChunk[]
-  auditLogs    AuditLog[]
-  patches      Patch[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-}
-
-model Project {
-  id            String         @id @default(cuid())
-  name          String
-  description   String?
-  ownerId       String
-  owner         User           @relation(fields: [ownerId], references: [id])
-  workspaces    Workspace[]
-  conversations Conversation[]
-  memoryChunks  MemoryChunk[]
-  contextNodes  ContextNode[]
-  patches       Patch[]
-  goals         AutonomousGoal[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
-
-  @@index([ownerId])
-}
-
-model Workspace {
-  id           String        @id @default(cuid())
-  projectId    String
-  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  path         String
-  memoryChunks MemoryChunk[]
-  patches      Patch[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  @@index([projectId])
-}
-
-model Conversation {
-  id           String        @id @default(cuid())
-  projectId    String?
-  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title        String
-  messages     Message[]
-  memoryChunks MemoryChunk[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
-
-  @@index([projectId])
-}
-
-model Message {
-  id             String       @id @default(cuid())
-  conversationId String
-  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
-  role           MessageRole
-  content        String
-  metadata       Json?
-  createdAt      DateTime     @default(now())
-
-  @@index([conversationId])
-  @@index([role])
-}
-
-model Agent {
-  id         String           @id @default(cuid())
-  name       String
-  type       AgentType
-  status     AgentStatus      @default(IDLE)
-  tasks      Task[]
-  executions AgentExecution[]
-  createdAt  DateTime         @default(now())
-  updatedAt  DateTime         @updatedAt
-
-  @@index([type])
-  @@index([status])
-}
-
-model Task {
-  id          String           @id @default(cuid())
-  agentId     String?
-  agent       Agent?           @relation(fields: [agentId], references: [id], onDelete: SetNull)
-  title       String
-  status      TaskStatus       @default(PENDING)
-  payload     Json?
-  result      Json?
-  executions  AgentExecution[]
-  goalId      String?
-  goal        AutonomousGoal?  @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  createdAt   DateTime         @default(now())
-  updatedAt   DateTime         @updatedAt
-
-  @@index([agentId])
-  @@index([status])
-  @@index([goalId])
-}
-
-model AgentExecution {
-  id         String      @id @default(cuid())
-  agentId    String
-  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
-  taskId     String?
-  task       Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
-  input      Json?
-  output     Json?
-  status     TaskStatus  @default(RUNNING)
-  durationMs Int?
-  createdAt  DateTime    @default(now())
-
-  @@index([agentId])
-  @@index([taskId])
-  @@index([status])
-}
-
-model MemoryChunk {
-  id             String       @id @default(cuid())
-  scope          MemoryScope  @default(PROJECT)
-  projectId      String?
-  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  userId         String?
-  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
-  conversationId String?
-  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
-  workspaceId    String?
-  workspace      Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  title          String?
-  content        String
-  tags           Json?
-  metadata       Json?
-  embeddings     Embedding[]
-  createdAt      DateTime     @default(now())
-  updatedAt      DateTime     @updatedAt
-
-  @@index([projectId, scope])
-  @@index([conversationId])
-  @@index([userId])
-  @@index([workspaceId])
-}
-
-model Embedding {
-  id                String      @id @default(cuid())
-  memoryChunkId     String
-  memoryChunk       MemoryChunk @relation(fields: [memoryChunkId], references: [id], onDelete: Cascade)
-  vectorUnsupported String?
-  model             String
-  dimensions        Int
-  createdAt         DateTime    @default(now())
-
-  @@index([memoryChunkId])
-  @@index([model])
-}
-
-model ContextNode {
-  id            String        @id @default(cuid())
-  projectId     String?
-  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  type          String
-  name          String
-  path          String?
-  metadata      Json?
-  outgoingEdges ContextEdge[] @relation("ContextEdgeSource")
-  incomingEdges ContextEdge[] @relation("ContextEdgeTarget")
-  createdAt     DateTime      @default(now())
-  updatedAt     DateTime      @updatedAt
-
-  @@index([projectId])
-  @@index([type])
-  @@index([path])
-}
-
-model ContextEdge {
-  id           String      @id @default(cuid())
-  sourceId     String
-  targetId     String
-  source       ContextNode @relation("ContextEdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
-  target       ContextNode @relation("ContextEdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
-  relationship String
-  metadata     Json?
-  createdAt    DateTime    @default(now())
-
-  @@index([sourceId])
-  @@index([targetId])
-  @@index([relationship])
-}
-
-model Patch {
-  id          String       @id @default(cuid())
-  projectId   String
-  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
-  workspaceId String?
-  workspace   Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
-  createdById String?
-  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
-  filePath    String
-  diff        String
-  status      PatchStatus  @default(PROPOSED)
-  backupPath  String?
-  appliedAt   DateTime?
-  history     PatchHistory[]
-  createdAt   DateTime     @default(now())
-  updatedAt   DateTime     @updatedAt
-
-  @@index([projectId])
-  @@index([status])
-}
-
-model PatchHistory {
-  id        String   @id @default(cuid())
-  patchId   String
-  patch     Patch    @relation(fields: [patchId], references: [id], onDelete: Cascade)
-  action    String
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  @@index([patchId])
-}
-
-model TerminalSession {
-  id          String   @id @default(cuid())
-  workspaceId String?
-  cwd         String?
-  history     Json?
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
-}
-
-model AutonomousGoal {
-  id          String               @id @default(cuid())
-  projectId   String?
-  project     Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
-  title       String
-  description String?
-  status      AutonomousGoalStatus @default(PENDING)
-  payload     Json?
-  result      Json?
-  tasks       Task[]
-  approvals   ApprovalRequest[]
-  createdAt   DateTime             @default(now())
-  updatedAt   DateTime             @updatedAt
-
-  @@index([projectId])
-  @@index([status])
-}
-
-model ApprovalRequest {
-  id        String         @id @default(cuid())
-  goalId    String?
-  goal      AutonomousGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
-  patchId   String?
-  type      String
-  status    ApprovalStatus @default(PENDING)
-  metadata  Json?
-  createdAt DateTime       @default(now())
-  updatedAt DateTime       @updatedAt
-
-  @@index([goalId])
-  @@index([status])
-}
-
-model AuditLog {
-  id        String   @id @default(cuid())
-  actorId   String?
-  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  action    String
-  entity    String
-  entityId  String?
-  metadata  Json?
-  createdAt DateTime @default(now())
-
-  @@index([actorId])
-  @@index([entity])
-  @@index([entityId])
-  @@index([createdAt])
-}
-
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  extensions = [vector]
+}
+
+enum UserRole {
+  ADMIN
+  DEVELOPER
+  VIEWER
+}
+
+enum MessageRole {
+  USER
+  ASSISTANT
+  SYSTEM
+  TOOL
+}
+
+enum AgentType {
+  AUTO
+  PLANNER
+  CODER
+  REVIEWER
+  DEBUGGER
+  ARCHITECT
+  TERMINAL
+}
+
+enum AgentStatus {
+  IDLE
+  RUNNING
+  FAILED
+  COMPLETED
+}
+
+enum TaskStatus {
+  PENDING
+  RUNNING
+  FAILED
+  COMPLETED
+  CANCELLED
+}
+
+enum MemoryScope {
+  USER
+  PROJECT
+  CONVERSATION
+  WORKSPACE
+}
+
+enum PatchStatus {
+  PROPOSED
+  APPLIED
+  ROLLED_BACK
+  FAILED
+}
+
+enum ApprovalStatus {
+  PENDING
+  APPROVED
+  REJECTED
+}
+
+enum AutonomousGoalStatus {
+  PENDING
+  PLANNING
+  EXECUTING
+  AWAITING_APPROVAL
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+model User {
+  id           String        @id @default(cuid())
+  email        String        @unique
+  name         String
+  passwordHash String
+  role         UserRole      @default(DEVELOPER)
+  projects     Project[]
+  memoryChunks MemoryChunk[]
+  auditLogs    AuditLog[]
+  patches      Patch[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+}
+
+model Project {
+  id            String         @id @default(cuid())
+  name          String
+  description   String?
+  ownerId       String
+  owner         User           @relation(fields: [ownerId], references: [id])
+  workspaces    Workspace[]
+  conversations Conversation[]
+  memoryChunks  MemoryChunk[]
+  contextNodes  ContextNode[]
+  patches       Patch[]
+  goals         AutonomousGoal[]
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+
+  @@index([ownerId])
+}
+
+model Workspace {
+  id           String        @id @default(cuid())
+  projectId    String
+  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  path         String
+  memoryChunks MemoryChunk[]
+  patches      Patch[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([projectId])
+}
+
+model Conversation {
+  id           String        @id @default(cuid())
+  projectId    String?
+  project      Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title        String
+  messages     Message[]
+  memoryChunks MemoryChunk[]
+  createdAt    DateTime      @default(now())
+  updatedAt    DateTime      @updatedAt
+
+  @@index([projectId])
+}
+
+model Message {
+  id             String       @id @default(cuid())
+  conversationId String
+  conversation   Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  role           MessageRole
+  content        String
+  metadata       Json?
+  createdAt      DateTime     @default(now())
+
+  @@index([conversationId])
+  @@index([role])
+}
+
+model Agent {
+  id         String           @id @default(cuid())
+  name       String
+  type       AgentType
+  status     AgentStatus      @default(IDLE)
+  tasks      Task[]
+  executions AgentExecution[]
+  createdAt  DateTime         @default(now())
+  updatedAt  DateTime         @updatedAt
+
+  @@index([type])
+  @@index([status])
+}
+
+model Task {
+  id          String           @id @default(cuid())
+  agentId     String?
+  agent       Agent?           @relation(fields: [agentId], references: [id], onDelete: SetNull)
+  title       String
+  status      TaskStatus       @default(PENDING)
+  payload     Json?
+  result      Json?
+  executions  AgentExecution[]
+  goalId      String?
+  goal        AutonomousGoal?  @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  createdAt   DateTime         @default(now())
+  updatedAt   DateTime         @updatedAt
+
+  @@index([agentId])
+  @@index([status])
+  @@index([goalId])
+}
+
+model AgentExecution {
+  id         String      @id @default(cuid())
+  agentId    String
+  agent      Agent       @relation(fields: [agentId], references: [id], onDelete: Cascade)
+  taskId     String?
+  task       Task?       @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  input      Json?
+  output     Json?
+  status     TaskStatus  @default(RUNNING)
+  durationMs Int?
+  createdAt  DateTime    @default(now())
+
+  @@index([agentId])
+  @@index([taskId])
+  @@index([status])
+}
+
+model MemoryChunk {
+  id             String       @id @default(cuid())
+  scope          MemoryScope  @default(PROJECT)
+  projectId      String?
+  project        Project?     @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  userId         String?
+  user           User?        @relation(fields: [userId], references: [id], onDelete: SetNull)
+  conversationId String?
+  conversation   Conversation? @relation(fields: [conversationId], references: [id], onDelete: SetNull)
+  workspaceId    String?
+  workspace      Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  title          String?
+  content        String
+  tags           Json?
+  metadata       Json?
+  embeddings     Embedding[]
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+
+  @@index([projectId, scope])
+  @@index([conversationId])
+  @@index([userId])
+  @@index([workspaceId])
+}
+
+model Embedding {
+  id            String                      @id @default(cuid())
+  memoryChunkId String
+  memoryChunk   MemoryChunk                 @relation(fields: [memoryChunkId], references: [id], onDelete: Cascade)
+  vector        Unsupported("vector(768)")?
+  model         String
+  dimensions    Int
+  createdAt     DateTime                    @default(now())
+
+  @@index([memoryChunkId])
+  @@index([model])
+}
+
+model ContextNode {
+  id            String        @id @default(cuid())
+  projectId     String?
+  project       Project?      @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  type          String
+  name          String
+  path          String?
+  metadata      Json?
+  outgoingEdges ContextEdge[] @relation("ContextEdgeSource")
+  incomingEdges ContextEdge[] @relation("ContextEdgeTarget")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+
+  @@index([projectId])
+  @@index([type])
+  @@index([path])
+}
+
+model ContextEdge {
+  id           String      @id @default(cuid())
+  sourceId     String
+  targetId     String
+  source       ContextNode @relation("ContextEdgeSource", fields: [sourceId], references: [id], onDelete: Cascade)
+  target       ContextNode @relation("ContextEdgeTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  relationship String
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+
+  @@index([sourceId])
+  @@index([targetId])
+  @@index([relationship])
+}
+
+model Patch {
+  id          String       @id @default(cuid())
+  projectId   String
+  project     Project      @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace?   @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  createdById String?
+  createdBy   User?        @relation(fields: [createdById], references: [id], onDelete: SetNull)
+  filePath    String
+  diff        String
+  status      PatchStatus  @default(PROPOSED)
+  backupPath  String?
+  appliedAt   DateTime?
+  history     PatchHistory[]
+  createdAt   DateTime     @default(now())
+  updatedAt   DateTime     @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model PatchHistory {
+  id        String   @id @default(cuid())
+  patchId   String
+  patch     Patch    @relation(fields: [patchId], references: [id], onDelete: Cascade)
+  action    String
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([patchId])
+}
+
+model TerminalSession {
+  id          String   @id @default(cuid())
+  workspaceId String?
+  cwd         String?
+  history     Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model AutonomousGoal {
+  id          String               @id @default(cuid())
+  projectId   String?
+  project     Project?             @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  title       String
+  description String?
+  status      AutonomousGoalStatus @default(PENDING)
+  payload     Json?
+  result      Json?
+  tasks       Task[]
+  approvals   ApprovalRequest[]
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  @@index([projectId])
+  @@index([status])
+}
+
+model ApprovalRequest {
+  id        String         @id @default(cuid())
+  goalId    String?
+  goal      AutonomousGoal? @relation(fields: [goalId], references: [id], onDelete: SetNull)
+  patchId   String?
+  type      String
+  status    ApprovalStatus @default(PENDING)
+  metadata  Json?
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+
+  @@index([goalId])
+  @@index([status])
+}
+
+model AuditLog {
+  id        String   @id @default(cuid())
+  actorId   String?
+  actor     User?    @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  action    String
+  entity    String
+  entityId  String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@index([actorId])
+  @@index([entity])
+  @@index([entityId])
+  @@index([createdAt])
+}
+

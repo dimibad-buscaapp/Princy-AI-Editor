@@ -1,0 +1,15 @@
+# Optional local PostgreSQL with pgvector (development only)
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: princy_ai_editor
+    volumes:
+      - princy_pgdata:/var/lib/postgresql/data
+
+volumes:
+  princy_pgdata:

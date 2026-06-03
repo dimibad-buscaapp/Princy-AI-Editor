@@ -1,3 +1,5 @@
+import { validateVector } from "./vector.js";
+
 export type OllamaClientOptions = {
   baseUrl?: string;
   embedModel?: string;
@@ -41,7 +43,7 @@ export class OllamaClient {
     if (!data.embedding?.length) {
       throw new Error("Ollama returned empty embedding.");
     }
-    return data.embedding;
+    return validateVector(data.embedding);
   }
 
   async chat(messages: { role: string; content: string }[], options?: { stream?: boolean }) {
