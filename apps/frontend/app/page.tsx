@@ -19,7 +19,7 @@ const services = [
 
 export default function Home() {
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { user, logout, sessionMessage } = useAuth();
 
   return (
     <ProtectedRoute>
@@ -41,13 +41,14 @@ export default function Home() {
               className="logoutButton"
               onClick={() => {
                 logout();
-                router.replace("/login");
               }}
             >
               Sair
             </button>
           </div>
         </header>
+
+        {sessionMessage ? <div className="sessionBanner">{sessionMessage}</div> : null}
 
         <section className="hero">
           <p className="eyebrow">Princy AI Editor</p>

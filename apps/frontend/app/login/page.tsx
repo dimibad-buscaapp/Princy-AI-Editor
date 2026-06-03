@@ -6,7 +6,7 @@ import { useAuth } from "../../src/context/auth-context";
 
 export default function LoginPage() {
   const router = useRouter();
-  const { login, isAuthenticated, loading: authLoading } = useAuth();
+  const { login, isAuthenticated, loading: authLoading, sessionMessage } = useAuth();
   const [email, setEmail] = useState("admin@princy.local");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -47,6 +47,8 @@ export default function LoginPage() {
           <h1>Entrar no painel</h1>
           <p className="intro">Use as credenciais de desenvolvimento para acessar o dashboard.</p>
         </div>
+
+        {sessionMessage ? <div className="authInfo">{sessionMessage}</div> : null}
 
         <form onSubmit={handleSubmit} className="authForm">
           <label className="authField">
