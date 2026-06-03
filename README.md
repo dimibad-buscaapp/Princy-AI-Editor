@@ -172,16 +172,16 @@ Na VPS:
 ```powershell
 ollama --version
 ollama list
-ollama pull qwen3-coder
+ollama pull qwen2.5:3b
 ollama pull nomic-embed-text
 curl http://127.0.0.1:11434/api/tags
 Restart-Service PrincyAgents -Force
 ```
 
-Se `qwen3-coder` nao existir, use outro modelo e ajuste `.env`:
+VPS com **8GB RAM**: nao use `qwen3-coder` (~18GB). Prefira `qwen2.5:3b`, `llama3.2:3b` ou `phi3:mini` e ajuste `.env`:
 
 ```text
-OLLAMA_CHAT_MODEL=llama3.2
+OLLAMA_CHAT_MODEL=qwen2.5:3b
 ```
 
 Depois `npm run build` e `Restart-Service PrincyAgents`.

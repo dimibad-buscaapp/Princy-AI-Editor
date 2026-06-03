@@ -16,7 +16,7 @@ export class OllamaClient {
   constructor(options: OllamaClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? process.env.OLLAMA_BASE_URL ?? process.env.OLLAMA_URL ?? "http://127.0.0.1:11434").replace(/\/$/, "");
     this.embedModel = options.embedModel ?? process.env.OLLAMA_EMBED_MODEL ?? "nomic-embed-text";
-    this.chatModel = options.chatModel ?? process.env.OLLAMA_CHAT_MODEL ?? "qwen3-coder";
+    this.chatModel = options.chatModel ?? process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b";
     this.timeoutMs = options.timeoutMs ?? 60_000;
   }
 
