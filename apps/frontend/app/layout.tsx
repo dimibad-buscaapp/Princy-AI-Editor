@@ -8,13 +8,15 @@ import "./globals.css";
 const orbitron = Orbitron({
   subsets: ["latin"],
   variable: "--font-orbitron",
-  display: "swap"
+  display: "swap",
+  preload: false
 });
 
 const inter = Inter({
   subsets: ["latin"],
   variable: "--font-inter",
-  display: "swap"
+  display: "swap",
+  preload: true
 });
 
 export const metadata: Metadata = {

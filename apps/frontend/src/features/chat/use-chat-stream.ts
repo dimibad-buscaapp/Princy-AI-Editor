@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { parseSseChunk } from "../../lib/chat-sse";
+import { apiUrl } from "../../lib/api";
+import { generateId } from "../../lib/generate-id";
 import { getAccessToken } from "../../lib/token-storage";
 
 export type ChatMessage = {
@@ -21,9 +23,8 @@ export function useChatStream() {
 
   const send = useCallback(async (message: string, agentType: string, thinkingMode: boolean) => {
     const token = getAccessToken();
-    const gateway = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://127.0.0.1:3407";
-    const userId = crypto.randomUUID();
-    const assistantId = crypto.randomUUID();
+    const userId = generateId();
+    const assistantId = generateId();
     const now = new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 
     setError(null);
@@ -36,7 +37,7 @@ export function useChatStream() {
     ]);
 
     try {
-      const res = await fetch(`${gateway}/api/chat/stream`, {
+      const res = await fetch(apiUrl("/chat/stream"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
