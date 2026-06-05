@@ -1,0 +1,7 @@
+{"level":30,"time":"2026-06-04T22:07:39.868Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-04T23:01:43.972Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-04T23:19:33.889Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-05T00:29:19.292Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-05T00:36:04.074Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-05T01:19:07.096Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}
+{"level":30,"time":"2026-06-05T01:40:33.898Z","service":"Memory Service","environment":"production","name":"memory-service","host":"0.0.0.0","port":3405,"msg":"Memory Service listening"}

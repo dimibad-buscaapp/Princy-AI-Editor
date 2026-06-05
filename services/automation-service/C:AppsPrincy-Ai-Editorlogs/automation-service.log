@@ -1,0 +1,7 @@
+{"level":30,"time":"2026-06-04T22:07:39.865Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-04T23:01:43.988Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-04T23:19:33.883Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-05T00:29:19.328Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-05T00:36:04.397Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-05T01:19:07.034Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-05T01:40:33.764Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}

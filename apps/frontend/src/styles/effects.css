@@ -1,0 +1,54 @@
+.glass-panel {
+  background: var(--glass-bg);
+  backdrop-filter: blur(16px);
+  border: 1px solid var(--glass-border);
+  border-radius: 16px;
+}
+
+.holo-card {
+  position: relative;
+  background: linear-gradient(145deg, rgba(8, 17, 32, 0.9), rgba(5, 8, 22, 0.75));
+  border: 1px solid rgba(0, 242, 255, 0.15);
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.holo-card::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(120deg, transparent, rgba(0, 242, 255, 0.08), transparent, rgba(112, 0, 255, 0.1), transparent);
+  background-size: 300% 300%;
+  animation: holoBorder 8s ease infinite;
+  pointer-events: none;
+}
+
+.glow-border {
+  box-shadow: var(--glow-cyan), inset 0 0 0 1px rgba(0, 242, 255, 0.12);
+}
+
+.neural-bg {
+  background:
+    radial-gradient(circle at 20% 20%, rgba(112, 0, 255, 0.18), transparent 40%),
+    radial-gradient(circle at 80% 60%, rgba(0, 242, 255, 0.12), transparent 35%),
+    var(--princy-bg-deep);
+}
+
+.text-gradient-princy {
+  background: linear-gradient(135deg, var(--princy-cyan), var(--princy-purple));
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.luminous-border {
+  box-shadow: inset 0 0 0 1px rgba(0, 242, 255, 0.15), 0 0 20px rgba(112, 0, 255, 0.12);
+}
+
+.home-section-title {
+  font-size: 0.75rem;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  margin: 0 0 16px;
+  text-transform: uppercase;
+}
