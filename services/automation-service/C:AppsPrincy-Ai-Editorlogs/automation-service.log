@@ -5,3 +5,5 @@
 {"level":30,"time":"2026-06-05T00:36:04.397Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
 {"level":30,"time":"2026-06-05T01:19:07.034Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
 {"level":30,"time":"2026-06-05T01:40:33.764Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}
+{"level":30,"time":"2026-06-05T01:44:49.618Z","service":"Automation Service","environment":"production","name":"automation-service","requestId":"ff3959c5-71d7-4c16-876a-6c9c86ddb608","method":"GET","path":"/health/ready","statusCode":200,"durationMs":411,"msg":"request completed"}
+{"level":30,"time":"2026-06-05T01:58:34.042Z","service":"Automation Service","environment":"production","name":"automation-service","host":"0.0.0.0","port":3406,"msg":"Automation Service listening"}

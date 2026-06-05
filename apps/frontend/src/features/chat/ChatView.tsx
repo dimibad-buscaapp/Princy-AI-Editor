@@ -4,7 +4,7 @@ import { useState } from "react";
 import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
 import { ChatSidebar } from "./ChatSidebar";
-import { DEMO_MESSAGES } from "./chat-history";
+import { DEMO_MESSAGES, loadChatHistory, saveChatHistory } from "./chat-history";
 import { useChatStream } from "./use-chat-stream";
 
 export function ChatView() {
@@ -46,6 +46,14 @@ export function ChatView() {
           disabled={streaming}
           onSend={() => {
             if (!message.trim() || streaming) return;
+            const title = message.trim().slice(0, 60);
+            const history = loadChatHistory();
+            if (!history.find((h) => h.title === title)) {
+              saveChatHistory([
+                { id: String(Date.now()), title, section: "today", time: new Date().toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" }) },
+                ...history
+              ]);
+            }
             if (messages.length === 0) setMessages([]);
             void send(message.trim(), "AUTO", thinking);
             setMessage("");

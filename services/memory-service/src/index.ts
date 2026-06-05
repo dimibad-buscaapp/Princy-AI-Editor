@@ -2,7 +2,10 @@ import "dotenv/config";
 import { createDatabaseReadinessCheck } from "@princy/core";
 import { assertPgvectorReady, prisma } from "@princy/database";
 import { startService } from "@princy/service-kit";
+import { initRedisPublisher } from "@princy/event-bus";
 import { registerMemoryRoutes } from "./routes/memory.routes.js";
+
+void initRedisPublisher();
 
 const port = Number(process.env.MEMORY_SERVICE_PORT ?? process.env.MEMORY_PORT ?? 3405);
 

@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { Orbitron, Inter } from "next/font/google";
 import type { ReactNode } from "react";
 import { AuthProvider } from "../src/context/auth-context";
+import { ToastProvider } from "../src/design-system/Toast";
 import "./globals.css";
 
 const orbitron = Orbitron({
@@ -29,7 +30,9 @@ export default function RootLayout({
   return (
     <html lang="pt-BR" className={`${orbitron.variable} ${inter.variable}`}>
       <body>
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <ToastProvider>{children}</ToastProvider>
+        </AuthProvider>
       </body>
     </html>
   );

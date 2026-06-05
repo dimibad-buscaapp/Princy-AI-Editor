@@ -1,6 +1,6 @@
 "use client";
 
-import { Bot, Paperclip, Send, Sparkles } from "lucide-react";
+import { Bot, ChevronDown, Paperclip, Send, Sparkles } from "lucide-react";
 import { GlowButton } from "../../design-system/GlowButton";
 import { chatModel } from "../../design-system/layout/nav-items";
 
@@ -30,7 +30,7 @@ export function ChatInput({ value, onChange, onSend, thinking, onThinkingChange,
       />
       <div className="chat-input__toolbar">
         <span className="chat-input__model-chip">
-          <Bot size={14} /> Modelo: {chatModel}
+          <Bot size={14} /> Modelo: {chatModel} <ChevronDown size={12} />
         </span>
         <label className="chat-input__thinking">
           <input type="checkbox" checked={thinking} onChange={(e) => onThinkingChange(e.target.checked)} />

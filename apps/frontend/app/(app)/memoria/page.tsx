@@ -1,5 +1,5 @@
-import { ScaffoldPage } from "../../../src/design-system/ScaffoldPage";
+import { MemoryView } from "../../../src/features/memory/MemoryView";
 
 export default function MemoriaPage() {
-  return <ScaffoldPage title="Memória" subtitle="Memória persistente, embeddings e recuperação contextual." />;
+  return <MemoryView />;
 }

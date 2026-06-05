@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState, type ReactNode } from "react";
+import { Suspense, useEffect, useState, type ReactNode } from "react";
 import { ParticleField } from "../ParticleField";
+import { RefOverlay } from "../RefOverlay";
 import { Sidebar } from "./Sidebar";
 import { StatusBar } from "./StatusBar";
 import { TopBar } from "./TopBar";
@@ -24,6 +25,9 @@ export function PrincyShell({ children }: PrincyShellProps) {
   return (
     <div className="princy-shell neural-bg">
       <ParticleField />
+      <Suspense fallback={null}>
+        <RefOverlay />
+      </Suspense>
       <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
       <div className="princy-shell__main">
         <TopBar />

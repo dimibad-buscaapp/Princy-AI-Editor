@@ -12,13 +12,13 @@ const refsDir = path.join(root, "apps/frontend/public/princy/refs");
 const outDir = path.join(root, "apps/frontend/public/princy");
 
 const crops = [
-  { ref: "03-index.png", name: "hero-alien.png", left: 38, top: 5, width: 62, height: 55 },
-  { ref: "06-swarm.png", name: "swarm-brain.png", left: 22, top: 18, width: 56, height: 62 },
-  { ref: "06-swarm.png", name: "galaxy-bg.webp", left: 0, top: 0, width: 72, height: 100 },
-  { ref: "08-statusbar.png", name: "ship-statusbar.png", left: 0, top: 0, width: 28, height: 100 },
-  { ref: "02-sidebar.png", name: "logo-alien.png", left: 4, top: 3, width: 18, height: 8 },
-  { ref: "02-sidebar.png", name: "avatar-alien.png", left: 4, top: 3, width: 18, height: 8 },
-  { ref: "04-chat.png", name: "chat-avatar.png", left: 28, top: 22, width: 8, height: 8 }
+  { ref: "03-index.png", name: "hero-alien.png", left: 35, top: 0, width: 65, height: 58 },
+  { ref: "06-swarm.png", name: "swarm-brain.png", left: 24, top: 16, width: 52, height: 58 },
+  { ref: "06-swarm.png", name: "galaxy-bg.webp", left: 0, top: 0, width: 75, height: 100 },
+  { ref: "08-statusbar.png", name: "ship-statusbar.png", left: 0, top: 0, width: 12, height: 100 },
+  { ref: "02-sidebar.png", name: "logo-alien.png", left: 3, top: 2, width: 14, height: 7 },
+  { ref: "02-sidebar.png", name: "avatar-alien.png", left: 3, top: 2, width: 14, height: 7 },
+  { ref: "04-chat.png", name: "chat-avatar.png", left: 2, top: 3, width: 6, height: 5 }
 ];
 
 if (!fs.existsSync(refsDir)) {

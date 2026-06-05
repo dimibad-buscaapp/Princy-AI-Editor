@@ -6,7 +6,8 @@ export type PrincyEventType =
   | "task"
   | "terminal"
   | "memory"
-  | "context";
+  | "context"
+  | "automation";
 
 export type PrincyEvent = {
   type: PrincyEventType;
@@ -20,8 +21,11 @@ class EventBusImpl extends EventEmitter {
     const full: PrincyEvent = { ...event, timestamp: new Date().toISOString() };
     this.emit("event", full);
     this.emit(event.type, full);
+    void import("./redis-bridge.js").then(({ publishToRedis }) => publishToRedis(full)).catch(() => undefined);
     return full;
   }
 }
 
 export const eventBus = new EventBusImpl();
+
+export { initRedisPublisher, subscribeRedisEvents, pingRedis, REDIS_CHANNEL } from "./redis-bridge.js";

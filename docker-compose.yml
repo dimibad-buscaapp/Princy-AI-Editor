@@ -1,4 +1,11 @@
 services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
   frontend:
     build: .
     command: npm run start -w @princy/frontend
@@ -70,3 +77,6 @@ services:
       - .env
     ports:
       - "3408:3408"
+
+volumes:
+  redis_data:

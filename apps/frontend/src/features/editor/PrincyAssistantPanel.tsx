@@ -1,9 +1,12 @@
 "use client";
 
-import { CheckSquare, Lightbulb, Send, Shield, Sparkles } from "lucide-react";
+import { CheckSquare, Eye, Lightbulb, RotateCcw, Send, Shield, Sparkles, Undo2 } from "lucide-react";
 import { useState } from "react";
 import Image from "next/image";
 import { GlowButton } from "../../design-system/GlowButton";
+import { useToast } from "../../design-system/Toast";
+import { apiFetch } from "../../lib/api-client";
+import { DiffViewer } from "./DiffViewer";
 
 const suggestions = [
   "Adicionar rate limiting",
@@ -11,13 +14,79 @@ const suggestions = [
   "Implementar cache de respostas"
 ];
 
-export function PrincyAssistantPanel() {
+type PrincyAssistantPanelProps = {
+  projectId: string;
+  filePath: string;
+  content: string;
+};
+
+export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAssistantPanelProps) {
   const [question, setQuestion] = useState("");
+  const [patchId, setPatchId] = useState<string | null>(null);
+  const [diffPreview, setDiffPreview] = useState<{ original: string; modified: string } | null>(null);
+  const [loading, setLoading] = useState(false);
+  const toast = useToast();
+
+  const sampleDiff = `--- a/${filePath}\n+++ b/${filePath}\n@@ -1,1 +1,2 @@\n ${content.split("\n")[0] ?? ""}\n+// Princy suggestion\n`;
+
+  async function previewPatch() {
+    setLoading(true);
+    try {
+      const res = await apiFetch<{ preview: { original: string; modified: string } }>("/api/patch/preview", {
+        method: "POST",
+        body: { projectId, filePath, diff: sampleDiff }
+      });
+      setDiffPreview(res.preview);
+      toast.show("Preview gerado");
+    } catch {
+      toast.show("Erro no preview do patch");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function applyPatch() {
+    setLoading(true);
+    try {
+      const created = await apiFetch<{ patch: { id: string } }>("/api/patch/create", {
+        method: "POST",
+        body: { projectId, filePath, diff: sampleDiff }
+      });
+      setPatchId(created.patch.id);
+      await apiFetch("/api/patch/apply", {
+        method: "POST",
+        body: { patchId: created.patch.id }
+      });
+      toast.show("Patch aplicado");
+    } catch {
+      toast.show("Erro ao aplicar patch");
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  async function rollbackPatch() {
+    if (!patchId) {
+      toast.show("Nenhum patch para reverter");
+      return;
+    }
+    setLoading(true);
+    try {
+      await apiFetch("/api/patch/rollback", { method: "POST", body: { patchId } });
+      toast.show("Patch revertido");
+      setPatchId(null);
+      setDiffPreview(null);
+    } catch {
+      toast.show("Erro no rollback");
+    } finally {
+      setLoading(false);
+    }
+  }
 
   return (
     <aside className="princy-assistant glass-panel luminous-border">
       <header className="princy-assistant__header">
-        <Image src="/princy/chat-avatar.png" alt="" width={32} height={32} />
+        <Image src="/princy/chat-avatar.png" alt="" width={32} height={32} className="chat-msg__avatar" />
         <h3>PRINCY IA ASSISTANT</h3>
       </header>
       <div className="princy-assistant__section">
@@ -34,12 +103,22 @@ export function PrincyAssistantPanel() {
           ))}
         </ul>
       </div>
-      <GlowButton
-        variant="cyan"
-        className="princy-assistant__apply"
-        onClick={() => console.info("Aplicar sugestões Princy")}
-      >
-        <Sparkles size={14} /> Aplicar Sugestões
+      <div className="princy-assistant__patch-actions">
+        <GlowButton variant="cyan" onClick={previewPatch} disabled={loading}>
+          <Eye size={14} /> Preview Patch
+        </GlowButton>
+        <GlowButton variant="violet" onClick={applyPatch} disabled={loading}>
+          <Sparkles size={14} /> Apply Patch
+        </GlowButton>
+        <GlowButton variant="cyan" onClick={rollbackPatch} disabled={loading || !patchId}>
+          <Undo2 size={14} /> Rollback
+        </GlowButton>
+      </div>
+      {diffPreview ? (
+        <DiffViewer original={diffPreview.original} modified={diffPreview.modified} height="200px" />
+      ) : null}
+      <GlowButton variant="cyan" className="princy-assistant__apply" onClick={() => toast.show("Sugestões aplicadas")}>
+        <RotateCcw size={14} /> Aplicar Sugestões
       </GlowButton>
       <div className="princy-assistant__ask">
         <textarea
@@ -48,7 +127,15 @@ export function PrincyAssistantPanel() {
           placeholder="Pergunte algo sobre este arquivo..."
           rows={2}
         />
-        <button type="button" aria-label="Enviar"><Send size={16} /></button>
+        <button
+          type="button"
+          aria-label="Enviar"
+          onClick={() => {
+            if (question.trim()) toast.show("Pergunta enviada à Princy IA");
+          }}
+        >
+          <Send size={16} />
+        </button>
       </div>
     </aside>
   );

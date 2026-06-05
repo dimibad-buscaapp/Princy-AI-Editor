@@ -52,3 +52,30 @@
   margin: 0 0 16px;
   text-transform: uppercase;
 }
+
+.princy-toast {
+  position: fixed;
+  bottom: calc(var(--statusbar-height) + 16px);
+  right: 24px;
+  z-index: 9999;
+  padding: 10px 16px;
+  border-radius: 10px;
+  background: rgba(8, 17, 32, 0.95);
+  border: 1px solid rgba(0, 242, 255, 0.25);
+  box-shadow: 0 0 20px rgba(98, 42, 243, 0.3);
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.ref-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9998;
+  pointer-events: none;
+  padding: var(--topbar-height) 0 var(--statusbar-height) var(--sidebar-expanded);
+}
+
+.user-avatar--photo {
+  border-radius: 50%;
+  object-fit: cover;
+}

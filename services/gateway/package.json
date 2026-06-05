@@ -13,6 +13,7 @@
     "test": "node --import tsx --test \"src/**/*.test.ts\""
   },
   "dependencies": {
+    "@princy/event-bus": "*",
     "@princy/service-kit": "*",
     "express": "latest",
     "express-rate-limit": "latest",

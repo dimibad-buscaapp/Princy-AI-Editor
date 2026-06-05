@@ -5,6 +5,9 @@ import { createGatewayRateLimit } from "./rate-limit.js";
 import { getSanitizedDiscovery, getServiceTargets } from "./services.js";
 import { registerGatewayWhoamiRoute } from "./whoami.js";
 import { registerMetricsRoute } from "./metrics.js";
+import { registerObservabilityRoute } from "./observability.js";
+import { registerGatewayEventsRoute } from "./events.js";
+import { initRedisPublisher } from "@princy/event-bus";
 
 const port = Number(process.env.GATEWAY_PORT ?? 3407);
 const targets = getServiceTargets();
@@ -15,6 +18,7 @@ const preRoutes: ServiceRouteRegistrar[] = [
     registerProxyRoutes(app, [
       { path: "/api/auth", target: targets.api, rewritePrefix: "/auth" },
       { path: "/api/chat", target: targets.agents, rewritePrefix: "/chat" },
+      { path: "/api/chat/complete", target: targets.agents, rewritePrefix: "/chat/complete" },
       { path: "/api/projects", target: targets.api, rewritePrefix: "/projects" },
       { path: "/api/files", target: targets.workspace, rewritePrefix: "/workspace" },
       { path: "/api/workspace", target: targets.workspace, rewritePrefix: "/workspace" },
@@ -23,16 +27,19 @@ const preRoutes: ServiceRouteRegistrar[] = [
       { path: "/api/agents", target: targets.agents, rewritePrefix: "/agents" },
       { path: "/api/patch", target: targets.workspace, rewritePrefix: "/patch" },
       { path: "/api/terminal", target: targets.workspace, rewritePrefix: "/terminal" },
-      { path: "/api/events", target: targets.agents, rewritePrefix: "/events" },
       { path: "/api/mcp", target: targets.mcp, rewritePrefix: "/mcp" },
       { path: "/api/automation", target: targets.automation, rewritePrefix: "/automation" }
     ]);
   }
 ];
 
+void initRedisPublisher();
+
 const routes: ServiceRouteRegistrar[] = [
   (app) => {
+    registerGatewayEventsRoute(app);
     registerMetricsRoute(app);
+    registerObservabilityRoute(app);
     registerGatewayWhoamiRoute(app);
 
     app.get("/services", (_request, response) => {

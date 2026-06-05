@@ -3,72 +3,81 @@
 import { useEffect, useState } from "react";
 import { HolographicCard } from "../../design-system/HolographicCard";
 import { MetricCounter } from "../../design-system/MetricCounter";
+import { apiFetch } from "../../lib/api-client";
 
-type ServiceStatus = { name: string; ok: boolean; detail: string };
+type ServiceStatus = { name: string; ok: boolean; detail: string; port?: number };
+
+type ParsedMetrics = {
+  requests: number;
+  errors: number;
+  latencyMs: number;
+  tokens: number;
+  queueDepth: number;
+};
 
 export function ObservabilityView() {
-  const [metrics, setMetrics] = useState("");
+  const [metricsRaw, setMetricsRaw] = useState("");
+  const [parsed, setParsed] = useState<ParsedMetrics>({ requests: 0, errors: 0, latencyMs: 0, tokens: 0, queueDepth: 0 });
   const [services, setServices] = useState<ServiceStatus[]>([]);
+  const gateway = process.env.NEXT_PUBLIC_GATEWAY_URL ?? process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://127.0.0.1:3407";
 
   useEffect(() => {
-    const gateway = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://127.0.0.1:3407";
-    fetch(`${gateway}/metrics`).then((r) => r.text()).then(setMetrics).catch(() => setMetrics("Metrics unavailable"));
+    void (async () => {
+      try {
+        const health = await apiFetch<{ services: ServiceStatus[] }>("/observability/health");
+        setServices(health.services ?? []);
+      } catch {
+        setServices([]);
+      }
+      try {
+        const res = await fetch(`${gateway}/observability/metrics`);
+        const data = (await res.json()) as { raw?: string; parsed?: ParsedMetrics };
+        setMetricsRaw(data.raw ?? "");
+        if (data.parsed) setParsed(data.parsed);
+      } catch {
+        fetch(`${gateway}/metrics`).then((r) => r.text()).then(setMetricsRaw).catch(() => setMetricsRaw(""));
+      }
+    })();
+  }, [gateway]);
 
-    const checks: { name: string; url: string }[] = [
-      { name: "Gateway", url: `${gateway}/health/live` },
-      { name: "Agents", url: "http://127.0.0.1:3402/health/live" },
-      { name: "API", url: "http://127.0.0.1:3401/health/live" },
-      { name: "Memory", url: "http://127.0.0.1:3405/health/live" }
-    ];
-
-    void Promise.all(
-      checks.map(async (c) => {
-        try {
-          const r = await fetch(c.url);
-          return { name: c.name, ok: r.ok, detail: r.ok ? "healthy" : `HTTP ${r.status}` };
-        } catch (e) {
-          return { name: c.name, ok: false, detail: e instanceof Error ? e.message : "offline" };
-        }
-      })
-    ).then(setServices);
-  }, []);
-
-  const requestCount = Number(metrics.match(/http_requests_total\{[^}]*\}\s+(\d+)/)?.[1] ?? 0);
+  const healthyCount = services.filter((s) => s.ok).length;
 
   return (
     <div className="obs-view">
       <header className="obs-view__header glass-panel luminous-border">
         <h1>Observability</h1>
-        <p>Logs, eventos, SSE, tokens e status do Princy Core.</p>
+        <p>Health de {services.length} dependências — {healthyCount} saudáveis.</p>
       </header>
       <div className="obs-view__metrics">
-        <MetricCounter label="Requisições" value={requestCount} />
-        <MetricCounter label="Latência média" value={42} suffix="ms" />
-        <MetricCounter label="Tokens SSE" value={12840} />
-        <MetricCounter label="Eventos" value={256} />
+        <MetricCounter label="Requisições" value={parsed.requests} />
+        <MetricCounter label="Latência média" value={Math.round(parsed.latencyMs)} suffix="ms" />
+        <MetricCounter label="Tokens" value={parsed.tokens} />
+        <MetricCounter label="Fila" value={parsed.queueDepth} />
+        <MetricCounter label="Erros" value={parsed.errors} />
       </div>
       <div className="obs-view__grid">
-        <HolographicCard title="Logs / Eventos">
-          <pre className="obs-view__pre">{metrics.slice(0, 1200) || "Carregando métricas..."}</pre>
+        <HolographicCard title="Prometheus / Métricas">
+          <pre className="obs-view__pre">{metricsRaw.slice(0, 1500) || "Carregando métricas..."}</pre>
         </HolographicCard>
-        <HolographicCard title="Status dos Serviços">
+        <HolographicCard title="Status dos Serviços (11)">
           <ul className="obs-view__services">
             {services.map((s) => (
               <li key={s.name} className={s.ok ? "obs-view__ok" : "obs-view__fail"}>
-                <strong>{s.name}</strong> — {s.detail}
+                <strong>{s.name}</strong>
+                {s.port ? <span className="obs-view__port">:{s.port}</span> : null}
+                — {s.detail}
               </li>
             ))}
+            {services.length === 0 ? <li>Verificando serviços...</li> : null}
           </ul>
         </HolographicCard>
         <HolographicCard title="Ollama / Modelos">
-          <p>Chat: qwen3:8b</p>
-          <p>Reasoning: deepseek-r1:8b</p>
+          <p>Chat: {process.env.NEXT_PUBLIC_CHAT_MODEL ?? "qwen3:8b"}</p>
           <p>Embeddings: nomic-embed-text</p>
         </HolographicCard>
-        <HolographicCard title="Gateway / SSE">
-          <p>Proxy timeout: 300000ms</p>
-          <p>Stream: text/event-stream</p>
-          <p>Eventos: status, token, done</p>
+        <HolographicCard title="Gateway / SSE / Redis">
+          <p>Event stream: /api/events/stream</p>
+          <p>Canal Redis: princy:events</p>
         </HolographicCard>
       </div>
       <svg className="obs-view__spark" viewBox="0 0 400 60" aria-hidden>

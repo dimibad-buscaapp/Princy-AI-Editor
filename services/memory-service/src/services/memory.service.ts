@@ -77,4 +77,21 @@ export class MemoryService {
   async getConversationMemory(conversationId: string) {
     return this.repo.listByConversation(conversationId);
   }
+
+  async getUsage() {
+    const chunks = await this.repo.listAll(500);
+    const byScope: Record<string, number> = {};
+    for (const c of chunks) {
+      byScope[c.scope] = (byScope[c.scope] ?? 0) + 1;
+    }
+    const recentQueries = chunks
+      .filter((c) => c.metadata && typeof c.metadata === "object" && "ragQuery" in (c.metadata as object))
+      .slice(0, 10)
+      .map((c) => ({
+        query: String((c.metadata as Record<string, unknown>).ragQuery ?? c.title ?? ""),
+        score: Number((c.metadata as Record<string, unknown>).score ?? 0),
+        at: c.createdAt.toISOString()
+      }));
+    return { byScope, total: chunks.length, recentQueries };
+  }
 }

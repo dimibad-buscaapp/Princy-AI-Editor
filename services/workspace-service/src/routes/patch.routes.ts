@@ -28,6 +28,18 @@ export function registerPatchRoutes(app: Express) {
     response.status(201).json({ patch });
   }));
 
+  app.post("/patch/preview", auth, validateBody(createSchema), asyncHandler(async (request, response) => {
+    const workspace = request.body.workspaceId
+      ? await workspaceRepo.findById(request.body.workspaceId)
+      : null;
+    const preview = await patchService.preview({
+      filePath: request.body.filePath,
+      diff: request.body.diff,
+      workspaceRoot: workspace?.path ?? process.cwd()
+    });
+    response.json({ preview });
+  }));
+
   app.post("/patch/apply", auth, validateBody(z.object({ patchId: z.string() })), asyncHandler(async (request, response) => {
     const patch = await prisma.patch.findUnique({ where: { id: request.body.patchId }, include: { workspace: true } });
     if (!patch?.workspace) {

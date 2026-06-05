@@ -1,7 +1,15 @@
 @import "../src/styles/tokens.css";
 @import "../src/styles/animations.css";
 @import "../src/styles/effects.css";
-@import "../src/styles/princy-app.css";
+@import "../src/styles/shell.css";
+@import "../src/styles/home.css";
+@import "../src/styles/chat.css";
+@import "../src/styles/swarm.css";
+@import "../src/styles/editor.css";
+@import "../src/styles/shared.css";
+@import "../src/styles/graph.css";
+@import "../src/styles/memory.css";
+@import "../src/styles/autonomous.css";
 
 * {
   box-sizing: border-box;

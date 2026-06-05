@@ -1,19 +1,19 @@
 "use client";
 
 import Image from "next/image";
-import { Bot, MessageSquare, Network, Workflow } from "lucide-react";
+import { Bot, Brain, Database, MessageSquare, Network, Workflow, Zap } from "lucide-react";
 import { useEffect, useState } from "react";
 import { HolographicCard } from "../../design-system/HolographicCard";
 import { NeuralGlow } from "../../design-system/NeuralGlow";
 
 const activity = [
-  { icon: "🧠", text: "Agente Architect finalizou análise do sistema", time: "há 2 min" },
-  { icon: "💾", text: "Memória expandida em +128 vetores", time: "há 8 min" },
-  { icon: "⚡", text: "Swarm executou 23 tarefas com sucesso", time: "há 15 min" }
+  { icon: Brain, text: "Agente Architect finalizou análise do sistema", time: "há 2 min" },
+  { icon: Database, text: "Memória expandida em +128 vetores", time: "há 5 min" },
+  { icon: Zap, text: "Swarm executou 23 tarefas com sucesso", time: "há 12 min" }
 ];
 
 const features = [
-  { title: "CONVERSAÇÃO", desc: "Converse com a Princy IA e obtenha respostas inteligentes.", href: "/chat", icon: <MessageSquare size={20} /> },
+  { title: "CONVERSAÇÃO", desc: "Converse com a Princy AI e obtenha respostas inteligentes.", href: "/chat", icon: <MessageSquare size={20} /> },
   { title: "EDIÇÃO AVANÇADA", desc: "Código com inteligência, sugestões e refatorações automáticas.", href: "/editor/demo", icon: <Bot size={20} /> },
   { title: "SWARM AUTÔNOMO", desc: "Agentes trabalhando juntos para alcançar resultados incríveis.", href: "/swarm", icon: <Network size={20} /> },
   { title: "AUTOMAÇÃO", desc: "Automatize fluxos complexos com facilidade.", href: "/automacoes", icon: <Workflow size={20} /> }
@@ -41,15 +41,14 @@ export function HomeView() {
       <section className="home-hero glass-panel luminous-border">
         <div className="home-hero__copy">
           <h1 className="home-hero__title">PRINCY AI</h1>
-          <p className="home-hero__subtitle">INTELIGÊNCIA QUE EXPANDE A MENTE.</p>
+          <p className="home-hero__subtitle">INTELIGÊNCIA QUE EXPANDE A MENTE</p>
           <p className="home-hero__tagline">
-            Plataforma autônoma de desenvolvimento com IA. Colaboração neural entre agentes,
-            memória persistente e automação do futuro.
+            Sua IA autônoma, colaborativa e evolutiva. Construa, orquestre e automatize qualquer ideia.
           </p>
         </div>
         <div className="home-hero__visual">
           <NeuralGlow size={300} className="home-hero__glow" />
-          <Image src="/princy/hero-alien.png" alt="Princy AI" width={480} height={320} className="home-hero__img" priority />
+          <Image src="/princy/hero-alien.png" alt="Princy AI" width={520} height={340} className="home-hero__img" priority />
         </div>
       </section>
 
@@ -68,18 +67,21 @@ export function HomeView() {
       <section className="home-bottom-panel glass-panel luminous-border">
         <div>
           <h2 className="home-section-title">ATIVIDADE RECENTE</h2>
-          {activity.map((a) => (
-            <div key={a.text} className="home-activity__row">
-              <span>{a.icon}</span>
-              <span>{a.text}</span>
-              <span className="home-activity__time">{a.time}</span>
-            </div>
-          ))}
+          {activity.map((a) => {
+            const Icon = a.icon;
+            return (
+              <div key={a.text} className="home-activity__row">
+                <span className="home-activity__icon"><Icon size={14} /></span>
+                <span>{a.text}</span>
+                <span className="home-activity__time">{a.time}</span>
+              </div>
+            );
+          })}
         </div>
         <div>
           <h2 className="home-section-title">MÉTRICAS EM TEMPO REAL</h2>
           <div className="home-metrics__row"><span>Tokens Processados</span><strong>{metrics.tokens}</strong></div>
-          <div className="home-metrics__row"><span>Requisições Hoje</span><strong>{metrics.requests}</strong></div>
+          <div className="home-metrics__row"><span>Requisições Hoje</span><strong>{metrics.requests.toLocaleString("pt-BR")}</strong></div>
           <div className="home-metrics__row"><span>Agentes Ativos</span><strong>{metrics.agents}</strong></div>
           <div className="home-metrics__row"><span>Precisão Média</span><strong>{metrics.accuracy}</strong></div>
           <div className="home-metrics__chart-wrap">

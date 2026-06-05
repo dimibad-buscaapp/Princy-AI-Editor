@@ -13,3 +13,6 @@
 {"level":30,"time":"2026-06-05T00:48:26.054Z","service":"Agents","environment":"production","name":"agents","requestId":"113a9f82-d17c-4b12-9246-34f3f7d6cc3d","method":"POST","path":"/chat/stream","statusCode":200,"durationMs":300008,"msg":"request completed"}
 {"level":30,"time":"2026-06-05T01:19:07.029Z","service":"Agents","environment":"production","name":"agents","host":"0.0.0.0","port":3402,"msg":"Agents listening"}
 {"level":30,"time":"2026-06-05T01:40:33.706Z","service":"Agents","environment":"production","name":"agents","host":"0.0.0.0","port":3402,"msg":"Agents listening"}
+{"level":30,"time":"2026-06-05T01:44:49.577Z","service":"Agents","environment":"production","name":"agents","requestId":"c3a1a633-5f18-479e-9125-32c681794621","method":"GET","path":"/health/ready","statusCode":200,"durationMs":353,"msg":"request completed"}
+{"level":30,"time":"2026-06-05T01:44:52.208Z","service":"Agents","environment":"production","name":"agents","requestId":"d220223c-123c-4360-b470-9d949dae1d9a","method":"GET","path":"/health/ready","statusCode":200,"durationMs":10,"msg":"request completed"}
+{"level":30,"time":"2026-06-05T01:58:33.990Z","service":"Agents","environment":"production","name":"agents","host":"0.0.0.0","port":3402,"msg":"Agents listening"}

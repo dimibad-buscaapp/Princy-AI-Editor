@@ -19,6 +19,11 @@ export function registerMemoryRoutes(app: Express) {
   const ragService = new RagService();
   const auth = authenticate();
 
+  app.get("/memory/usage", auth, asyncHandler(async (_request, response) => {
+    const usage = await memoryService.getUsage();
+    response.json(usage);
+  }));
+
   app.get("/memory/vector/status", auth, asyncHandler(async (_request, response) => {
     const status = await embeddingService.getVectorStatus();
     response.json(status);

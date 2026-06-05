@@ -7,6 +7,7 @@ import {
   MessageSquare,
   Network,
   Settings,
+  Share2,
   Terminal,
   Workflow,
   Zap
@@ -24,6 +25,7 @@ export const navItems: NavItem[] = [
   { label: "Chat Princy", href: "/chat", icon: MessageSquare, pageTitle: "CHAT PRINCY" },
   { label: "Editor", href: "/editor/demo", icon: Terminal, pageTitle: "EDITOR" },
   { label: "Swarm", href: "/swarm", icon: Network, pageTitle: "SWARM" },
+  { label: "Graph", href: "/graph", icon: Share2, pageTitle: "CONTEXT GRAPH" },
   { label: "Observability", href: "/observability", icon: Zap, pageTitle: "OBSERVABILITY" },
   { label: "Projetos", href: "/projetos", icon: FolderKanban, pageTitle: "PROJETOS" },
   { label: "Memória", href: "/memoria", icon: Brain, pageTitle: "MEMÓRIA" },

@@ -1,5 +1,5 @@
-import { ScaffoldPage } from "../../../src/design-system/ScaffoldPage";
+import { AutonomousView } from "../../../src/features/autonomous/AutonomousView";
 
 export default function AutomacoesPage() {
-  return <ScaffoldPage title="Automações" subtitle="Fluxos autônomos e jobs agendados do Princy Core." />;
+  return <AutonomousView />;
 }

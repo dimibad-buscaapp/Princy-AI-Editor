@@ -183,3 +183,6 @@ export function apiPut<T = unknown>(
 export function apiDelete<T = unknown>(path: string, options?: Omit<ApiRequestOptions, "method" | "body">) {
   return apiRequest<T>(path, { ...options, method: "DELETE" });
 }
+
+/** Alias for apiRequest — used across feature modules. */
+export const apiFetch = apiRequest;

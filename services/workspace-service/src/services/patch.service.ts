@@ -77,6 +77,13 @@ export class PatchService {
     return updated;
   }
 
+  async preview(input: { filePath: string; diff: string; workspaceRoot: string }) {
+    const target = resolveSafePath(input.workspaceRoot, input.filePath);
+    const original = await fs.readFile(target, "utf8").catch(() => "");
+    const modified = applyUnifiedDiff(original, input.diff);
+    return { original, modified, filePath: input.filePath };
+  }
+
   async history(patchId?: string) {
     return prisma.patchHistory.findMany({
       where: patchId ? { patchId } : {},

@@ -19,7 +19,8 @@ export function registerAutomationRoutes(app: Express) {
   const auth = authenticate();
 
   app.post("/automation/goals", auth, validateBody(goalSchema), asyncHandler(async (request, response) => {
-    const result = await workflow.start(request.body.title, request.body.projectId);
+    const token = request.headers.authorization?.replace(/^Bearer\s+/i, "");
+    const result = await workflow.start(request.body.title, request.body.projectId, token);
     response.status(201).json(result);
   }));
 

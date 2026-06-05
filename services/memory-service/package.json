@@ -15,6 +15,7 @@
     "@princy/ai-client": "*",
     "@princy/core": "*",
     "@princy/database": "*",
+    "@princy/event-bus": "*",
     "@princy/service-kit": "*",
     "dotenv": "latest",
     "zod": "latest"

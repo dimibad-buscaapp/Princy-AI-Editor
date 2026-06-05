@@ -7,6 +7,7 @@ type NeuralConnectionsProps = {
   agents: SwarmAgent[];
   centerX?: number;
   centerY?: number;
+  intensity?: number;
 };
 
 function lightningPath(x1: number, y1: number, x2: number, y2: number, seed: number) {
@@ -15,7 +16,7 @@ function lightningPath(x1: number, y1: number, x2: number, y2: number, seed: num
   return `M ${x1} ${y1} L ${mx} ${my} L ${x2} ${y2}`;
 }
 
-export function NeuralConnections({ agents, centerX = 50, centerY = 52 }: NeuralConnectionsProps) {
+export function NeuralConnections({ agents, centerX = 50, centerY = 52, intensity = 0.6 }: NeuralConnectionsProps) {
   return (
     <svg className="neural-connections" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden>
       <defs>
@@ -54,8 +55,8 @@ export function NeuralConnections({ agents, centerX = 50, centerY = 52 }: Neural
               stroke="url(#lineGrad)"
               strokeWidth="0.2"
               initial={{ pathLength: 0, opacity: 0.3 }}
-              animate={{ pathLength: 1, opacity: [0.4, 0.9, 0.4] }}
-              transition={{ duration: 2 + i * 0.2, repeat: Infinity, ease: "easeInOut" }}
+              animate={{ pathLength: 1, opacity: [0.4 * intensity, 0.9 * intensity, 0.4 * intensity] }}
+              transition={{ duration: Math.max(1, 2 - intensity) + i * 0.2, repeat: Infinity, ease: "easeInOut" }}
             />
             <motion.circle
               r="0.35"

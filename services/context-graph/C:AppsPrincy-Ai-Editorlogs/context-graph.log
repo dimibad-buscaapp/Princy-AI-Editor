@@ -5,3 +5,5 @@
 {"level":30,"time":"2026-06-05T00:36:04.348Z","service":"Context Graph","environment":"production","name":"context-graph","host":"0.0.0.0","port":3404,"msg":"Context Graph listening"}
 {"level":30,"time":"2026-06-05T01:19:07.096Z","service":"Context Graph","environment":"production","name":"context-graph","host":"0.0.0.0","port":3404,"msg":"Context Graph listening"}
 {"level":30,"time":"2026-06-05T01:40:33.762Z","service":"Context Graph","environment":"production","name":"context-graph","host":"0.0.0.0","port":3404,"msg":"Context Graph listening"}
+{"level":30,"time":"2026-06-05T01:44:49.516Z","service":"Context Graph","environment":"production","name":"context-graph","requestId":"fb555263-1985-4e13-9f47-c0ca3d2729ef","method":"GET","path":"/health/ready","statusCode":200,"durationMs":302,"msg":"request completed"}
+{"level":30,"time":"2026-06-05T01:58:34.049Z","service":"Context Graph","environment":"production","name":"context-graph","host":"0.0.0.0","port":3404,"msg":"Context Graph listening"}

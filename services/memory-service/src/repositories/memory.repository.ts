@@ -74,6 +74,13 @@ export class MemoryRepository {
     });
   }
 
+  async listAll(limit = 500) {
+    return prisma.memoryChunk.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: limit
+    });
+  }
+
   async listByConversation(conversationId: string, limit = 50) {
     return prisma.memoryChunk.findMany({
       where: { conversationId },

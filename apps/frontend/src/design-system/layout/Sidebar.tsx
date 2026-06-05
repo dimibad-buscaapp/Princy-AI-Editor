@@ -59,7 +59,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       <div className="princy-sidebar__footer">
         <div className="princy-sidebar__user">
-          <UserAvatar name={user?.name ?? user?.email} size={36} />
+          <UserAvatar name={user?.name ?? user?.email} email={user?.email} size={36} />
           {!collapsed ? (
             <div>
               <p className="princy-sidebar__username">{user?.name ?? "Usuário"}</p>
