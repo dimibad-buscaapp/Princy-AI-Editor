@@ -1,4 +1,4 @@
-import type { ClientRequest } from "node:http";
+import type { ClientRequest, IncomingMessage } from "node:http";
 import type { Express, Request, Response } from "express";
 import { createProxyMiddleware } from "http-proxy-middleware";
 import type { ServiceTarget } from "./services.js";
@@ -27,6 +27,24 @@ function recordFailure(key: string) {
 
 function recordSuccess(key: string) {
   circuitState.delete(key);
+}
+
+function isEventStreamRequest(request: Request) {
+  const path = request.originalUrl ?? request.url ?? "";
+  if (path.includes("/stream")) {
+    return true;
+  }
+  const accept = request.header("accept") ?? "";
+  return accept.includes("text/event-stream");
+}
+
+function applyEventStreamProxyHeaders(proxyRes: IncomingMessage) {
+  const contentType = String(proxyRes.headers["content-type"] ?? "");
+  if (!contentType.includes("text/event-stream")) {
+    return;
+  }
+  proxyRes.headers["cache-control"] = "no-cache, no-transform";
+  proxyRes.headers["x-accel-buffering"] = "no";
 }
 
 function getForwardedFor(request: Request) {
@@ -85,7 +103,7 @@ function rewritePath(path: string, route: ProxyRoute) {
 }
 
 export function registerProxyRoutes(app: Express, routes: ProxyRoute[]) {
-  const timeout = Number(process.env.GATEWAY_PROXY_TIMEOUT_MS ?? 10_000);
+  const timeout = Number(process.env.GATEWAY_PROXY_TIMEOUT_MS ?? 300_000);
 
   for (const route of routes) {
     app.use(route.path, (request: Request, response: Response, next) => {
@@ -131,7 +149,10 @@ export function registerProxyRoutes(app: Express, routes: ProxyRoute[]) {
           proxyReq: (proxyRequest, request, response) => {
             setGatewayHeaders(proxyRequest, request as Request, response as Response);
           },
-          proxyRes: () => {
+          proxyRes: (proxyRes, request) => {
+            if (isEventStreamRequest(request as Request)) {
+              applyEventStreamProxyHeaders(proxyRes);
+            }
             recordSuccess(route.target.key);
           },
           error: (error, _request, response) => {

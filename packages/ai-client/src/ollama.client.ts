@@ -7,6 +7,13 @@ export type OllamaClientOptions = {
   timeoutMs?: number;
 };
 
+function resolveTimeoutMs(options?: OllamaClientOptions) {
+  if (options?.timeoutMs !== undefined) {
+    return options.timeoutMs;
+  }
+  return Number(process.env.AI_CLIENT_TIMEOUT_MS ?? process.env.OLLAMA_TIMEOUT_MS ?? 300_000);
+}
+
 export class OllamaClient {
   private readonly baseUrl: string;
   private readonly embedModel: string;
@@ -16,8 +23,12 @@ export class OllamaClient {
   constructor(options: OllamaClientOptions = {}) {
     this.baseUrl = (options.baseUrl ?? process.env.OLLAMA_BASE_URL ?? process.env.OLLAMA_URL ?? "http://127.0.0.1:11434").replace(/\/$/, "");
     this.embedModel = options.embedModel ?? process.env.OLLAMA_EMBED_MODEL ?? "nomic-embed-text";
-    this.chatModel = options.chatModel ?? process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b";
-    this.timeoutMs = options.timeoutMs ?? 60_000;
+    this.chatModel =
+      options.chatModel ??
+      process.env.OLLAMA_CHAT_MODEL ??
+      process.env.DEFAULT_CHAT_MODEL ??
+      "qwen3:8b";
+    this.timeoutMs = resolveTimeoutMs(options);
   }
 
   async health(): Promise<boolean> {
@@ -50,15 +61,16 @@ export class OllamaClient {
   }
 
   async chat(messages: { role: string; content: string }[], options?: { stream?: boolean }) {
+    const stream = options?.stream ?? false;
     const response = await fetch(`${this.baseUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
         model: this.chatModel,
         messages,
-        stream: options?.stream ?? false
+        stream
       }),
-      signal: AbortSignal.timeout(this.timeoutMs)
+      ...(stream ? {} : { signal: AbortSignal.timeout(this.timeoutMs) })
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
