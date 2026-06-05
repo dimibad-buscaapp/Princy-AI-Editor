@@ -9,13 +9,28 @@ Monorepo inicial do **Princy AI Editor**, preparado para frontend, API, agentes,
 | **PC (dev)** | `C:\Users\hp\Desktop\Princy-AI-Editor` |
 | **VPS (prod)** | `C:\Apps\Princy-Ai-Editor` |
 | **GitHub** | `https://github.com/dimibad-buscaapp/Princy-AI-Editor.git` |
-| **Servidor** | `108.181.169.40` |
-| **Frontend** | `http://108.181.169.40:3400` |
-| **Gateway / API** | `http://108.181.169.40:3407` · `http://108.181.169.40:3407/api` |
+| **Servidor** | `13.140.129.77` |
+| **Frontend** | `http://13.140.129.77:3400` |
+| **Gateway / API** | `http://13.140.129.77:3407` · `http://13.140.129.77:3407/api` |
+
+URLs completas de produção: [`docs/URLS-PRODUCAO.md`](docs/URLS-PRODUCAO.md) · Arquitetura IA: [`docs/ARQUITETURA-IA.md`](docs/ARQUITETURA-IA.md)
 
 Config partilhada dos scripts de deploy: `scripts/deploy.config.ps1`.
 
-`http://108.181.169.40/` sem porta nao abre a app — use a porta **3400** (frontend) ou **3407** (gateway).
+`http://13.140.129.77/` sem porta nao abre a app — use a porta **3400** (frontend) ou **3407** (gateway).
+
+### URLs principais (produção)
+
+| Página | URL |
+| --- | --- |
+| Chat | http://13.140.129.77:3400/chat |
+| Swarm | http://13.140.129.77:3400/swarm |
+| Editor | http://13.140.129.77:3400/editor/demo |
+| Context Graph | http://13.140.129.77:3400/graph |
+| Memória | http://13.140.129.77:3400/memoria |
+| Automações | http://13.140.129.77:3400/automacoes |
+| Observability | http://13.140.129.77:3400/observability |
+| OpenAI `/v1/*` | http://13.140.129.77:3407/v1/models |
 
 ## Portas
 

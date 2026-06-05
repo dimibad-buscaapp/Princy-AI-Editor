@@ -1,0 +1,53 @@
+---
+description: Princy AI Editor — URLs de produção, Neural Core e ecossistema de agentes
+alwaysApply: true
+---
+
+# Princy AI Editor — Contexto do Ecossistema
+
+## Produção (VPS Linux)
+
+- **IP:** `13.140.129.77`
+- **Frontend:** `:3400` — http://13.140.129.77:3400
+- **Gateway:** `:3407` — http://13.140.129.77:3407
+
+URLs completas: `docs/URLS-PRODUCAO.md`
+Arquitetura IA (agentes, pipelines, modelos): `docs/ARQUITETURA-IA.md`
+
+## Páginas frontend
+
+| Rota | Função |
+|------|--------|
+| `/chat` | Chat com `agentType` |
+| `/swarm` | Swarm 10 agentes + pipeline live |
+| `/editor/demo` | Monaco + ghost text |
+| `/graph` | Context Graph |
+| `/memoria` | Memory |
+| `/automacoes` | Autonomous Mode |
+| `/observability` | Health/metrics |
+
+## Gateway e APIs
+
+- Proxies `/api/*` → microserviços internos
+- OpenAI-compat: `/v1/models`, `/v1/chat/completions`, `/v1/embeddings`
+- Health: `GET /api/system/health`
+- SSE: `GET /api/events/stream`
+
+## Neural Core (`services/agents`, porta 3402)
+
+- Módulo: `services/agents/src/neural-core/neural-core.ts`
+- 10 agentes + pipelines: `services/agents/src/agents/swarm-agents.ts`
+- Registry live: `services/agents/src/swarm/swarm-registry.ts`
+- Model Router: `packages/model-router` — `qwen3:8b`, `deepseek-r1:8b`, `nomic-embed-text`
+- OpenAI gateway: `services/gateway/src/openai-compat.ts`
+
+## Operação
+
+- PM2: `ecosystem.config.cjs` (9 serviços)
+- Health: `npm run health:linux`
+- Env produção: `.env` (não commitar secrets)
+
+## Preservar
+
+- Identidade visual V1 (não alterar tema/cores sem pedido)
+- Não editar arquivos de plano em `.cursor/plans/`
