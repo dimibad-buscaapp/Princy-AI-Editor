@@ -42,7 +42,7 @@ function createMainWindow(loadUrl: string) {
     height: 900,
     show: false,
     backgroundColor: "#0a0518",
-    title: "Princy Code Beta",
+    title: "Princy Code",
     webPreferences: secureWebPreferences()
   });
 
@@ -60,10 +60,10 @@ function createTray() {
     : path.join(__dirname, "../assets/icon.png");
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
-  tray.setToolTip("Princy Code Beta");
+  tray.setToolTip("Princy Code");
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: "Abrir Princy Code Beta", click: () => mainWindow?.show() },
+      { label: "Abrir Princy Code", click: () => mainWindow?.show() },
       { label: "Sair", click: () => app.quit() }
     ])
   );

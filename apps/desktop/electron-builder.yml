@@ -1,5 +1,5 @@
 appId: com.princy.code
-productName: Princy Code Beta
+productName: Princy Code
 executableName: princy-code
 electronVersion: "34.5.8"
 npmRebuild: false
@@ -31,5 +31,5 @@ nsis:
   artifactName: Princy-Code-Setup.${ext}
 publish:
   - provider: github
-    owner: princy
+    owner: dimibad-buscaapp
     repo: Princy-AI-Editor

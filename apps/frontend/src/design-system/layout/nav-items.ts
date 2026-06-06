@@ -24,7 +24,7 @@ export type NavItem = {
 };
 
 export const navItems: NavItem[] = [
-  { label: "Início", href: "/", icon: Home, pageTitle: "PRINCY CODE BETA" },
+  { label: "Início", href: "/", icon: Home, pageTitle: "PRINCY CODE" },
   { label: "Chat Princy", href: "/chat", icon: MessageSquare, pageTitle: "CHAT PRINCY" },
   { label: "Editor", href: "/editor/demo", icon: Terminal, pageTitle: "EDITOR" },
   { label: "Swarm", href: "/swarm", icon: Network, pageTitle: "SWARM" },
@@ -46,5 +46,5 @@ export function getPageTitle(pathname: string) {
   return item?.pageTitle ?? "PRINCY AI";
 }
 
-export const princyVersion = process.env.NEXT_PUBLIC_PRINCY_VERSION ?? "v2.5.0";
+export const princyVersion = process.env.NEXT_PUBLIC_PRINCY_VERSION ?? "v1.0.0";
 export const chatModel = process.env.NEXT_PUBLIC_CHAT_MODEL ?? "qwen2.5:3b";

@@ -6,7 +6,7 @@ export function buildErrorPageHtml(message?: string): string {
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Princy Code Beta</title>
+  <title>Princy Code</title>
   <style>
     body {
       margin: 0;
@@ -47,7 +47,7 @@ export function buildErrorPageHtml(message?: string): string {
 </head>
 <body>
   <div class="card">
-    <h1>Princy Code Beta</h1>
+    <h1>Princy Code</h1>
     <p>${text}</p>
     <p>Verifique se os serviços estão rodando na porta 3400 ou aguarde alguns instantes.</p>
     <div class="actions">

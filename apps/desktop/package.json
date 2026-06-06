@@ -1,6 +1,6 @@
 {
   "name": "@princy/desktop",
-  "version": "1.0.0-rc.1",
+  "version": "1.0.0",
   "private": true,
   "author": "Princy AI",
   "description": "Princy Code — Electron desktop shell",

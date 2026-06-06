@@ -11,6 +11,14 @@ function getRequiredSecret(value: string | undefined, envName: string) {
     throw new Error(`${envName} is required.`);
   }
 
+  if (value.length < 32) {
+    throw new Error(`${envName} must be at least 32 characters.`);
+  }
+
+  if (/CHANGE_ME|GERAR_|SUA_SENHA/i.test(value)) {
+    throw new Error(`${envName} is still a placeholder.`);
+  }
+
   return value;
 }
 
