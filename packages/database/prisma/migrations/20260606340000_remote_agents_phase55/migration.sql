@@ -1,0 +1,1 @@
+ALTER TABLE "WorkerNode" ADD COLUMN IF NOT EXISTS "remoteAgentUrl" TEXT;
