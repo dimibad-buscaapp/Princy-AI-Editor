@@ -90,6 +90,11 @@ export function registerMarketplaceRoutes(app: Express) {
     response.json(await storeHandler("mcp", "mcp", user.id));
   }));
 
+  app.get("/agents/store/themes", auth, asyncHandler(async (request, response) => {
+    const user = (request as AuthenticatedRequest).user;
+    response.json(await storeHandler("themes", "theme", user.id));
+  }));
+
   app.get("/agents/marketplace/:type", auth, asyncHandler(async (request, response) => {
     const user = (request as AuthenticatedRequest).user;
     const itemType = String(request.params.type);

@@ -1,0 +1,9 @@
+{
+  "store": "themes",
+  "version": "1.0.0",
+  "featured": ["princy-neural-dark"],
+  "items": [
+    { "id": "princy-light", "type": "theme", "name": "Princy Light", "description": "Tema claro minimalista.", "category": "Theme", "capabilities": [], "version": "0.1.0" },
+    { "id": "cyber-neon", "type": "theme", "name": "Cyber Neon", "description": "Neon accents e dark base.", "category": "Theme", "capabilities": [], "version": "0.1.0" }
+  ]
+}
