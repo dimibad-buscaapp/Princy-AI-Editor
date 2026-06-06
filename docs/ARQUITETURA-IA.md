@@ -122,6 +122,10 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
 
+### Project Permissions (Fase 43)
+
+Capabilities por projeto via `ProjectPermission` e middleware `requireProjectCapability`.
+
 ### Realtime Collaboration (Fase 42)
 
 | Método | Rota |

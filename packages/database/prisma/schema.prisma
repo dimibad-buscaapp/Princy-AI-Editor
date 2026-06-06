@@ -164,12 +164,12 @@ model TeamMember {
 }
 
 model Project {
-  id            String         @id @default(cuid())
+  id            String              @id @default(cuid())
   name          String
   description   String?
   ownerId       String
   teamId        String?
-  owner         User           @relation(fields: [ownerId], references: [id])
+  owner         User                @relation(fields: [ownerId], references: [id])
   workspaces    Workspace[]
   conversations Conversation[]
   memoryChunks  MemoryChunk[]
@@ -179,10 +179,25 @@ model Project {
   projectMemory ProjectMemory?
   codeMemories  CodeMemory[]
   chatCache     ChatCacheEntry[]
-  createdAt     DateTime       @default(now())
-  updatedAt     DateTime       @updatedAt
+  permissions   ProjectPermission[]
+  createdAt     DateTime            @default(now())
+  updatedAt     DateTime            @updatedAt
 
   @@index([ownerId])
+}
+
+model ProjectPermission {
+  id         String   @id @default(cuid())
+  projectId  String
+  project    Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  userId     String
+  capability String
+  grantedBy  String?
+  createdAt  DateTime @default(now())
+
+  @@unique([projectId, userId, capability])
+  @@index([projectId])
+  @@index([userId])
 }
 
 model Workspace {

@@ -1,4 +1,4 @@
-import { authenticate, asyncHandler, HttpError, validateBody } from "@princy/core";
+import { authenticate, asyncHandler, HttpError, requireProjectCapability, validateBody } from "@princy/core";
 import type { Express } from "express";
 import { z } from "zod";
 import { prisma } from "@princy/database";
@@ -36,7 +36,7 @@ export function registerSwarmRoutes(app: Express) {
   const auth = authenticate();
   const engine = new AgentExecutionEngine();
 
-  app.post("/swarm/run", auth, validateBody(runSchema), asyncHandler(async (request, response) => {
+  app.post("/swarm/run", auth, validateBody(runSchema), requireProjectCapability("swarm", (r) => r.body?.projectId), asyncHandler(async (request, response) => {
     const { objective, context, title, projectId } = request.body;
     const run = await swarmOrchestrator.startRun({ objective, context, title, projectId });
     setImmediate(() => {

@@ -16,6 +16,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@princy/database": "*",
     "express": "latest",
     "jsonwebtoken": "latest",
     "zod": "latest"

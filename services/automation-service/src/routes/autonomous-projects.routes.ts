@@ -1,4 +1,4 @@
-import { authenticate, asyncHandler, validateBody } from "@princy/core";
+import { authenticate, asyncHandler, requireProjectCapability, validateBody } from "@princy/core";
 import type { Express } from "express";
 import { z } from "zod";
 import { AutonomousProjectService } from "../autonomous/autonomous-project.service.js";
@@ -18,7 +18,7 @@ export function registerAutonomousProjectRoutes(app: Express) {
   const service = new AutonomousProjectService();
   const auth = authenticate();
 
-  app.post("/autonomous/projects", auth, validateBody(createSchema), asyncHandler(async (request, response) => {
+  app.post("/autonomous/projects", auth, validateBody(createSchema), requireProjectCapability("autonomous", (r) => r.body?.projectId), asyncHandler(async (request, response) => {
     const project = await service.create(request.body);
     response.status(201).json(project);
   }));
@@ -34,7 +34,7 @@ export function registerAutonomousProjectRoutes(app: Express) {
     response.json(detail);
   }));
 
-  app.post("/autonomous/projects/:id/run", auth, asyncHandler(async (request, response) => {
+  app.post("/autonomous/projects/:id/run", auth, requireProjectCapability("autonomous", (r) => (r.body?.projectId ?? r.query.projectId) as string | undefined), asyncHandler(async (request, response) => {
     const token = request.headers.authorization?.replace(/^Bearer\s+/i, "");
     const result = await service.run(String(request.params.id), token);
     response.json(result);

@@ -1,4 +1,4 @@
-import { authenticate, asyncHandler, validateBody } from "@princy/core";
+import { authenticate, asyncHandler, requireProjectCapability, validateBody } from "@princy/core";
 import type { Express } from "express";
 import { z } from "zod";
 import { OllamaClient } from "@princy/ai-client";
@@ -22,7 +22,7 @@ export function registerDevOpsRoutes(app: Express) {
     response.json(await getDevOpsStatus());
   }));
 
-  app.post("/devops/diagnose", auth, validateBody(diagnoseSchema), asyncHandler(async (request, response) => {
+  app.post("/devops/diagnose", auth, requireProjectCapability("devops", (r) => (r.body?.projectId ?? r.query.projectId) as string | undefined), validateBody(diagnoseSchema), asyncHandler(async (request, response) => {
     response.json(await diagnoseTarget(request.body.target));
   }));
 

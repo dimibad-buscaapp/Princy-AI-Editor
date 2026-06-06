@@ -1,4 +1,4 @@
-import { authenticate, asyncHandler, validateBody } from "@princy/core";
+import { authenticate, asyncHandler, requireProjectCapability, validateBody } from "@princy/core";
 import type { Express } from "express";
 import { z } from "zod";
 import { prisma } from "@princy/database";
@@ -17,7 +17,7 @@ export function registerPatchRoutes(app: Express) {
   const workspaceRepo = new WorkspaceRepository();
   const auth = authenticate();
 
-  app.post("/patch/create", auth, validateBody(createSchema), asyncHandler(async (request, response) => {
+  app.post("/patch/create", auth, validateBody(createSchema), requireProjectCapability("patch", (r) => r.body?.projectId), asyncHandler(async (request, response) => {
     const workspace = request.body.workspaceId
       ? await workspaceRepo.findById(request.body.workspaceId)
       : null;

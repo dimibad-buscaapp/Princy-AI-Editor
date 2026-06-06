@@ -11,8 +11,8 @@
 | 39 | Cloud Sync | done | `eea2291` | 2026-06-06 |
 | 40 | Team Workspaces | done | `fedcff7` | 2026-06-06 |
 | 41 | Shared Memory | done | `e493ede` | 2026-06-06 |
-| 42 | Realtime Collaboration | done | _(pending commit)_ | 2026-06-06 |
-| 43 | Project Permissions | pending | — | — |
+| 42 | Realtime Collaboration | done | `cfd6d0a` | 2026-06-06 |
+| 43 | Project Permissions | done | _(pending commit)_ | 2026-06-06 |
 | 44 | Marketplace V2 | pending | — | — |
 | 45 | Agent Store | pending | — | — |
 | 46 | Template Store | pending | — | — |
