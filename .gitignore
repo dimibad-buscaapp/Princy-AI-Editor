@@ -6,6 +6,8 @@ apps/desktop/dist/
 apps/desktop/release/
 coverage/
 logs/
+**/C:Apps*/
+**/*Princy-Ai-Editorlogs/
 *.tsbuildinfo
 .env
 .env.*
