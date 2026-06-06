@@ -793,6 +793,33 @@ model SyncQueue {
   @@index([createdAt])
 }
 
+model WorkerNode {
+  id              String   @id @default(cuid())
+  hostname        String
+  status          String   @default("idle")
+  region          String?
+  remoteAgentUrl  String?
+  gpuType         String?
+  gpuCount        Int      @default(0)
+  gpuMemoryMb     Int?
+  lastSeenAt      DateTime @default(now())
+  metadata        Json?
+  createdAt       DateTime @default(now())
+
+  @@index([status])
+}
+
+model RoutingPolicy {
+  id              String   @id @default(cuid())
+  projectId       String   @unique
+  preferLocal     Boolean  @default(true)
+  cloudFallback   Boolean  @default(false)
+  primaryProvider String   @default("ollama")
+  rules           Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+}
+
 model TaskPattern {
   id              String   @id @default(cuid())
   patternKey      String   @unique

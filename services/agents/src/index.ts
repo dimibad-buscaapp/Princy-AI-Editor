@@ -15,6 +15,8 @@ import { registerMarketplaceRoutes } from "./routes/marketplace.routes.js";
 import { registerRouterRoutes } from "./routes/router.routes.js";
 import { registerSelfImprovementRoutes } from "./routes/self-improvement.routes.js";
 import { registerTaskLearningRoutes } from "./routes/task-learning.routes.js";
+import { registerWorkerRoutes } from "./routes/worker.routes.js";
+import { registerRoutingPolicyRoutes } from "./routes/routing-policy.routes.js";
 import { getModelConfigService } from "./model-config/model-config.service.js";
 import { startModelKeepAlive, warmupChatModels } from "./model-config/model-warmup.js";
 import { initRedisPublisher } from "@princy/event-bus";
@@ -47,6 +49,8 @@ startService({
     registerRouterRoutes,
     registerSelfImprovementRoutes,
     registerTaskLearningRoutes,
+    registerWorkerRoutes,
+    registerRoutingPolicyRoutes,
     registerEventsRoutes
   ],
   readinessCheck: createDatabaseReadinessCheck(() => prisma.$queryRaw`SELECT 1`)
