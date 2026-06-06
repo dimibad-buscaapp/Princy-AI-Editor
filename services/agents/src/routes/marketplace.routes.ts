@@ -1,6 +1,7 @@
 import fs from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
+import { recordAudit } from "@princy/audit-kit";
 import { authenticate, asyncHandler, type AuthenticatedRequest } from "@princy/core";
 import type { Express } from "express";
 import { prisma } from "@princy/database";
@@ -127,6 +128,13 @@ export function registerMarketplaceRoutes(app: Express) {
       VALUES (${id}, ${user.id}, ${itemType}, ${itemId}, ${item.version}, NOW())
       ON CONFLICT ("userId", "itemType", "itemId") DO UPDATE SET version = EXCLUDED.version
     `;
+    void recordAudit({
+      actorId: user.id,
+      action: "marketplace.install",
+      entity: "InstalledItem",
+      entityId: id,
+      metadata: { itemType, itemId }
+    }).catch(() => undefined);
     response.json({ installed: true, itemType, itemId });
   }));
 

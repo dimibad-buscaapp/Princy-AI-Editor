@@ -13,6 +13,7 @@
     "lint": "tsc --noEmit"
   },
   "dependencies": {
+    "@princy/audit-kit": "*",
     "@princy/core": "*",
     "@princy/database": "*",
     "@princy/service-kit": "*",

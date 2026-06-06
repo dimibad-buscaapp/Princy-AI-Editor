@@ -18,6 +18,8 @@ const preRoutes: ServiceRouteRegistrar[] = [
     app.use(createGatewayRateLimit());
     registerProxyRoutes(app, [
       { path: "/api/auth", target: targets.api, rewritePrefix: "/auth" },
+      { path: "/api/audit", target: targets.api, rewritePrefix: "/audit" },
+      { path: "/api/analytics", target: targets.api, rewritePrefix: "/analytics" },
       { path: "/api/chat", target: targets.agents, rewritePrefix: "/chat" },
       { path: "/api/chat/complete", target: targets.agents, rewritePrefix: "/chat/complete" },
       { path: "/api/code", target: targets.agents, rewritePrefix: "/code" },

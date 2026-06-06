@@ -1,3 +1,4 @@
+import { recordAudit } from "@princy/audit-kit";
 import { authenticate, asyncHandler, validateBody, type AuthenticatedRequest } from "@princy/core";
 import type { Express } from "express";
 import { z } from "zod";
@@ -37,6 +38,7 @@ export function registerTeamsRoutes(app: Express) {
       VALUES (${cuid("tm")}, ${id}, ${userId}, 'owner', NOW())
     `;
     const rows = await prisma.$queryRaw`SELECT * FROM "Team" WHERE id = ${id}`;
+    void recordAudit({ actorId: userId, action: "team.create", entity: "Team", entityId: id }).catch(() => undefined);
     response.status(201).json({ team: (rows as unknown[])[0] });
   }));
 

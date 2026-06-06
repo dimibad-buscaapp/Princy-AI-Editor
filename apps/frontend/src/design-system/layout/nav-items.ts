@@ -12,7 +12,8 @@ import {
   Terminal,
   Workflow,
   Zap,
-  Activity
+  Activity,
+  ScrollText
 } from "lucide-react";
 
 export type NavItem = {
@@ -30,6 +31,7 @@ export const navItems: NavItem[] = [
   { label: "Marketplace", href: "/marketplace", icon: Store, pageTitle: "MARKETPLACE" },
   { label: "Graph", href: "/graph", icon: Share2, pageTitle: "CONTEXT GRAPH" },
   { label: "Observability", href: "/observability", icon: Zap, pageTitle: "OBSERVABILITY" },
+  { label: "Audit", href: "/audit", icon: ScrollText, pageTitle: "AUDIT LOGS" },
   { label: "System", href: "/system", icon: Activity, pageTitle: "SYSTEM HEALTH" },
   { label: "Projetos", href: "/projetos", icon: FolderKanban, pageTitle: "PROJETOS" },
   { label: "Memória", href: "/memoria", icon: Brain, pageTitle: "MEMÓRIA" },
