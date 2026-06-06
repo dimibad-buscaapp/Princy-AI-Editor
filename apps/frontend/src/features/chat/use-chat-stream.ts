@@ -1,9 +1,10 @@
 "use client";
 
-import { useCallback, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { parseSseChunk } from "../../lib/chat-sse";
 import { apiUrl } from "../../lib/api";
 import { generateId } from "../../lib/generate-id";
+import { inferRouterTier } from "../../lib/router-tier";
 import { getAccessToken } from "../../lib/token-storage";
 
 export type ChatMessage = {
@@ -151,5 +152,23 @@ export function useChatStream() {
     setError(null);
   }, []);
 
-  return { messages, status, streaming, error, conversationId, chatMetrics, send, clear, setMessages, loadConversation };
+  const thinking = useMemo(() => messages.some((m) => Boolean(m.thinking)), [messages]);
+  const cacheHit = chatMetrics?.cacheHit ?? false;
+  const routerTier = useMemo(() => inferRouterTier(chatMetrics?.model), [chatMetrics?.model]);
+
+  return {
+    messages,
+    status,
+    streaming,
+    error,
+    conversationId,
+    chatMetrics,
+    thinking,
+    cacheHit,
+    routerTier,
+    send,
+    clear,
+    setMessages,
+    loadConversation
+  };
 }

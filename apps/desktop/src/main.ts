@@ -1,8 +1,9 @@
-import { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage } from "electron";
+import { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage, ipcMain, shell } from "electron";
+import fs from "node:fs";
 import path from "node:path";
 import { setupAutoUpdater } from "./updater.js";
 import { waitForFrontend } from "./health.js";
-import { startMonorepo, stopMonorepo } from "./services.js";
+import { resolveMonorepoRoot, startMonorepo, stopMonorepo } from "./services.js";
 import { closeSplash, createSplashWindow, updateSplashMessage } from "./splash.js";
 import { errorPageDataUrl } from "./error-page.js";
 
@@ -41,7 +42,7 @@ function createMainWindow(loadUrl: string) {
     height: 900,
     show: false,
     backgroundColor: "#0a0518",
-    title: "Princy Code",
+    title: "Princy Code Beta",
     webPreferences: secureWebPreferences()
   });
 
@@ -59,10 +60,10 @@ function createTray() {
     : path.join(__dirname, "../assets/icon.png");
   const icon = nativeImage.createFromPath(iconPath);
   tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
-  tray.setToolTip("Princy Code");
+  tray.setToolTip("Princy Code Beta");
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: "Abrir Princy Code", click: () => mainWindow?.show() },
+      { label: "Abrir Princy Code Beta", click: () => mainWindow?.show() },
       { label: "Sair", click: () => app.quit() }
     ])
   );
@@ -95,7 +96,23 @@ async function bootstrap() {
   }
 }
 
+function registerIpcHandlers() {
+  ipcMain.on("princy:retry", () => {
+    void bootstrap();
+  });
+
+  ipcMain.handle("princy:open-logs", async () => {
+    const logsDir = path.join(resolveMonorepoRoot(), "logs");
+    if (fs.existsSync(logsDir)) {
+      await shell.openPath(logsDir);
+      return true;
+    }
+    return false;
+  });
+}
+
 app.whenReady().then(async () => {
+  registerIpcHandlers();
   await bootstrap();
   createTray();
   setupAutoUpdater();

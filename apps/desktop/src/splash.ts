@@ -31,7 +31,7 @@ export function createSplashWindow(preloadPath: string): BrowserWindow {
     center: true,
     show: false,
     backgroundColor: "#0a0518",
-    title: "Princy Code",
+    title: "Princy Code Beta",
     webPreferences: secureWebPreferences(preloadPath)
   });
 

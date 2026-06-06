@@ -23,7 +23,7 @@ export type NavItem = {
 };
 
 export const navItems: NavItem[] = [
-  { label: "Início", href: "/", icon: Home, pageTitle: "INDEX" },
+  { label: "Início", href: "/", icon: Home, pageTitle: "PRINCY CODE BETA" },
   { label: "Chat Princy", href: "/chat", icon: MessageSquare, pageTitle: "CHAT PRINCY" },
   { label: "Editor", href: "/editor/demo", icon: Terminal, pageTitle: "EDITOR" },
   { label: "Swarm", href: "/swarm", icon: Network, pageTitle: "SWARM" },

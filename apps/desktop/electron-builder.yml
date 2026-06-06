@@ -1,5 +1,5 @@
 appId: com.princy.code
-productName: Princy Code
+productName: Princy Code Beta
 executableName: princy-code
 electronVersion: "34.5.8"
 npmRebuild: false

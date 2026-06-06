@@ -296,3 +296,63 @@
 .chat-msg__actions button:hover {
   color: var(--princy-cyan);
 }
+
+/* Beta premium header */
+.chat-header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin: 12px 16px 0;
+  padding: 12px 16px;
+  border-radius: 12px;
+}
+
+.chat-header__left {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  flex: 1;
+}
+
+.chat-header__title {
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--princy-accent);
+}
+
+.chat-header__model {
+  font-family: monospace;
+  font-size: 0.78rem;
+  color: var(--princy-muted);
+  max-width: 200px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.chat-header__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.chat-header__metrics {
+  width: 100%;
+  font-size: 0.72rem;
+  color: var(--princy-muted);
+}
+
+.chat-view__thinking-banner {
+  margin: 8px 16px 0;
+  padding: 8px 14px;
+  border-radius: 8px;
+  background: var(--princy-accent-soft);
+  border: 1px solid rgba(34, 211, 238, 0.25);
+  color: var(--princy-accent);
+  font-size: 0.82rem;
+  animation: princyPulse 1.5s ease infinite;
+}

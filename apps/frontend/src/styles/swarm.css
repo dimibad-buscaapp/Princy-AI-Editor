@@ -103,3 +103,96 @@
   padding: 16px;
   z-index: 100;
 }
+
+/* Swarm HUD Beta */
+.swarm-hud {
+  margin-top: 16px;
+  padding: 12px 0 0;
+  border-top: 1px solid var(--princy-border);
+  background: transparent;
+  border-radius: 0;
+  border-left: none;
+}
+
+.swarm-hud__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 12px;
+}
+
+.swarm-hud__header h3 {
+  margin: 0;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--princy-accent);
+}
+
+.swarm-hud__pipeline {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.swarm-hud__step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.swarm-hud__connector {
+  color: var(--princy-muted);
+  font-size: 0.9rem;
+  line-height: 1;
+  margin: 4px 0;
+}
+
+.swarm-hud__step-card {
+  width: 100%;
+  padding: 10px;
+  border: 1px solid var(--princy-border);
+  border-radius: 10px;
+  background: rgba(5, 10, 25, 0.6);
+}
+
+.swarm-hud__step-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.swarm-hud__step-head strong {
+  font-size: 0.72rem;
+  letter-spacing: 0.06em;
+}
+
+.swarm-hud__model {
+  margin: 0;
+  font-size: 0.68rem;
+  font-family: monospace;
+  color: var(--princy-muted);
+}
+
+.swarm-hud__action {
+  margin: 4px 0 0;
+  font-size: 0.75rem;
+  color: var(--princy-text);
+}
+
+.swarm-hud__time {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  color: var(--princy-accent);
+}
+
+.swarm-hud__artifact {
+  margin: 4px 0 0;
+  font-size: 0.68rem;
+  color: var(--princy-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}

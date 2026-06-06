@@ -38,3 +38,90 @@
   color: var(--muted);
   font-size: 0.85rem;
 }
+
+/* Service Status Panel */
+.service-panel {
+  padding: 18px 20px;
+  background: var(--princy-panel);
+  border: 1px solid var(--princy-border);
+  border-radius: 14px;
+}
+
+.service-panel--compact {
+  padding: 14px 16px;
+}
+
+.service-panel__header {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.service-panel__header h3 {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--princy-accent);
+}
+
+.service-panel__meta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 0.75rem;
+  color: var(--princy-muted);
+}
+
+.service-panel__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.service-panel__row {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--princy-border);
+  font-size: 0.82rem;
+}
+
+.service-panel__row--ok .service-panel__name {
+  color: var(--princy-text);
+}
+
+.service-panel__row--fail .service-panel__name {
+  color: var(--princy-danger);
+}
+
+.service-panel__port {
+  color: var(--princy-muted);
+  font-size: 0.75rem;
+  margin-left: 4px;
+}
+
+.service-panel__status {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.service-panel__latency {
+  font-size: 0.72rem;
+  color: var(--princy-muted);
+}
+
+.service-panel__detail {
+  grid-column: 1 / -1;
+  font-size: 0.75rem;
+  color: var(--princy-muted);
+}
+
+.service-panel--compact .service-panel__row {
+  grid-template-columns: 1fr auto;
+}

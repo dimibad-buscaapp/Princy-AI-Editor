@@ -13,6 +13,7 @@ const OFFICIAL_HREFS = new Set([
   "/chat",
   "/editor/demo",
   "/swarm",
+  "/marketplace",
   "/observability",
   "/projetos",
   "/memoria",

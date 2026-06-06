@@ -11,6 +11,7 @@ import { NeuralLinksLayer } from "./components/NeuralLinksLayer";
 import { NeuralOrbitLayer } from "./components/NeuralOrbitLayer";
 import { NeuralParticles } from "./components/NeuralParticles";
 import { PrincyNeuralCore } from "./components/PrincyNeuralCore";
+import { SwarmHudBeta } from "./SwarmHudBeta";
 import { swarmActivity as defaultActivity, swarmAgents as fallbackAgents, swarmMetrics as fallbackMetrics } from "./swarm-data";
 import { useSwarmStream } from "./use-swarm-stream";
 import { useSwarmTasks } from "./use-swarm-tasks";
@@ -99,6 +100,7 @@ export function SwarmView() {
         <GlowButton variant="violet" className="swarm-view__cta" onClick={() => void openHistory()}>
           Ver Todas as Tarefas
         </GlowButton>
+        <SwarmHudBeta />
       </aside>
       <aside className="swarm-tasks-panel ref-panel">
         <h3>Tarefas Ativas</h3>

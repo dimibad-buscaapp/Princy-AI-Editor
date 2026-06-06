@@ -6,7 +6,7 @@ export function buildErrorPageHtml(message?: string): string {
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Princy Code</title>
+  <title>Princy Code Beta</title>
   <style>
     body {
       margin: 0;
@@ -28,6 +28,7 @@ export function buildErrorPageHtml(message?: string): string {
     }
     h1 { font-size: 22px; margin-bottom: 12px; color: #00f2ff; }
     p { opacity: 0.85; line-height: 1.5; margin-bottom: 20px; }
+    .actions { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
     button {
       background: linear-gradient(90deg, #00f2ff, #a855f7);
       border: none;
@@ -37,15 +38,37 @@ export function buildErrorPageHtml(message?: string): string {
       border-radius: 8px;
       cursor: pointer;
     }
+    button.secondary {
+      background: transparent;
+      border: 1px solid rgba(0, 242, 255, 0.35);
+      color: #e8f4ff;
+    }
   </style>
 </head>
 <body>
   <div class="card">
-    <h1>Princy Code</h1>
+    <h1>Princy Code Beta</h1>
     <p>${text}</p>
     <p>Verifique se os serviços estão rodando na porta 3400 ou aguarde alguns instantes.</p>
-    <button onclick="location.reload()">Tentar novamente</button>
+    <div class="actions">
+      <button id="retry-btn">Tentar novamente</button>
+      <button id="logs-btn" class="secondary">Abrir logs</button>
+    </div>
   </div>
+  <script>
+    document.getElementById("retry-btn")?.addEventListener("click", function () {
+      if (window.princyDesktop && window.princyDesktop.retry) {
+        window.princyDesktop.retry();
+      } else {
+        location.reload();
+      }
+    });
+    document.getElementById("logs-btn")?.addEventListener("click", function () {
+      if (window.princyDesktop && window.princyDesktop.openLogs) {
+        window.princyDesktop.openLogs();
+      }
+    });
+  </script>
 </body>
 </html>`;
 }

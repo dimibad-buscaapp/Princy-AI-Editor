@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useToast } from "../../design-system/Toast";
+import { ChatHeader } from "./ChatHeader";
 import { ChatInput } from "./ChatInput";
 import { ChatMessage } from "./ChatMessage";
 import { ChatSidebar } from "./ChatSidebar";
@@ -31,6 +32,19 @@ export function ChatView() {
         ? DEMO_MESSAGES.map((m) => ({ ...m, streaming: false }))
         : [];
 
+  const lastAssistant = useMemo(
+    () => [...displayMessages].reverse().find((m) => m.role === "assistant" && m.content),
+    [displayMessages]
+  );
+  const lastUser = useMemo(
+    () => [...displayMessages].reverse().find((m) => m.role === "user"),
+    [displayMessages]
+  );
+
+  const isThinking =
+    displayMessages.some((m) => "thinking" in m && Boolean(m.thinking)) ||
+    status.toLowerCase().includes("memória");
+
   return (
     <div className="chat-view">
       <ChatSidebar
@@ -53,17 +67,23 @@ export function ChatView() {
         }}
       />
       <div className="chat-view__main">
-        <div className="chat-view__meta">
-          {status ? <span className="chat-view__status">{status}</span> : null}
-          {chatMetrics ? (
-            <span className="chat-view__metrics">
-              {chatMetrics.model ? `${chatMetrics.model}` : ""}
-              {chatMetrics.ttftMs !== undefined ? ` · TTFT ${chatMetrics.ttftMs}ms` : ""}
-              {chatMetrics.tokensPerSec ? ` · ${chatMetrics.tokensPerSec} tok/s` : ""}
-              {chatMetrics.cacheHit ? " · cache" : ""}
-            </span>
-          ) : null}
-        </div>
+        <ChatHeader
+          routedModel={routedModel}
+          chatMetrics={chatMetrics}
+          status={status}
+          streaming={streaming}
+          thinking={thinking || isThinking}
+          agentType={agentType}
+          lastAssistantContent={lastAssistant?.content}
+          lastUserMessage={lastUser?.content}
+          onClear={clear}
+          onCopy={() => toast.show("Resposta copiada")}
+        />
+        {isThinking ? (
+          <div className="chat-view__thinking-banner" role="status">
+            Pensando...
+          </div>
+        ) : null}
         <div className="chat-view__messages">
           {displayMessages.map((m) => (
             <ChatMessage key={m.id} message={m} />

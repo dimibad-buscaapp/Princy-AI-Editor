@@ -1,5 +1,7 @@
 # Princy Code Alpha
 
+> **Transição:** A Fase 33 evoluiu o frontend e desktop para **Princy Code Beta**. Ver [FASE-33-PRINCY-CODE-BETA.md](./FASE-33-PRINCY-CODE-BETA.md).
+
 Princy Code Alpha entrega a extensão VS Code funcional + scaffold para IDE custom Code-OSS.
 
 ## O que está incluído
@@ -8,7 +10,7 @@ Princy Code Alpha entrega a extensão VS Code funcional + scaffold para IDE cust
 - **Tema:** Princy Dark Neural
 - **Gateway:** `http://13.140.129.77:3407`
 - **Scaffold Code-OSS:** `apps/princy-code/`
-- **Desktop Electron (Fase 32):** `apps/desktop` — shell **Princy Code**, instalador `Princy-Code-Setup.exe`
+- **Desktop Electron (Fase 32–33):** `apps/desktop` — shell **Princy Code Beta**, instalador `Princy-Code-Setup.exe`
 
 ## Roadmap pós-Alpha
 

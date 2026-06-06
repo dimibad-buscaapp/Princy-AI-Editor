@@ -176,3 +176,81 @@
   margin-top: 10px;
   height: 110px;
 }
+
+/* Beta dashboard */
+.home-view--beta {
+  gap: 18px;
+}
+
+.home-hero--beta {
+  grid-template-columns: 1fr auto;
+  min-height: auto;
+}
+
+.home-hero__cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 18px;
+}
+
+.home-hero__stats {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 8px;
+  z-index: 2;
+}
+
+.home-hero__stat-muted {
+  font-size: 0.78rem;
+  color: var(--princy-muted);
+}
+
+.home-beta-grid {
+  margin-top: 4px;
+}
+
+.home-beta-card {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  text-decoration: none;
+  color: inherit;
+  min-height: 120px;
+}
+
+.home-beta-card:hover {
+  text-decoration: none;
+}
+
+.home-recent-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  font-size: 0.82rem;
+}
+
+.home-recent-list li {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--princy-border);
+}
+
+.home-recent-list a {
+  color: var(--princy-accent);
+  text-decoration: none;
+}
+
+.home-bottom-panel--beta {
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .home-hero--beta {
+    grid-template-columns: 1fr;
+  }
+
+  .home-bottom-panel--beta {
+    grid-template-columns: 1fr;
+  }
+}
