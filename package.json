@@ -12,6 +12,7 @@
     "lint": "npm run lint --workspaces --if-present",
     "health": "powershell -ExecutionPolicy Bypass -File scripts/check-health.ps1",
     "health:linux": "bash scripts/check-health.sh",
+    "auth-smoke": "bash scripts/auth-smoke.sh",
     "build:vscode-extension": "npm run build -w @princy/vscode-api-client && npm run build -w princy-assistant",
     "package:vscode-extension": "npm run build:vscode-extension && npm run package -w princy-assistant",
     "desktop:dev": "npm run dev -w @princy/desktop",
