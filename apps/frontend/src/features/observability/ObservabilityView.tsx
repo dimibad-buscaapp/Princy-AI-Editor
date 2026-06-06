@@ -38,6 +38,16 @@ type HealthModels = {
   embed?: string;
 };
 
+type RouterStats = {
+  totalRequests: number;
+  qwen25Requests: number;
+  qwen3Requests: number;
+  deepseekRequests: number;
+  avgResponseTime: number;
+  mostUsedModel?: string;
+  cacheHitRatio?: number;
+};
+
 export function ObservabilityView() {
   const [metricsRaw, setMetricsRaw] = useState("");
   const [parsed, setParsed] = useState<ParsedMetrics>({ requests: 0, errors: 0, latencyMs: 0, tokens: 0, queueDepth: 0 });
@@ -45,6 +55,7 @@ export function ObservabilityView() {
   const [modelMetrics, setModelMetrics] = useState<ModelMetrics | null>(null);
   const [activeModels, setActiveModels] = useState<HealthModels>({});
   const [cacheStats, setCacheStats] = useState<{ entries: number; totalHits: number } | null>(null);
+  const [routerStats, setRouterStats] = useState<RouterStats | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -66,6 +77,12 @@ export function ObservabilityView() {
         setCacheStats(cache);
       } catch {
         setCacheStats(null);
+      }
+      try {
+        const router = await apiFetch<RouterStats>("/router/stats");
+        setRouterStats(router);
+      } catch {
+        setRouterStats(null);
       }
       try {
         const res = await fetch(gatewayUrl("/observability/metrics"));
@@ -122,6 +139,15 @@ export function ObservabilityView() {
             ))}
             {services.length === 0 ? <li>Verificando serviços...</li> : null}
           </ul>
+        </HolographicCard>
+        <HolographicCard title="Neural Router">
+          <p>Total requisições: {routerStats?.totalRequests ?? 0}</p>
+          <p>qwen2.5:3b: {routerStats?.qwen25Requests ?? 0}</p>
+          <p>qwen3:8b: {routerStats?.qwen3Requests ?? 0}</p>
+          <p>deepseek-r1:8b: {routerStats?.deepseekRequests ?? 0}</p>
+          <p>Tempo médio: {routerStats?.avgResponseTime ?? 0} ms</p>
+          <p>Modelo mais usado: {routerStats?.mostUsedModel ?? "—"}</p>
+          <p>Cache hit ratio: {routerStats?.cacheHitRatio != null ? `${routerStats.cacheHitRatio}%` : "—"}</p>
         </HolographicCard>
         <HolographicCard title="Chat Cache">
           <p>Entradas: {cacheStats?.entries ?? 0}</p>

@@ -1,6 +1,6 @@
 import { OllamaClient } from "@princy/ai-client";
 import type { ModelIntent, ModelTask } from "@princy/model-router";
-import { getAiRouter, routeModel } from "@princy/model-router";
+import { getAiRouter, routeAgent } from "@princy/model-router";
 import { getModelConfigService } from "../model-config/model-config.service.js";
 import type { AgentType } from "@princy/database";
 
@@ -44,7 +44,7 @@ export abstract class BaseAgent {
   protected async prompt(system: string, user: string, intent?: ModelIntent) {
     const modelIntent = intent ?? this.defaultIntent();
     const task = this.taskForIntent(modelIntent);
-    const model = routeModel(task);
+    const model = routeAgent(this.type);
     const started = Date.now();
     try {
       const response = await this.ollama.chat(

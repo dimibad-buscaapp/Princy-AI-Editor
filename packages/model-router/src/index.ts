@@ -1,4 +1,15 @@
 import { OllamaClient } from "@princy/ai-client";
+import {
+  DEFAULT_CODE_MODEL,
+  DEFAULT_FAST_MODEL,
+  DEFAULT_REASONING_MODEL,
+  getModelRouter,
+  modelForRequestType,
+  routeAgent as neuralRouteAgent,
+  routeAutocomplete as neuralRouteAutocomplete,
+  routeChat as neuralRouteChat,
+  routeTask as neuralRouteTask
+} from "@princy/shared";
 
 export type ModelIntent = "plan" | "code" | "review" | "debug" | "chat" | "embed";
 
@@ -31,12 +42,12 @@ export type ModelRunMetric = {
 };
 
 export const TASK_DEFAULTS: Record<ModelTask, string> = {
-  CHAT: "qwen2.5:3b",
-  INLINE_CHAT: "qwen2.5:3b",
-  GHOST_TEXT: "qwen2.5:3b",
-  EDITOR_ASSISTANT: "qwen2.5:3b",
-  ARCHITECT: "deepseek-r1:8b",
-  AUTONOMOUS: "deepseek-r1:8b",
+  CHAT: DEFAULT_FAST_MODEL,
+  INLINE_CHAT: DEFAULT_FAST_MODEL,
+  GHOST_TEXT: DEFAULT_FAST_MODEL,
+  EDITOR_ASSISTANT: DEFAULT_CODE_MODEL,
+  ARCHITECT: DEFAULT_REASONING_MODEL,
+  AUTONOMOUS: DEFAULT_REASONING_MODEL,
   MEMORY: "nomic-embed-text"
 };
 
@@ -95,10 +106,13 @@ export function isComplexChatMessage(message: string): boolean {
 }
 
 export function routeChatModel(message: string, mode: "fast" | "deep" = "fast"): string {
-  const fast = envModel("CHAT_FAST_MODEL", envModel("OLLAMA_CHAT_MODEL", TASK_DEFAULTS.CHAT));
-  const deep = envModel("CHAT_DEEP_MODEL", envModel("DEFAULT_REASONING_MODEL", TASK_DEFAULTS.ARCHITECT));
-  if (mode === "deep" || isComplexChatMessage(message)) return deep;
-  return fast;
+  if (mode === "deep") {
+    return getModelRouter().routeChatDecision(message, "deep").model;
+  }
+  if (isComplexChatMessage(message)) {
+    return neuralRouteTask(message);
+  }
+  return neuralRouteChat(message);
 }
 
 export function routeModel(task: ModelTask, overrides?: Partial<Record<ModelSlot, string>>) {
@@ -106,8 +120,33 @@ export function routeModel(task: ModelTask, overrides?: Partial<Record<ModelSlot
   const merged = { ...slotOverrides, ...overrides };
   const override = merged[slot];
   if (override) return override;
-  return TASK_DEFAULTS[task] ?? envFallbackForTask(task);
+
+  switch (task) {
+    case "CHAT":
+    case "INLINE_CHAT":
+      return neuralRouteChat("");
+    case "GHOST_TEXT":
+      return neuralRouteAutocomplete();
+    case "EDITOR_ASSISTANT":
+      return modelForRequestType("refactor");
+    case "ARCHITECT":
+      return modelForRequestType("architect");
+    case "AUTONOMOUS":
+      return modelForRequestType("autonomous");
+    case "MEMORY":
+      return TASK_DEFAULTS.MEMORY;
+    default:
+      return TASK_DEFAULTS[task] ?? envFallbackForTask(task);
+  }
 }
+
+export {
+  getModelRouter,
+  routeAgent,
+  routeAutocomplete,
+  routeChat,
+  routeTask
+} from "@princy/shared";
 
 export function mapAgentTypeToTask(agentType: string): ModelTask {
   switch (agentType) {

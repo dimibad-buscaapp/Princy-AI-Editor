@@ -30,6 +30,7 @@ const preRoutes: ServiceRouteRegistrar[] = [
       { path: "/api/swarm", target: targets.agents, rewritePrefix: "/swarm" },
       { path: "/api/devops", target: targets.agents, rewritePrefix: "/devops" },
       { path: "/api/models", target: targets.agents, rewritePrefix: "/models" },
+      { path: "/api/router", target: targets.agents, rewritePrefix: "/router" },
       { path: "/api/patch", target: targets.workspace, rewritePrefix: "/patch" },
       { path: "/api/terminal", target: targets.workspace, rewritePrefix: "/terminal" },
       { path: "/api/mcp", target: targets.mcp, rewritePrefix: "/mcp" },

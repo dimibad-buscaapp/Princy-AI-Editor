@@ -64,6 +64,7 @@ check "Memory Chat Context" "$GATEWAY/api/memory/chat/context" '^(401|403)$'
 check "Swarm Tasks" "$GATEWAY/api/swarm/tasks" '^(401|403)$'
 check "DevOps Status" "$GATEWAY/api/devops/status" '^(401|403)$'
 check "Models Warm" "$GATEWAY/api/models/warm" '^(401|403)$' '-X POST -H Content-Type:application/json -d {}'
+check "Router Stats" "$GATEWAY/api/router/stats" '^(401|403)$'
 check "Workspace Profile" "$GATEWAY/api/workspace/profile" '^(401|403)$'
 check "Marketplace" "$GATEWAY/api/agents/marketplace" '^(401|403)$'
 check_sse() {

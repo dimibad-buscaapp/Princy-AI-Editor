@@ -8,6 +8,7 @@ import {
   type ModelSlot,
   type ModelTask
 } from "@princy/model-router";
+import { getModelRouter, type RequestType } from "@princy/shared";
 
 const SLOT_TASKS: Record<ModelSlot, ModelTask[]> = {
   CHAT: ["CHAT", "INLINE_CHAT"],
@@ -119,9 +120,18 @@ export class ModelConfigService {
     tokenCount: number;
     tokensPerSec: number;
     cacheHit?: boolean;
+    requestType?: RequestType;
   }) {
     const router = getAiRouter();
     router.recordStreamRun(metric);
+
+    const requestType = metric.requestType ?? taskToRequestType(metric.task);
+    getModelRouter().recordResponseTime(
+      requestType,
+      metric.modelId,
+      metric.totalMs,
+      metric.cacheHit
+    );
 
     const id = `mm_${Date.now()}_${Math.random().toString(36).slice(2, 9)}`;
     await prisma.$executeRaw`
@@ -184,6 +194,24 @@ export class ModelConfigService {
       },
       memory: router.getStreamMetrics(limit)
     };
+  }
+}
+
+function taskToRequestType(task: ModelTask): RequestType {
+  switch (task) {
+    case "GHOST_TEXT":
+      return "ghost_text";
+    case "EDITOR_ASSISTANT":
+      return "refactor";
+    case "ARCHITECT":
+      return "architect";
+    case "AUTONOMOUS":
+      return "autonomous";
+    case "INLINE_CHAT":
+    case "CHAT":
+    case "MEMORY":
+    default:
+      return "chat_simple";
   }
 }
 

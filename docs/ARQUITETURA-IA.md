@@ -65,13 +65,20 @@ COORDINATOR → RESEARCHER → MEMORY → CONTEXT_GRAPH → ARCHITECT → DEVELO
 COORDINATOR → ARCHITECT → DEVELOPER → TESTER → REVIEWER → DEVOPS
 ```
 
-## Model Router
+## Neural Router V1
 
-| Intent | Modelo | Env |
+Pacote: `packages/shared/src/router` — seleciona automaticamente o modelo por tipo de tarefa.
+
+| Tarefa | Modelo | Env |
 |--------|--------|-----|
-| `chat`, `code` | `qwen3:8b` | `OLLAMA_CHAT_MODEL` |
-| `plan`, `review`, `debug` | `deepseek-r1:8b` | `DEFAULT_REASONING_MODEL` |
-| `embed` | `nomic-embed-text` | `OLLAMA_EMBED_MODEL` |
+| Chat simples, ghost text, explain code | `qwen2.5:3b` | `DEFAULT_FAST_MODEL` |
+| Refactor, testes, geração de código | `qwen3:8b` | `DEFAULT_CODE_MODEL` |
+| Architect, autonomous, swarm | `deepseek-r1:8b` | `DEFAULT_REASONING_MODEL` |
+| Embeddings | `nomic-embed-text` | `OLLAMA_EMBED_MODEL` |
+
+**Endpoint:** `GET /api/router/stats` — agregação por modelo (`qwen25`, `qwen3`, `deepseek`), tempo médio e cache hit ratio.
+
+Documentação completa: [NEURAL-ROUTER-V1.md](./NEURAL-ROUTER-V1.md)
 
 Modelos extras via `OLLAMA_EXTRA_MODELS` (lista separada por vírgula).
 

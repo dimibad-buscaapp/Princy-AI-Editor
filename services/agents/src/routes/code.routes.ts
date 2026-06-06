@@ -7,7 +7,7 @@ import { ArchitectAgent } from "../agents/architect.agent.js";
 import { ResearchAgent } from "../agents/swarm-agents.js";
 import { DebuggerAgent } from "../agents/debugger.agent.js";
 import { AgentExecutionEngine } from "../orchestrator/agent-execution-engine.js";
-import { routeModel } from "@princy/model-router";
+import { routeAutocomplete, routeModel, routeTask } from "@princy/model-router";
 import { getModelConfigService } from "../model-config/model-config.service.js";
 
 const codeSchema = z.object({
@@ -39,7 +39,7 @@ export function registerCodeRoutes(app: Express) {
       objective: `Complete code: ${prefix ?? ""}\n${objective}`,
       context
     });
-    response.json({ suggestion: (prefix ?? "") + result.output, model: routeModel("EDITOR_ASSISTANT") });
+    response.json({ suggestion: (prefix ?? "") + result.output, model: routeTask(`complete code: ${objective}`) });
   }));
 
   app.post("/code/explain", auth, validateBody(codeSchema), asyncHandler(async (request, response) => {
@@ -48,7 +48,7 @@ export function registerCodeRoutes(app: Express) {
       objective: `Explain this code:\n${code ?? objective}`,
       context
     });
-    response.json({ explanation: result.output, model: routeModel("CHAT") });
+    response.json({ explanation: result.output, model: routeTask(`explain: ${code ?? objective}`) });
   }));
 
   app.post("/code/refactor", auth, validateBody(codeSchema), asyncHandler(async (request, response) => {
@@ -58,7 +58,7 @@ export function registerCodeRoutes(app: Express) {
       objective: `Refactor:\n${code ?? ""}`,
       context: `${context ?? ""}\n${arch.output}`
     });
-    response.json({ plan: arch.output, refactored: dev.output, model: routeModel("ARCHITECT") });
+    response.json({ plan: arch.output, refactored: dev.output, model: routeTask(objective) });
   }));
 
   app.post("/code/tests", auth, validateBody(codeSchema), asyncHandler(async (request, response) => {
@@ -67,13 +67,13 @@ export function registerCodeRoutes(app: Express) {
       objective: `Generate tests for:\n${code ?? objective}`,
       context
     });
-    response.json({ tests: result.output, model: routeModel("EDITOR_ASSISTANT") });
+    response.json({ tests: result.output, model: routeTask(`generate tests: ${code ?? objective}`) });
   }));
 
   const ollama = new OllamaClient();
   app.post("/code/ghost-text", auth, validateBody(ghostSchema), asyncHandler(async (request, response) => {
     const { prefix, language } = request.body;
-    const model = routeModel("GHOST_TEXT");
+    const model = routeAutocomplete();
     const started = Date.now();
     const chatRes = await ollama.chat([
       {
@@ -105,7 +105,7 @@ export function registerCodeRoutes(app: Express) {
     response.json({
       fix: result.output,
       explanation: result.output,
-      model: routeModel("EDITOR_ASSISTANT")
+      model: routeTask(objective)
     });
   }));
 }

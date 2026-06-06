@@ -17,6 +17,7 @@
     "@princy/event-bus": "*",
     "@princy/memory": "*",
     "@princy/model-router": "*",
+    "@princy/shared": "*",
     "@princy/service-kit": "*",
     "@princy/tool-kit": "*",
     "dotenv": "latest",

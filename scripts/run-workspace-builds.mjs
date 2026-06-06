@@ -7,6 +7,7 @@ const workspaces = [
   "@princy/ai-client",
   "@princy/event-bus",
   "@princy/tool-kit",
+  "@princy/shared",
   "@princy/model-router",
   "@princy/memory",
   "@princy/api",

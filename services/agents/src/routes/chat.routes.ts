@@ -4,7 +4,7 @@ import { z } from "zod";
 import { prisma } from "@princy/database";
 import { eventBus } from "@princy/event-bus";
 import { getCachedResponse, setCachedResponse } from "@princy/memory";
-import { mapAgentTypeToTask, routeChatModel, routeModel } from "@princy/model-router";
+import { mapAgentTypeToTask, routeAgent, routeChatModel, routeModel } from "@princy/model-router";
 import type { ModelTask } from "@princy/model-router";
 import {
   startHeartbeat,
@@ -139,9 +139,11 @@ export function registerChatRoutes(app: Express) {
     const useOverride = context?.forceModel === true && (modelOverride || typeof context?.model === "string");
     const model = useOverride
       ? (modelOverride ?? (context?.model as string))
-      : thinkingMode || routeType === "ARCHITECT"
+      : thinkingMode
         ? routeModel("ARCHITECT")
-        : routeChatModel(message, process.env.CHAT_DEFAULT_MODE === "deep" ? "deep" : "fast");
+        : routeType !== "AUTO"
+          ? routeAgent(routeType)
+          : routeChatModel(message, process.env.CHAT_DEFAULT_MODE === "deep" ? "deep" : "fast");
 
     const cached = await getCachedResponse(message, projectId);
     let assistantContent = "";
