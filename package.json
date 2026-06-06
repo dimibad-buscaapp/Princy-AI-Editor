@@ -1,11 +1,11 @@
 {
   "name": "princy-ai-editor",
-  "version": "0.1.0",
+  "version": "1.0.0-rc.1",
   "private": true,
   "description": "Princy AI Editor monorepo.",
   "scripts": {
-    "dev": "concurrently -n frontend,api,agents,workspace,graph,memory,automation,gateway,mcp -c blue,green,cyan,magenta,yellow,red,white,gray \"npm run dev -w @princy/frontend\" \"npm run dev -w @princy/api\" \"npm run dev -w @princy/agents\" \"npm run dev -w @princy/workspace-service\" \"npm run dev -w @princy/context-graph\" \"npm run dev -w @princy/memory-service\" \"npm run dev -w @princy/automation-service\" \"npm run dev -w @princy/gateway\" \"npm run dev -w @princy/mcp-server\"",
-    "start": "concurrently -n frontend,api,agents,workspace,graph,memory,automation,gateway,mcp -c blue,green,cyan,magenta,yellow,red,white,gray \"npm run start -w @princy/frontend\" \"npm run start -w @princy/api\" \"npm run start -w @princy/agents\" \"npm run start -w @princy/workspace-service\" \"npm run start -w @princy/context-graph\" \"npm run start -w @princy/memory-service\" \"npm run start -w @princy/automation-service\" \"npm run start -w @princy/gateway\" \"npm run start -w @princy/mcp-server\"",
+    "dev": "concurrently -n frontend,api,agents,workspace,graph,memory,automation,gateway,mcp,scheduler -c blue,green,cyan,magenta,yellow,red,white,gray,bgBlue \"npm run dev -w @princy/frontend\" \"npm run dev -w @princy/api\" \"npm run dev -w @princy/agents\" \"npm run dev -w @princy/workspace-service\" \"npm run dev -w @princy/context-graph\" \"npm run dev -w @princy/memory-service\" \"npm run dev -w @princy/automation-service\" \"npm run dev -w @princy/gateway\" \"npm run dev -w @princy/mcp-server\" \"npm run dev -w @princy/scheduler-service\"",
+    "start": "concurrently -n frontend,api,agents,workspace,graph,memory,automation,gateway,mcp,scheduler -c blue,green,cyan,magenta,yellow,red,white,gray,bgBlue \"npm run start -w @princy/frontend\" \"npm run start -w @princy/api\" \"npm run start -w @princy/agents\" \"npm run start -w @princy/workspace-service\" \"npm run start -w @princy/context-graph\" \"npm run start -w @princy/memory-service\" \"npm run start -w @princy/automation-service\" \"npm run start -w @princy/gateway\" \"npm run start -w @princy/mcp-server\" \"npm run start -w @princy/scheduler-service\"",
     "clean": "npm run clean --workspaces --if-present",
     "build": "node scripts/run-workspace-builds.mjs",
     "typecheck": "node scripts/run-workspace-typechecks.mjs",

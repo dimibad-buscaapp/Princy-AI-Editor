@@ -5,7 +5,8 @@ export type ServiceKey =
   | "context"
   | "memory"
   | "automation"
-  | "mcp";
+  | "mcp"
+  | "scheduler";
 
 export type ServiceTarget = {
   key: ServiceKey;
@@ -56,6 +57,12 @@ export function getServiceTargets(): Record<ServiceKey, ServiceTarget> {
       key: "mcp",
       name: "MCP Server",
       url: process.env.MCP_SERVER_URL ?? "http://127.0.0.1:3408",
+      public: false
+    },
+    scheduler: {
+      key: "scheduler",
+      name: "Scheduler Service",
+      url: process.env.SCHEDULER_SERVICE_URL ?? "http://127.0.0.1:3409",
       public: false
     }
   };

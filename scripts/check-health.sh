@@ -27,6 +27,7 @@ MEMORY_SERVICE_PORT=$(read_env MEMORY_SERVICE_PORT 3405)
 AUTOMATION_SERVICE_PORT=$(read_env AUTOMATION_SERVICE_PORT 3406)
 GATEWAY_PORT=$(read_env GATEWAY_PORT 3407)
 MCP_SERVER_PORT=$(read_env MCP_SERVER_PORT 3408)
+SCHEDULER_SERVICE_PORT=$(read_env SCHEDULER_SERVICE_PORT 3409)
 
 check() {
   local name="$1"
@@ -55,6 +56,7 @@ check "System Health" "http://127.0.0.1:${GATEWAY_PORT}/api/system/health"
 check "OpenAI Models" "http://127.0.0.1:${GATEWAY_PORT}/v1/models"
 check "Neural Core" "http://127.0.0.1:${AGENTS_PORT}/health/neural"
 check "MCP" "http://127.0.0.1:${MCP_SERVER_PORT}/health/live"
+check "Scheduler" "http://127.0.0.1:${SCHEDULER_SERVICE_PORT}/health/live"
 check "Ollama" "http://127.0.0.1:11434/api/tags"
 
 if command -v redis-cli >/dev/null 2>&1; then

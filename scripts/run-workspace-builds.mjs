@@ -20,6 +20,7 @@ const workspaces = [
   "@princy/automation-service",
   "@princy/gateway",
   "@princy/mcp-server",
+  "@princy/scheduler-service",
   "@princy/frontend",
   "@princy/vscode-api-client",
   "princy-assistant",

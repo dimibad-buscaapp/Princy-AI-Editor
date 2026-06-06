@@ -41,7 +41,10 @@ const preRoutes: ServiceRouteRegistrar[] = [
       { path: "/api/terminal", target: targets.workspace, rewritePrefix: "/terminal" },
       { path: "/api/mcp", target: targets.mcp, rewritePrefix: "/mcp" },
       { path: "/api/automation", target: targets.automation, rewritePrefix: "/automation" },
-      { path: "/api/autonomous", target: targets.automation, rewritePrefix: "/autonomous" }
+      { path: "/api/autonomous", target: targets.automation, rewritePrefix: "/autonomous" },
+      { path: "/api/workers", target: targets.agents, rewritePrefix: "/workers" },
+      { path: "/api/routing", target: targets.agents, rewritePrefix: "/routing" },
+      { path: "/api/scheduler", target: targets.scheduler, rewritePrefix: "/scheduler" }
     ]);
   }
 ];
