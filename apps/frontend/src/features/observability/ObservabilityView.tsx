@@ -67,6 +67,8 @@ export function ObservabilityView() {
   const [cacheStats, setCacheStats] = useState<{ entries: number; totalHits: number } | null>(null);
   const [routerStats, setRouterStats] = useState<RouterStats | null>(null);
   const [selfImprovement, setSelfImprovement] = useState<SelfImprovementStats | null>(null);
+  const [usage, setUsage] = useState<{ messages: number; memoryChunks: number; swarmRuns: number } | null>(null);
+  const [usageModels, setUsageModels] = useState<Array<{ modelId: string; runs: number; avgMs: number }>>([]);
 
   useEffect(() => {
     void (async () => {
@@ -100,6 +102,17 @@ export function ObservabilityView() {
         setSelfImprovement(si);
       } catch {
         setSelfImprovement(null);
+      }
+      try {
+        const analytics = await apiFetch<{
+          usage: { messages: number; memoryChunks: number; swarmRuns: number };
+          models: Array<{ modelId: string; runs: number; avgMs: number }>;
+        }>("/analytics/usage");
+        setUsage(analytics.usage);
+        setUsageModels(analytics.models ?? []);
+      } catch {
+        setUsage(null);
+        setUsageModels([]);
       }
       try {
         const res = await fetch(gatewayUrl("/observability/metrics"));
@@ -191,6 +204,26 @@ export function ObservabilityView() {
             </>
           ) : (
             <p>Carregando métricas de auto-melhoria...</p>
+          )}
+        </HolographicCard>
+        <HolographicCard title="Usage Analytics">
+          {usage ? (
+            <>
+              <p>Mensagens: {usage.messages}</p>
+              <p>Memory chunks: {usage.memoryChunks}</p>
+              <p>Swarm runs: {usage.swarmRuns}</p>
+              <h4>Modelos (uso)</h4>
+              <ul className="obs-view__services">
+                {usageModels.map((m) => (
+                  <li key={m.modelId}>
+                    <strong>{m.modelId}</strong> — {m.runs} runs · Ø {m.avgMs}ms
+                  </li>
+                ))}
+                {usageModels.length === 0 ? <li>Sem dados de uso ainda.</li> : null}
+              </ul>
+            </>
+          ) : (
+            <p>Carregando analytics...</p>
           )}
         </HolographicCard>
         <HolographicCard title="Neural Router">
