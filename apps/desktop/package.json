@@ -3,61 +3,25 @@
   "version": "0.1.0",
   "private": true,
   "author": "Princy AI",
-  "description": "Princy AI Editor — Electron desktop shell",
-  "main": "dist/main.js",
+  "description": "Princy Code — Electron desktop shell",
+  "main": "out/main.js",
   "scripts": {
-    "dev": "tsx watch src/main.ts",
+    "dev": "npm run build && cross-env PRINCY_DEV=1 electron .",
     "build": "tsc -p tsconfig.json",
-    "pack": "npm run build && electron-builder --linux dir",
-    "pack:dir": "npm run build && electron-builder --dir",
-    "pack:win": "npm run build && electron-builder --win",
-    "pack:linux": "npm run build && electron-builder --linux AppImage",
-    "start": "electron dist/main.js"
+    "start": "electron out/main.js",
+    "dist": "npm run build && electron-builder --win nsis",
+    "pack": "npm run build && electron-builder --dir",
+    "pack:win": "npm run build && electron-builder --win nsis",
+    "pack:linux": "npm run build && electron-builder --linux dir"
   },
   "dependencies": {
     "electron-updater": "^6.3.9"
   },
   "devDependencies": {
     "@types/node": "latest",
+    "cross-env": "latest",
     "electron": "34.5.8",
     "electron-builder": "25.1.8",
-    "tsx": "latest",
     "typescript": "latest"
-  },
-  "build": {
-    "electronVersion": "34.5.8",
-    "npmRebuild": false,
-    "buildDependenciesFromSource": false,
-    "appId": "com.princy.ai-editor",
-    "productName": "PrincyAIEditor",
-    "executableName": "princy-ai-editor",
-    "directories": {
-      "output": "release",
-      "buildResources": "build"
-    },
-    "files": [
-      "dist/**/*",
-      "package.json"
-    ],
-    "win": {
-      "target": ["nsis"],
-      "artifactName": "Princy-AI-Setup.${ext}"
-    },
-    "linux": {
-      "target": ["dir"],
-      "category": "Development",
-      "artifactName": "Princy-AI-Editor-${version}.${ext}"
-    },
-    "publish": [
-      {
-        "provider": "github",
-        "owner": "princy",
-        "repo": "Princy-AI-Editor"
-      }
-    ],
-    "nsis": {
-      "oneClick": false,
-      "allowToChangeInstallationDirectory": true
-    }
   }
 }

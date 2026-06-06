@@ -1,60 +1,113 @@
 import { app, BrowserWindow, Tray, Menu, globalShortcut, nativeImage } from "electron";
 import path from "node:path";
-import { spawn, type ChildProcess } from "node:child_process";
 import { setupAutoUpdater } from "./updater.js";
+import { waitForFrontend } from "./health.js";
+import { startMonorepo, stopMonorepo } from "./services.js";
+import { closeSplash, createSplashWindow, updateSplashMessage } from "./splash.js";
+import { errorPageDataUrl } from "./error-page.js";
 
 const FRONTEND_PORT = Number(process.env.PRINCY_FRONTEND_PORT ?? 3400);
-const FRONTEND_URL = `http://127.0.0.1:${FRONTEND_PORT}`;
+const isDev = process.env.PRINCY_DEV === "1" || !app.isPackaged;
+const FRONTEND_HOST = isDev ? "localhost" : "127.0.0.1";
+const FRONTEND_URL = `http://${FRONTEND_HOST}:${FRONTEND_PORT}`;
+const FRONTEND_URLS = [
+  FRONTEND_URL,
+  `http://127.0.0.1:${FRONTEND_PORT}`,
+  `http://localhost:${FRONTEND_PORT}`
+];
+
 let mainWindow: BrowserWindow | null = null;
 let tray: Tray | null = null;
-let monorepoProc: ChildProcess | null = null;
 
-function startMonorepo() {
-  const root = path.resolve(__dirname, "../../..");
-  monorepoProc = spawn("npm", ["run", "start"], {
-    cwd: root,
-    shell: true,
-    stdio: "ignore",
-    env: { ...process.env, FORCE_COLOR: "0" }
-  });
+function secureWebPreferences() {
+  return {
+    preload: path.join(__dirname, "preload.js"),
+    contextIsolation: true,
+    nodeIntegration: false,
+    sandbox: true,
+    webSecurity: true
+  } as const;
 }
 
-function createWindow() {
+function createMainWindow(loadUrl: string) {
+  if (mainWindow && !mainWindow.isDestroyed()) {
+    void mainWindow.loadURL(loadUrl);
+    mainWindow.show();
+    return mainWindow;
+  }
+
   mainWindow = new BrowserWindow({
     width: 1440,
     height: 900,
+    show: false,
     backgroundColor: "#0a0518",
-    webPreferences: {
-      preload: path.join(__dirname, "preload.js"),
-      contextIsolation: true,
-      nodeIntegration: false
-    }
+    title: "Princy Code",
+    webPreferences: secureWebPreferences()
   });
-  mainWindow.loadURL(FRONTEND_URL);
+
+  void mainWindow.loadURL(loadUrl);
+  mainWindow.once("ready-to-show", () => mainWindow?.show());
   mainWindow.on("closed", () => {
     mainWindow = null;
   });
+  return mainWindow;
 }
 
 function createTray() {
-  const icon = nativeImage.createEmpty();
-  tray = new Tray(icon);
-  tray.setToolTip("Princy AI Editor");
+  const iconPath = app.isPackaged
+    ? path.join(process.resourcesPath, "assets", "icon.png")
+    : path.join(__dirname, "../assets/icon.png");
+  const icon = nativeImage.createFromPath(iconPath);
+  tray = new Tray(icon.isEmpty() ? nativeImage.createEmpty() : icon);
+  tray.setToolTip("Princy Code");
   tray.setContextMenu(
     Menu.buildFromTemplate([
-      { label: "Abrir Princy", click: () => mainWindow?.show() },
+      { label: "Abrir Princy Code", click: () => mainWindow?.show() },
       { label: "Sair", click: () => app.quit() }
     ])
   );
 }
 
-app.whenReady().then(() => {
+async function bootstrap() {
+  const preloadPath = path.join(__dirname, "preload.js");
+  createSplashWindow(preloadPath);
+  await updateSplashMessage("Princy services are starting...");
+
   startMonorepo();
-  createWindow();
+
+  const health = await waitForFrontend({
+    urls: [...new Set(FRONTEND_URLS)],
+    intervalMs: 1500,
+    timeoutMs: 90_000,
+    onAttempt: async () => {
+      await updateSplashMessage("Princy services are starting...");
+    }
+  });
+
+  closeSplash();
+
+  if (health.ok && health.url) {
+    createMainWindow(health.url);
+  } else {
+    createMainWindow(
+      errorPageDataUrl("Não foi possível conectar aos serviços locais da Princy.")
+    );
+  }
+}
+
+app.whenReady().then(async () => {
+  await bootstrap();
   createTray();
   setupAutoUpdater();
+
   globalShortcut.register("CommandOrControl+K", () => {
     mainWindow?.webContents.send("princy:command-palette");
+  });
+
+  app.on("activate", () => {
+    if (BrowserWindow.getAllWindows().length === 0) {
+      void bootstrap();
+    }
   });
 });
 
@@ -64,5 +117,5 @@ app.on("window-all-closed", () => {
 
 app.on("will-quit", () => {
   globalShortcut.unregisterAll();
-  monorepoProc?.kill();
+  stopMonorepo();
 });

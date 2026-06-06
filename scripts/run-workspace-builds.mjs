@@ -20,7 +20,8 @@ const workspaces = [
   "@princy/mcp-server",
   "@princy/frontend",
   "@princy/vscode-api-client",
-  "princy-assistant"
+  "princy-assistant",
+  "@princy/desktop"
 ];
 
 for (const workspace of workspaces) {

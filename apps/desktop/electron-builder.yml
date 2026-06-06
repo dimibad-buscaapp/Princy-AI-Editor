@@ -1,0 +1,35 @@
+appId: com.princy.code
+productName: Princy Code
+executableName: princy-code
+electronVersion: "34.5.8"
+npmRebuild: false
+buildDependenciesFromSource: false
+directories:
+  output: dist
+  buildResources: assets
+files:
+  - out/**/*
+  - package.json
+extraResources:
+  - from: assets
+    to: assets
+    filter:
+      - "**/*"
+win:
+  target:
+    - nsis
+  icon: assets/icon.ico
+linux:
+  target:
+    - dir
+  category: Development
+  icon: assets/icon.png
+  artifactName: Princy-Code-${version}.${ext}
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  artifactName: Princy-Code-Setup.${ext}
+publish:
+  - provider: github
+    owner: princy
+    repo: Princy-AI-Editor

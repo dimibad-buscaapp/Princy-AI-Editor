@@ -7,13 +7,14 @@ Princy Code Alpha entrega a extensão VS Code funcional + scaffold para IDE cust
 - **VSIX:** `princy-assistant` com chat SSE, ghost text, inline actions, patch, terminal IA, swarm tasks, context graph, autonomous opt-in
 - **Tema:** Princy Dark Neural
 - **Gateway:** `http://13.140.129.77:3407`
-- **Scaffold Code-OSS:** `apps/princy-code/` (sem build `.exe` nesta fase)
+- **Scaffold Code-OSS:** `apps/princy-code/`
+- **Desktop Electron (Fase 32):** `apps/desktop` — shell **Princy Code**, instalador `Princy-Code-Setup.exe`
 
 ## Roadmap pós-Alpha
 
 1. Submodule `microsoft/vscode`
 2. Extensão built-in via `patch-code-oss.mjs`
-3. Instaladores Windows/macOS/Linux
+3. Instaladores macOS/Linux assinados
 4. Swarm neural UI na extensão desktop
 
 ## Checklist Alpha
@@ -33,4 +34,11 @@ Princy Code Alpha entrega a extensão VS Code funcional + scaffold para IDE cust
 npm run package:vscode-extension
 ```
 
-Ver também [VSCODE-EXTENSION-USAGE.md](./VSCODE-EXTENSION-USAGE.md).
+## Build Desktop (Fase 32)
+
+```bash
+npm run desktop:dev      # desenvolvimento
+npm run desktop:dist     # Princy-Code-Setup.exe (Windows)
+```
+
+Ver [FASE-32-ELECTRON-DESKTOP.md](./FASE-32-ELECTRON-DESKTOP.md) e [VSCODE-EXTENSION-USAGE.md](./VSCODE-EXTENSION-USAGE.md).
