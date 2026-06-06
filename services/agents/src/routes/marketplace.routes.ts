@@ -5,7 +5,14 @@ import { authenticate, asyncHandler, type AuthenticatedRequest } from "@princy/c
 import type { Express } from "express";
 import { prisma } from "@princy/database";
 
-const manifestPath = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../marketplace/manifest.json");
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../../../../marketplace");
+const manifestPath = path.join(rootDir, "manifest.json");
+
+async function loadStore(store: string) {
+  const storePath = path.join(rootDir, "stores", `${store}.json`);
+  const raw = await fs.readFile(storePath, "utf8");
+  return JSON.parse(raw) as { store: string; version: string; featured: string[]; items: MarketplaceItem[] };
+}
 
 export type MarketplaceItem = {
   id: string;
@@ -47,6 +54,26 @@ export function registerMarketplaceRoutes(app: Express) {
     }));
     if (type) items = items.filter((i) => i.type === type);
     response.json({ version: manifest.version, items });
+  }));
+
+  app.get("/agents/store/agents", auth, asyncHandler(async (request, response) => {
+    const user = (request as AuthenticatedRequest).user;
+    const [manifest, store, installed] = await Promise.all([
+      loadManifest(),
+      loadStore("agents"),
+      prisma.$queryRaw<Array<{ itemId: string }>>`
+        SELECT "itemId" FROM "InstalledItem" WHERE "userId" = ${user.id} AND "itemType" = 'agent'
+      `
+    ]);
+    const installedIds = new Set(installed.map((i) => i.itemId));
+    const base = manifest.items.filter((i) => i.type === "agent");
+    const merged = [...base, ...store.items.filter((s) => !base.some((b) => b.id === s.id))];
+    response.json({
+      store: store.store,
+      version: store.version,
+      featured: store.featured,
+      items: merged.map((i) => ({ ...i, installed: installedIds.has(i.id) }))
+    });
   }));
 
   app.get("/agents/marketplace/:type", auth, asyncHandler(async (request, response) => {

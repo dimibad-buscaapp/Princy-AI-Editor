@@ -1,0 +1,9 @@
+{
+  "store": "agents",
+  "version": "1.0.0",
+  "featured": ["react", "next", "coordinator"],
+  "items": [
+    { "id": "vue", "type": "agent", "name": "Vue Agent", "description": "Composition API e Pinia.", "category": "Frontend", "capabilities": ["vue", "pinia"], "version": "0.1.0" },
+    { "id": "rust", "type": "agent", "name": "Rust Agent", "description": "Systems programming e Cargo.", "category": "Backend", "capabilities": ["cargo", "async"], "version": "0.1.0" }
+  ]
+}
