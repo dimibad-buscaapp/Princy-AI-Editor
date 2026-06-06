@@ -45,9 +45,25 @@ const ROLE_LABELS: Record<string, string> = {
   DEVOPS: "DevOps"
 };
 
+type TaskSuggestion = {
+  id: string;
+  label: string;
+  category: string;
+  occurrenceCount: number;
+  suggestion: string;
+};
+
+type TaskClassification = {
+  classification: { category: string; label: string };
+  suggestAutomation: boolean;
+  template?: { focus?: string; steps?: string[] };
+};
+
 export function AutonomousView() {
   const [objective, setObjective] = useState("");
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [suggestions, setSuggestions] = useState<TaskSuggestion[]>([]);
+  const [classification, setClassification] = useState<TaskClassification | null>(null);
   const [approval, setApproval] = useState<Approval | null>(null);
   const [running, setRunning] = useState(false);
   const [steps, setSteps] = useState<PipelineStep[]>(
@@ -62,7 +78,26 @@ export function AutonomousView() {
 
   useEffect(() => {
     void loadGoals();
+    void apiFetch<{ suggestions: TaskSuggestion[] }>("/agents/task-learning/suggestions")
+      .then((d) => setSuggestions(d.suggestions ?? []))
+      .catch(() => setSuggestions([]));
   }, []);
+
+  useEffect(() => {
+    if (!objective.trim() || objective.length < 8) {
+      setClassification(null);
+      return;
+    }
+    const t = setTimeout(() => {
+      void apiFetch<TaskClassification>("/agents/task-learning/classify", {
+        method: "POST",
+        body: { objective }
+      })
+        .then(setClassification)
+        .catch(() => setClassification(null));
+    }, 400);
+    return () => clearTimeout(t);
+  }, [objective]);
 
   useEffect(() => {
     const source = new EventSource(eventsStreamUrl());
@@ -190,6 +225,27 @@ export function AutonomousView() {
           <Play size={14} /> {running ? "Executando..." : "Iniciar"}
         </GlowButton>
       </div>
+      {classification ? (
+        <HolographicCard title="Task Learning">
+          <p>Categoria: <strong>{classification.classification.label}</strong> ({classification.classification.category})</p>
+          {classification.template?.focus ? <p>{classification.template.focus}</p> : null}
+          {classification.suggestAutomation ? (
+            <p className="auto-view__hint">Padrão recorrente detectado — fluxo padrão disponível.</p>
+          ) : null}
+        </HolographicCard>
+      ) : null}
+      {suggestions.length > 0 ? (
+        <HolographicCard title="Sugestões de Automação">
+          <ul className="auto-view__goals">
+            {suggestions.slice(0, 5).map((s) => (
+              <li key={s.id} className="auto-view__goal">
+                <strong>{s.label}</strong> — {s.occurrenceCount}x
+                <small>{s.suggestion}</small>
+              </li>
+            ))}
+          </ul>
+        </HolographicCard>
+      ) : null}
       <HolographicCard title={`Pipeline — ${phase}`}>
         <ol className="auto-view__pipeline">
           {steps.map((step) => (

@@ -2,6 +2,7 @@ import { eventBus } from "@princy/event-bus";
 import { prisma } from "@princy/database";
 import type { SwarmAgentRole } from "../swarm/swarm-artifacts.js";
 import { getAgentMemoryContext } from "@princy/memory";
+import { recordTaskPattern } from "../task-learning/task-learning.service.js";
 import { AUTONOMOUS_PIPELINE } from "../agents/swarm-agents.js";
 import type { SwarmRole } from "../swarm/swarm-registry.js";
 import { swarmRegistry } from "../swarm/swarm-registry.js";
@@ -90,6 +91,8 @@ export class SwarmOrchestrator {
         VALUES (${taskId}, ${pid}, ${parentId}, ${`${role}: ${title}`}, ${input.context ?? null}, ${role}::"SwarmAgentRole", 'PENDING', ${i + 1}, ${JSON.stringify({ objective: input.objective, context: input.context, projectId: input.projectId })}::jsonb, NOW(), NOW())
       `;
     }
+
+    void recordTaskPattern({ objective: input.objective, projectId: input.projectId }).catch(() => undefined);
 
     const rows = await prisma.$queryRaw<SwarmRunRecord[]>`
       SELECT * FROM "SwarmRun" WHERE id = ${id} LIMIT 1
@@ -217,6 +220,11 @@ export class SwarmOrchestrator {
         artifacts = ${JSON.stringify(allArtifacts)}::jsonb, "updatedAt" = NOW()
       WHERE id = ${runId}
     `;
+
+    void recordTaskPattern({
+      objective: run.objective,
+      planSnapshot: { runId, artifacts: allArtifacts, durationMs }
+    }).catch(() => undefined);
 
     this.publish("swarm.completed", {
       runId,

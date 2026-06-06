@@ -134,6 +134,10 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/agents/:agentId/memory` |
 | `DELETE` | `/api/agents/:agentId/memory/:memoryId` |
 | `GET` | `/api/agents/self-improvement/stats` |
+| `GET` | `/api/agents/task-learning/patterns` |
+| `GET` | `/api/agents/task-learning/suggestions` |
+| `POST` | `/api/agents/task-learning/classify` |
+| `POST` | `/api/agents/task-learning/record` |
 | `POST` | `/api/patch/reject` |
 | `POST` | `/api/chat/complete` | *(deprecated alias)* |
 

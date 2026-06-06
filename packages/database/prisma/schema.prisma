@@ -577,3 +577,20 @@ model InstalledAgent {
   @@index([userId])
 }
 
+model TaskPattern {
+  id              String   @id @default(cuid())
+  patternKey      String   @unique
+  label           String
+  category        String
+  occurrenceCount Int      @default(1)
+  template        Json?
+  lastPlan        Json?
+  projectId       String?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  @@index([category])
+  @@index([projectId])
+  @@index([occurrenceCount])
+}
+
