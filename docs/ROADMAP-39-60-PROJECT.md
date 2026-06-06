@@ -12,8 +12,8 @@
 | 40 | Team Workspaces | done | `fedcff7` | 2026-06-06 |
 | 41 | Shared Memory | done | `e493ede` | 2026-06-06 |
 | 42 | Realtime Collaboration | done | `cfd6d0a` | 2026-06-06 |
-| 43 | Project Permissions | done | _(pending commit)_ | 2026-06-06 |
-| 44 | Marketplace V2 | pending | — | — |
+| 43 | Project Permissions | done | `9db745c` | 2026-06-06 |
+| 44 | Marketplace V2 | done | _(pending commit)_ | 2026-06-06 |
 | 45 | Agent Store | pending | — | — |
 | 46 | Template Store | pending | — | — |
 | 47 | MCP Store | pending | — | — |

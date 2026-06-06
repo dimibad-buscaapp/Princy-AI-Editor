@@ -651,6 +651,19 @@ model InstalledAgent {
   @@index([userId])
 }
 
+model InstalledItem {
+  id        String   @id @default(cuid())
+  userId    String
+  itemType  String
+  itemId    String
+  version   String?
+  metadata  Json?
+  createdAt DateTime @default(now())
+
+  @@unique([userId, itemType, itemId])
+  @@index([userId, itemType])
+}
+
 model AutonomousProject {
   id               String   @id @default(cuid())
   title            String

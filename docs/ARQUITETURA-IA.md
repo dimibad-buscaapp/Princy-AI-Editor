@@ -122,6 +122,13 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
 
+### Marketplace V2 (Fase 44)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/agents/marketplace?type=` |
+| `POST` | `/api/agents/marketplace/:type/:id/install` |
+
 ### Project Permissions (Fase 43)
 
 Capabilities por projeto via `ProjectPermission` e middleware `requireProjectCapability`.

@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "items": [
+    { "id": "react", "type": "agent", "name": "React Agent", "description": "Componentes, hooks e padrões React.", "category": "Frontend", "capabilities": ["jsx", "hooks", "state"], "version": "0.1.0" },
+    { "id": "next", "type": "agent", "name": "Next Agent", "description": "App Router, SSR e API routes Next.js.", "category": "Frontend", "capabilities": ["ssr", "routing", "api"], "version": "0.1.0" },
+    { "id": "node", "type": "agent", "name": "Node Agent", "description": "APIs Node, Express e scripts.", "category": "Backend", "capabilities": ["express", "middleware", "scripts"], "version": "0.1.0" },
+    { "id": "prisma", "type": "agent", "name": "Prisma Agent", "description": "Schemas, migrations e queries Prisma.", "category": "Database", "capabilities": ["schema", "migrate", "query"], "version": "0.1.0" },
+    { "id": "docker", "type": "agent", "name": "Docker Agent", "description": "Dockerfile, compose e containers.", "category": "DevOps", "capabilities": ["dockerfile", "compose", "images"], "version": "0.1.0" },
+    { "id": "coordinator", "type": "agent", "name": "Coordinator Agent", "description": "Orquestra tarefas multi-agente.", "category": "Swarm", "capabilities": ["planning", "routing", "review"], "version": "0.1.0" },
+    { "id": "princy-neural-dark", "type": "theme", "name": "Princy Neural Dark", "description": "Tema escuro premium com glow neural.", "category": "Theme", "capabilities": [], "version": "1.0.0" },
+    { "id": "fullstack-monorepo", "type": "template", "name": "Fullstack Monorepo", "description": "Template Next + API + Prisma.", "category": "Starter", "capabilities": ["next", "prisma"], "version": "0.1.0" },
+    { "id": "filesystem", "type": "mcp", "name": "Filesystem MCP", "description": "Acesso seguro ao filesystem local.", "category": "MCP", "capabilities": ["read", "write"], "version": "0.1.0" }
+  ]
+}
