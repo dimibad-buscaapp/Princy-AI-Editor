@@ -8,7 +8,7 @@ import { Queue } from "bullmq";
 const port = Number(process.env.SCHEDULER_SERVICE_PORT ?? 3409);
 const redisUrl = process.env.REDIS_URL ?? "redis://127.0.0.1:6379";
 
-const swarmQueue = new Queue("princy:swarm-jobs", {
+const swarmQueue = new Queue("princy-swarm-jobs", {
   connection: { url: redisUrl }
 });
 
@@ -25,7 +25,7 @@ startService({
         swarmQueue.getCompletedCount(),
         swarmQueue.getFailedCount()
       ]);
-      response.json({ queue: "princy:swarm-jobs", waiting, active, completed, failed, port });
+      response.json({ queue: "princy-swarm-jobs", waiting, active, completed, failed, port });
     }));
 
     app.post("/scheduler/enqueue", auth, asyncHandler(async (request, response) => {

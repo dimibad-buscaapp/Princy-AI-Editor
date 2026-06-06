@@ -35,6 +35,7 @@ Frontend (:3400) → Gateway (:3407) → Neural Core / Agents (:3402)
 | Automation | 3406 | `AUTOMATION_SERVICE_PORT` |
 | Gateway | 3407 | `GATEWAY_PORT` |
 | MCP | 3408 | `MCP_SERVER_PORT` |
+| Scheduler (BullMQ) | 3409 | `SCHEDULER_SERVICE_PORT` |
 | Ollama | 11434 | `OLLAMA_BASE_URL` |
 | Redis | 6379 | `REDIS_URL` |
 
@@ -121,6 +122,34 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/runs/:id/cancel` |
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
+
+### Distributed / Scheduler (Fases 54–57)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/workers` |
+| `POST` | `/api/workers/register` |
+| `GET` | `/api/scheduler/status` |
+| `POST` | `/api/scheduler/enqueue` |
+
+### Hybrid Routing (Fase 58)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/routing/policy/:projectId` |
+| `PUT` | `/api/routing/policy` |
+
+### Audit (Fase 50)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/audit` |
+
+### Analytics (Fase 53)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/analytics/usage` |
 
 ### Marketplace V2 (Fase 44)
 
