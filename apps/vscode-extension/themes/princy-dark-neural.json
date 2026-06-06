@@ -1,0 +1,40 @@
+{
+  "name": "Princy Dark Neural",
+  "type": "dark",
+  "colors": {
+    "editor.background": "#020617",
+    "sideBar.background": "#050816",
+    "activityBar.background": "#050816",
+    "activityBar.foreground": "#8B5CF6",
+    "activityBarBadge.background": "#622AF3",
+    "statusBar.background": "#050816",
+    "statusBar.foreground": "#22D3EE",
+    "titleBar.activeBackground": "#020617",
+    "titleBar.activeForeground": "#F8FAFC",
+    "panel.background": "#050816",
+    "terminal.background": "#020617",
+    "focusBorder": "#622AF3",
+    "button.background": "#622AF3",
+    "button.foreground": "#F8FAFC",
+    "list.activeSelectionBackground": "#622AF340",
+    "list.hoverBackground": "#3B82F620"
+  },
+  "tokenColors": [
+    {
+      "scope": ["comment"],
+      "settings": { "foreground": "#64748B" }
+    },
+    {
+      "scope": ["string"],
+      "settings": { "foreground": "#22D3EE" }
+    },
+    {
+      "scope": ["keyword"],
+      "settings": { "foreground": "#8B5CF6" }
+    },
+    {
+      "scope": ["entity.name.function"],
+      "settings": { "foreground": "#3B82F6" }
+    }
+  ]
+}

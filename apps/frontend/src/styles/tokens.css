@@ -1,40 +1,45 @@
 :root {
   color-scheme: dark;
 
+  --princy-bg: #020617;
   --princy-bg-deep: #020617;
+  --princy-bg-2: #050816;
   --princy-bg-mid: #050816;
-  --princy-bg-panel: #081120;
-  --princy-bg-sidebar: #05050d;
+  --princy-bg-panel: rgba(5, 10, 25, 0.78);
+  --princy-bg-sidebar: #020617;
+  --princy-panel: rgba(5, 10, 25, 0.78);
+  --princy-panel-strong: rgba(8, 13, 32, 0.92);
 
   --princy-active: #622af3;
-  --princy-cyan: #00f2ff;
-  --princy-violet: #7000ff;
-  --princy-purple: #a855f7;
-  --princy-purple-btn: #7c3aed;
+  --princy-purple: #622af3;
+  --princy-violet: #8b5cf6;
+  --princy-cyan: #22d3ee;
   --princy-blue: #3b82f6;
+  --princy-purple-btn: #7c3aed;
   --princy-online: #4ade80;
 
-  --princy-text: #eef4ff;
-  --princy-muted: #8b9cb8;
-  --princy-border: rgba(0, 242, 255, 0.12);
+  --princy-text: #f8fafc;
+  --princy-muted: #94a3b8;
+  --princy-border: rgba(110, 150, 255, 0.22);
+  --princy-border-strong: rgba(139, 92, 246, 0.55);
 
-  --glass-bg: rgba(8, 17, 32, 0.72);
-  --glass-border: rgba(0, 242, 255, 0.18);
-  --glow-cyan: 0 0 24px rgba(0, 242, 255, 0.35);
-  --glow-violet: 0 0 32px rgba(112, 0, 255, 0.4);
-  --neural-pulse: rgba(112, 0, 255, 0.25);
+  --glass-bg: var(--princy-panel);
+  --glass-border: var(--princy-border);
+  --glow-cyan: 0 0 24px rgba(34, 211, 238, 0.35);
+  --glow-violet: 0 0 32px rgba(139, 92, 246, 0.4);
+  --neural-pulse: rgba(139, 92, 246, 0.25);
 
-  --sidebar-expanded: 240px;
-  --sidebar-collapsed: 72px;
-  --topbar-height: 40px;
-  --statusbar-height: 36px;
+  --sidebar-expanded: 160px;
+  --sidebar-collapsed: 160px;
+  --topbar-height: 36px;
+  --statusbar-height: 32px;
 
   --font-display: var(--font-orbitron), "Orbitron", ui-sans-serif, sans-serif;
   --font-body: var(--font-inter), Inter, ui-sans-serif, system-ui, sans-serif;
 
-  --background: var(--princy-bg-deep);
-  --surface: var(--princy-bg-mid);
-  --surface-strong: var(--princy-bg-panel);
+  --background: var(--princy-bg);
+  --surface: var(--princy-bg-2);
+  --surface-strong: var(--princy-panel-strong);
   --text: var(--princy-text);
   --muted: var(--princy-muted);
   --accent: var(--princy-cyan);

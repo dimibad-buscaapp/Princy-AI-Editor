@@ -3,6 +3,10 @@ import { BaseAgent, type AgentContext, type AgentResult } from "./base.agent.js"
 export class ReviewerAgent extends BaseAgent {
   readonly type = "REVIEWER" as const;
 
+  protected defaultIntent() {
+    return "review" as const;
+  }
+
   async run(ctx: AgentContext): Promise<AgentResult> {
     const output = await this.prompt(
       "You are a code reviewer. List issues and suggested fixes.",

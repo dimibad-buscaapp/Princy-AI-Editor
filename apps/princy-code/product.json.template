@@ -1,0 +1,20 @@
+{
+  "nameShort": "Princy Code",
+  "nameLong": "Princy Code",
+  "applicationName": "princy-code",
+  "dataFolderName": ".princy-code",
+  "win32MutexName": "princycode",
+  "licenseName": "MIT",
+  "licenseUrl": "https://github.com/princy-ai/princy-ai-editor/blob/main/LICENSE",
+  "win32DirName": "Princy Code",
+  "win32NameVersion": "Princy Code",
+  "win32RegValueName": "PrincyCode",
+  "win32AppId": "{{PRINCY_CODE_APP_ID}}",
+  "win32x64AppId": "{{PRINCY_CODE_APP_ID}}",
+  "win32arm64AppId": "{{PRINCY_CODE_APP_ID}}",
+  "win32UserAppId": "{{PRINCY_CODE_USER_APP_ID}}",
+  "darwinBundleIdentifier": "ai.princy.code",
+  "linuxIconName": "princy-code",
+  "urlProtocol": "princy-code",
+  "extensionAllowedProposedApi": ["princy-ai.princy-assistant"]
+}

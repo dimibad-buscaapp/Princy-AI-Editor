@@ -43,7 +43,7 @@ Arquitetura IA (agentes, pipelines, modelos): `docs/ARQUITETURA-IA.md`
 
 ## Operação
 
-- PM2: `ecosystem.config.cjs` (9 serviços)
+- PM2: processo `princy-ai-editor` (`ecosystem.config.cjs`)
 - Health: `npm run health:linux`
 - Env produção: `.env` (não commitar secrets)
 

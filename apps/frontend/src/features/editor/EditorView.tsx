@@ -58,7 +58,7 @@ export function EditorView({ projectId }: { projectId: string }) {
         <button type="button" title="Git"><GitBranch size={18} strokeWidth={1.5} /></button>
         <button type="button" title="Extensions"><Puzzle size={18} strokeWidth={1.5} /></button>
       </aside>
-      <aside className="princy-editor__explorer glass-panel">
+      <aside className="princy-editor__explorer ref-panel">
         <p className="princy-editor__label">EXPLORADOR</p>
         <p className="princy-editor__project">PRINCY-AI-EDITOR</p>
         <FileTree nodes={editorTree} activePath={activePath} onSelect={selectFile} />
@@ -119,7 +119,7 @@ export function EditorView({ projectId }: { projectId: string }) {
             />
           ) : null}
         </div>
-        <div className="princy-editor__bottom glass-panel">
+        <div className="princy-editor__bottom ref-panel">
           {(["terminal", "output", "problems"] as const).map((tab) => (
             <button key={tab} type="button" className={panelTab === tab ? "active" : ""} onClick={() => setPanelTab(tab)}>
               {tab.charAt(0).toUpperCase() + tab.slice(1)}

@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { usePathname, useSearchParams } from "next/navigation";
+import { SIDEBAR_WIDTH_PX } from "./princy-visual-mode";
 
 const REF_MAP: Record<string, string> = {
   "/": "/princy/refs/03-index.png",
@@ -22,8 +23,12 @@ export function RefOverlay() {
   if (!src) return null;
 
   return (
-    <div className="ref-overlay" aria-hidden>
-      <Image src={src} alt="" fill style={{ objectFit: "contain", opacity: 0.45, pointerEvents: "none" }} />
+    <div
+      className="ref-overlay"
+      aria-hidden
+      style={{ paddingLeft: `${SIDEBAR_WIDTH_PX}px` }}
+    >
+      <Image src={src} alt="" fill style={{ objectFit: "contain", opacity: 0.5, pointerEvents: "none" }} />
     </div>
   );
 }

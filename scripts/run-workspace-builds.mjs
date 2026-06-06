@@ -8,6 +8,7 @@ const workspaces = [
   "@princy/event-bus",
   "@princy/tool-kit",
   "@princy/model-router",
+  "@princy/memory",
   "@princy/api",
   "@princy/agents",
   "@princy/workspace-service",
@@ -16,7 +17,9 @@ const workspaces = [
   "@princy/automation-service",
   "@princy/gateway",
   "@princy/mcp-server",
-  "@princy/frontend"
+  "@princy/frontend",
+  "@princy/vscode-api-client",
+  "princy-assistant"
 ];
 
 for (const workspace of workspaces) {

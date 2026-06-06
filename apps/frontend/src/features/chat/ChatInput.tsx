@@ -2,7 +2,7 @@
 
 import { Bot, ChevronDown, Paperclip, Send, Sparkles } from "lucide-react";
 import { GlowButton } from "../../design-system/GlowButton";
-import { chatModel } from "../../design-system/layout/nav-items";
+import { CHAT_AGENT_OPTIONS } from "./chat-agents";
 
 type ChatInputProps = {
   value: string;
@@ -10,12 +10,25 @@ type ChatInputProps = {
   onSend: () => void;
   thinking: boolean;
   onThinkingChange: (v: boolean) => void;
+  agentType: string;
+  onAgentTypeChange: (v: string) => void;
+  routedModel: string;
   disabled?: boolean;
 };
 
-export function ChatInput({ value, onChange, onSend, thinking, onThinkingChange, disabled }: ChatInputProps) {
+export function ChatInput({
+  value,
+  onChange,
+  onSend,
+  thinking,
+  onThinkingChange,
+  agentType,
+  onAgentTypeChange,
+  routedModel,
+  disabled
+}: ChatInputProps) {
   return (
-    <div className="chat-input glass-panel">
+    <div className="chat-input">
       <textarea
         value={value}
         onChange={(e) => onChange(e.target.value)}
@@ -29,9 +42,20 @@ export function ChatInput({ value, onChange, onSend, thinking, onThinkingChange,
         }}
       />
       <div className="chat-input__toolbar">
-        <span className="chat-input__model-chip">
-          <Bot size={14} /> Modelo: {chatModel} <ChevronDown size={12} />
+        <span className="chat-input__model-chip chat-input__model-chip--routed" title="Modelo roteado automaticamente">
+          <Bot size={14} />
+          <span>{routedModel}</span>
         </span>
+        <label className="chat-input__model-chip chat-input__agent-chip">
+          <select value={agentType} onChange={(e) => onAgentTypeChange(e.target.value)} aria-label="Agente">
+            {CHAT_AGENT_OPTIONS.map((opt) => (
+              <option key={opt.value} value={opt.value}>
+                {opt.label}
+              </option>
+            ))}
+          </select>
+          <ChevronDown size={12} />
+        </label>
         <label className="chat-input__thinking">
           <input type="checkbox" checked={thinking} onChange={(e) => onThinkingChange(e.target.checked)} />
           <Sparkles size={14} /> Pensamento

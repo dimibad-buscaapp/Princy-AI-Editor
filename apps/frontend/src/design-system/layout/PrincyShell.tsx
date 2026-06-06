@@ -1,9 +1,11 @@
 "use client";
 
-import { Suspense, useEffect, useState, type ReactNode } from "react";
+import { Suspense, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
+import { isReferenceLocked } from "../princy-visual-mode";
 import { ParticleField } from "../ParticleField";
 import { RefOverlay } from "../RefOverlay";
-import { Sidebar } from "./Sidebar";
+import { PrincySidebar } from "../../layout/PrincySidebar";
 import { StatusBar } from "./StatusBar";
 import { TopBar } from "./TopBar";
 
@@ -11,24 +13,30 @@ type PrincyShellProps = {
   children: ReactNode;
 };
 
-export function PrincyShell({ children }: PrincyShellProps) {
-  const [collapsed, setCollapsed] = useState(false);
+function shellClass(pathname: string): string {
+  const classes = ["princy-shell", "neural-bg"];
+  if (!isReferenceLocked()) return classes.join(" ");
 
-  useEffect(() => {
-    const mq = window.matchMedia("(max-width: 1280px)");
-    const apply = () => setCollapsed(mq.matches);
-    apply();
-    mq.addEventListener("change", apply);
-    return () => mq.removeEventListener("change", apply);
-  }, []);
+  if (pathname.startsWith("/chat") || pathname.startsWith("/swarm")) {
+    classes.push("ref-shell--immersive");
+  }
+  if (pathname.startsWith("/editor")) {
+    classes.push("ref-shell--immersive", "ref-shell--no-status");
+  }
+  return classes.join(" ");
+}
+
+export function PrincyShell({ children }: PrincyShellProps) {
+  const pathname = usePathname();
+  const locked = isReferenceLocked();
 
   return (
-    <div className="princy-shell neural-bg">
-      <ParticleField />
+    <div className={shellClass(pathname)}>
+      {locked ? <div className="particle-field particle-field--dim" aria-hidden /> : <ParticleField />}
       <Suspense fallback={null}>
         <RefOverlay />
       </Suspense>
-      <Sidebar collapsed={collapsed} onToggle={() => setCollapsed((v) => !v)} />
+      {locked ? <PrincySidebar /> : null}
       <div className="princy-shell__main">
         <TopBar />
         <main className="princy-shell__content">{children}</main>

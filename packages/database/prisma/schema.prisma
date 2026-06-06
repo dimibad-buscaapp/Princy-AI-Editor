@@ -51,6 +51,25 @@ enum MemoryScope {
   PROJECT
   CONVERSATION
   WORKSPACE
+  AGENT
+}
+
+enum CodeMemoryKind {
+  SYMBOL
+  ROUTE
+  ENDPOINT
+  PRISMA_MODEL
+  PACKAGE
+  FILE
+}
+
+enum SwarmAgentRole {
+  COORDINATOR
+  ARCHITECT
+  DEVELOPER
+  TESTER
+  REVIEWER
+  DEVOPS
 }
 
 enum PatchStatus {
@@ -74,6 +93,14 @@ enum AutonomousGoalStatus {
   COMPLETED
   FAILED
   CANCELLED
+}
+
+enum ModelSlot {
+  CHAT
+  EDITOR
+  SWARM
+  AUTONOMOUS
+  EMBED
 }
 
 model User {
@@ -102,6 +129,9 @@ model Project {
   contextNodes  ContextNode[]
   patches       Patch[]
   goals         AutonomousGoal[]
+  projectMemory ProjectMemory?
+  codeMemories  CodeMemory[]
+  chatCache     ChatCacheEntry[]
   createdAt     DateTime       @default(now())
   updatedAt     DateTime       @updatedAt
 
@@ -115,6 +145,8 @@ model Workspace {
   path         String
   memoryChunks MemoryChunk[]
   patches      Patch[]
+  profile      WorkspaceProfile?
+  codeMemories CodeMemory[]
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -128,6 +160,7 @@ model Conversation {
   title        String
   messages     Message[]
   memoryChunks MemoryChunk[]
+  memory       ConversationMemory?
   createdAt    DateTime      @default(now())
   updatedAt    DateTime      @updatedAt
 
@@ -356,5 +389,157 @@ model AuditLog {
   @@index([entity])
   @@index([entityId])
   @@index([createdAt])
+}
+
+model ModelAssignment {
+  slot      ModelSlot @id
+  modelId   String
+  updatedAt DateTime  @updatedAt
+  updatedBy String?
+}
+
+model ModelMetric {
+  id           String   @id @default(cuid())
+  modelId      String
+  task         String
+  ttftMs       Int
+  totalMs      Int
+  tokenCount   Int
+  tokensPerSec Float
+  cacheHit     Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  @@index([modelId, createdAt])
+  @@index([task, createdAt])
+}
+
+model ProjectMemory {
+  id                  String   @id @default(cuid())
+  projectId           String   @unique
+  project             Project  @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  name                String?
+  stack               Json?
+  services            Json?
+  ports               Json?
+  routes              Json?
+  recentChanges       Json?
+  pending             Json?
+  technicalDecisions  Json?
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+}
+
+model ConversationMemory {
+  id               String       @id @default(cuid())
+  conversationId   String       @unique
+  conversation     Conversation @relation(fields: [conversationId], references: [id], onDelete: Cascade)
+  shortSummary     String?
+  longSummary      String?
+  userPreferences  Json?
+  lastSummarizedAt DateTime?
+  createdAt        DateTime     @default(now())
+  updatedAt        DateTime     @updatedAt
+}
+
+model CodeMemory {
+  id          String         @id @default(cuid())
+  projectId   String
+  project     Project        @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  workspaceId String?
+  workspace   Workspace?     @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  filePath    String
+  kind        CodeMemoryKind
+  symbol      String?
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  @@index([projectId, kind])
+  @@index([workspaceId])
+  @@index([filePath])
+}
+
+model AgentMemory {
+  id         String   @id @default(cuid())
+  agentRole  String
+  taskId     String?
+  success    Boolean  @default(true)
+  durationMs Int?
+  decision   String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([agentRole])
+  @@index([taskId])
+}
+
+model ChatCacheEntry {
+  id         String   @id @default(cuid())
+  projectId  String?
+  project    Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  queryHash  String
+  query      String
+  response   String
+  model      String
+  ttlSeconds Int      @default(86400)
+  hitCount   Int      @default(0)
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([queryHash, projectId])
+  @@index([expiresAt])
+}
+
+model SwarmTask {
+  id           String         @id @default(cuid())
+  pipelineId   String
+  parentTaskId String?
+  parent       SwarmTask?     @relation("SwarmSubtasks", fields: [parentTaskId], references: [id], onDelete: SetNull)
+  children     SwarmTask[]    @relation("SwarmSubtasks")
+  title        String
+  description  String?
+  agentRole    SwarmAgentRole
+  status       TaskStatus     @default(PENDING)
+  input        Json?
+  output       Json?
+  logs         Json?
+  order        Int            @default(0)
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  @@index([pipelineId])
+  @@index([parentTaskId])
+  @@index([status])
+  @@index([agentRole])
+}
+
+model WorkspaceProfile {
+  id             String    @id @default(cuid())
+  workspaceId    String    @unique
+  workspace      Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  framework      String?
+  language       String?
+  packageManager String?
+  services       Json?
+  ports          Json?
+  scripts        Json?
+  database       Json?
+  deployment     Json?
+  risks          Json?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+}
+
+model InstalledAgent {
+  id         String   @id @default(cuid())
+  userId     String
+  agentId    String
+  version    String?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@unique([userId, agentId])
+  @@index([userId])
 }
 

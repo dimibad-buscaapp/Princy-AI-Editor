@@ -1,0 +1,40 @@
+.system-view {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.system-view__header h1 {
+  margin: 0 0 8px;
+}
+
+.system-view__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 12px;
+}
+
+.system-view__status {
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  margin: 0 0 6px;
+}
+
+.system-view__status--online {
+  color: #4ade80;
+}
+
+.system-view__status--offline {
+  color: #f87171;
+}
+
+.system-view__detail {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+.system-view__loading {
+  color: var(--muted);
+  font-size: 0.85rem;
+}

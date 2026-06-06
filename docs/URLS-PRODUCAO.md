@@ -90,7 +90,7 @@ curl -s http://13.140.129.77:3407/api/system/health
 curl -s http://13.140.129.77:3407/v1/models
 ```
 
-PM2 (9 serviços): `ecosystem.config.cjs` — `pm2 restart ecosystem.config.cjs --update-env`
+PM2: processo `princy-ai-editor` via `ecosystem.config.cjs` — `pm2 restart princy-ai-editor --update-env`
 
 ---
 

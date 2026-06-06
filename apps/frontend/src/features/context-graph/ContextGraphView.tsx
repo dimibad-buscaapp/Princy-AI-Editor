@@ -12,7 +12,6 @@ import {
   type Edge,
   type Node
 } from "@xyflow/react";
-import "@xyflow/react/dist/style.css";
 import { apiFetch } from "../../lib/api-client";
 
 type GraphNode = { id: string; label: string; type?: string };
@@ -29,7 +28,7 @@ export function ContextGraphView() {
     setLoading(true);
     try {
       const data = await apiFetch<{ nodes: GraphNode[]; edges: GraphEdge[] }>(
-        `/api/context/graph?projectId=${encodeURIComponent(projectId)}`
+        `/context/graph?projectId=${encodeURIComponent(projectId)}`
       );
       const flowNodes: Node[] = (data.nodes ?? []).map((n, i) => ({
         id: n.id,
@@ -61,7 +60,7 @@ export function ContextGraphView() {
 
   async function searchSymbols() {
     if (!query.trim()) return;
-    const data = await apiFetch<{ nodes: GraphNode[] }>("/api/context/search", {
+    const data = await apiFetch<{ nodes: GraphNode[] }>("/context/search", {
       method: "POST",
       body: { projectId, query }
     });

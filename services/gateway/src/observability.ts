@@ -34,38 +34,94 @@ function parsePrometheusMetrics(text: string) {
   };
 }
 
-export function registerObservabilityRoute(app: Express) {
+async function buildHealthPayload() {
   const targets = getServiceTargets();
   const gatewayPort = Number(process.env.GATEWAY_PORT ?? 3407);
 
-  app.get("/observability/health", async (_request, response) => {
-    const checks = await Promise.all([
-      checkUrl("Gateway", `http://127.0.0.1:${gatewayPort}/health/live`, gatewayPort),
-      checkUrl("API", `${targets.api.url}/health/live`, 3401),
-      checkUrl("Agents", `${targets.agents.url}/health/live`, 3402),
-      checkUrl("Workspace", `${targets.workspace.url}/health/live`, 3403),
-      checkUrl("Context Graph", `${targets.context.url}/health/live`, 3404),
-      checkUrl("Memory", `${targets.memory.url}/health/live`, 3405),
-      checkUrl("Automation", `${targets.automation.url}/health/live`, 3406),
-      checkUrl("MCP", `${targets.mcp.url}/health/live`, 3408),
-      checkUrl("Ollama", `${process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434"}/api/tags`, 11434)
-    ]);
+  const checks = await Promise.all([
+    checkUrl("Gateway", `http://127.0.0.1:${gatewayPort}/health/live`, gatewayPort),
+    checkUrl("API", `${targets.api.url}/health/live`, 3401),
+    checkUrl("Agents", `${targets.agents.url}/health/live`, 3402),
+    checkUrl("Workspace", `${targets.workspace.url}/health/live`, 3403),
+    checkUrl("Context Graph", `${targets.context.url}/health/live`, 3404),
+    checkUrl("Memory", `${targets.memory.url}/health/live`, 3405),
+    checkUrl("Automation", `${targets.automation.url}/health/live`, 3406),
+    checkUrl("MCP", `${targets.mcp.url}/health/live`, 3408),
+    checkUrl("Ollama", `${process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434"}/api/tags`, 11434)
+  ]);
 
-    let redisOk = false;
-    let redisDetail = "not configured";
-    try {
-      redisOk = await pingRedis();
-      redisDetail = redisOk ? "PONG" : "no response";
-    } catch (e) {
-      redisDetail = e instanceof Error ? e.message : "offline";
+  let redisOk = false;
+  let redisDetail = "not configured";
+  try {
+    redisOk = await pingRedis();
+    redisDetail = redisOk ? "PONG" : "no response";
+  } catch (e) {
+    redisDetail = e instanceof Error ? e.message : "offline";
+  }
+  checks.push({ name: "Redis", ok: redisOk, detail: redisDetail, port: 6379 });
+
+  let neuralCore = { agents: "10/10", status: "unknown" as string };
+  let resolvedModels = {
+    chat: process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b",
+    editor: process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b",
+    swarm: process.env.DEFAULT_REASONING_MODEL ?? "deepseek-r1:8b",
+    autonomous: process.env.DEFAULT_REASONING_MODEL ?? "deepseek-r1:8b",
+    embed: process.env.OLLAMA_EMBED_MODEL ?? "nomic-embed-text"
+  };
+  try {
+    const agentsRes = await fetch(`${targets.agents.url}/health/neural`, { signal: AbortSignal.timeout(3000) });
+    if (agentsRes.ok) {
+      const m = (await agentsRes.json()) as {
+        agents?: string;
+        status?: string;
+        models?: typeof resolvedModels;
+      };
+      neuralCore = { agents: m.agents ?? "10/10", status: m.status ?? "online" };
+      if (m.models) resolvedModels = m.models;
     }
-    checks.push({ name: "Redis", ok: redisOk, detail: redisDetail, port: 6379 });
+  } catch {
+    neuralCore.status = "offline";
+  }
 
-    const healthy = checks.filter((c) => c.ok).length;
-    response.json({
-      services: checks,
-      summary: { healthy, total: checks.length }
-    });
+  const warnings: string[] = [];
+  const fastModel = process.env.CHAT_FAST_MODEL ?? process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b";
+  const ollamaCheck = checks.find((c) => c.name === "Ollama");
+  if (ollamaCheck?.ok) {
+    try {
+      const tagsRes = await fetch(`${process.env.OLLAMA_BASE_URL ?? "http://127.0.0.1:11434"}/api/tags`, {
+        signal: AbortSignal.timeout(3000)
+      });
+      if (tagsRes.ok) {
+        const tags = (await tagsRes.json()) as { models?: { name: string }[] };
+        const installed = (tags.models ?? []).map((m) => m.name);
+        if (!installed.some((n) => n.startsWith(fastModel))) {
+          warnings.push(`CHAT_FAST_MODEL ${fastModel} not installed in Ollama`);
+        }
+      }
+    } catch {
+      // ignore tag probe failures
+    }
+  }
+
+  const healthy = checks.filter((c) => c.ok).length;
+  return {
+    services: checks,
+    summary: { healthy, total: checks.length },
+    neuralCore,
+    models: resolvedModels,
+    warnings
+  };
+}
+
+export function registerObservabilityRoute(app: Express) {
+  const gatewayPort = Number(process.env.GATEWAY_PORT ?? 3407);
+
+  app.get("/api/system/health", async (_request, response) => {
+    response.json(await buildHealthPayload());
+  });
+
+  app.get("/observability/health", async (_request, response) => {
+    response.json(await buildHealthPayload());
   });
 
   app.get("/observability/metrics", async (_request, response) => {

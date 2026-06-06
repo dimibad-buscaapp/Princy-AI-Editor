@@ -31,19 +31,30 @@
 .princy-shell__content {
   flex: 1;
   overflow: auto;
-  padding: 16px 20px;
+  padding: 12px 14px;
   min-height: 0;
+}
+
+.particle-field--dim {
+  position: fixed;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  opacity: 0.12;
+  background:
+    radial-gradient(1px 1px at 25% 35%, rgba(255, 255, 255, 0.4), transparent),
+    radial-gradient(1px 1px at 75% 60%, rgba(255, 255, 255, 0.25), transparent);
 }
 
 /* Sidebar */
 .princy-sidebar {
   display: flex;
   flex-direction: column;
-  background: rgba(5, 5, 13, 0.95);
-  border-right: 1px solid rgba(0, 242, 255, 0.15);
-  box-shadow: inset -1px 0 12px rgba(0, 242, 255, 0.06);
-  border-radius: 0 16px 16px 0;
-  backdrop-filter: blur(12px);
+  background: var(--princy-bg-sidebar);
+  border-right: 1px solid rgba(98, 42, 243, 0.2);
+  box-shadow: inset -1px 0 16px rgba(98, 42, 243, 0.08);
+  border-radius: 0 14px 14px 0;
+  backdrop-filter: blur(14px);
   z-index: 2;
   flex-shrink: 0;
   overflow: hidden;
@@ -98,10 +109,12 @@
   display: flex;
   align-items: center;
   gap: 12px;
-  padding: 10px 14px;
-  border-radius: 9999px;
+  padding: 11px 16px;
+  border-radius: 10px;
   color: #fff;
   text-decoration: none;
+  font-size: 0.88rem;
+  font-weight: 500;
   transition: background 0.2s, color 0.2s, box-shadow 0.2s;
 }
 
@@ -114,7 +127,7 @@
 .princy-sidebar__link--active {
   color: #fff;
   background: var(--princy-active);
-  box-shadow: 0 0 16px rgba(98, 42, 243, 0.45);
+  box-shadow: 0 4px 20px rgba(98, 42, 243, 0.5);
 }
 
 .princy-sidebar__footer {
@@ -149,6 +162,15 @@
 }
 
 /* TopBar */
+.princy-topbar--immersive .princy-topbar__search {
+  display: none;
+}
+
+.princy-topbar--immersive .princy-topbar__actions .princy-topbar__autonomous,
+.princy-topbar--immersive .princy-topbar__actions .princy-topbar__version {
+  display: none;
+}
+
 .princy-topbar {
   height: var(--topbar-height);
   display: grid;
@@ -325,6 +347,11 @@
   color: #fff;
   font-weight: 700;
   flex-shrink: 0;
+}
+
+.user-avatar--photo {
+  object-fit: cover;
+  border: 2px solid rgba(98, 42, 243, 0.4);
 }
 
 .princy-statusbar__slogan {

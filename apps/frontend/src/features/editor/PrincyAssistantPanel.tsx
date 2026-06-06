@@ -32,7 +32,7 @@ export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAss
   async function previewPatch() {
     setLoading(true);
     try {
-      const res = await apiFetch<{ preview: { original: string; modified: string } }>("/api/patch/preview", {
+      const res = await apiFetch<{ preview: { original: string; modified: string } }>("/patch/preview", {
         method: "POST",
         body: { projectId, filePath, diff: sampleDiff }
       });
@@ -48,12 +48,12 @@ export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAss
   async function applyPatch() {
     setLoading(true);
     try {
-      const created = await apiFetch<{ patch: { id: string } }>("/api/patch/create", {
+      const created = await apiFetch<{ patch: { id: string } }>("/patch/create", {
         method: "POST",
         body: { projectId, filePath, diff: sampleDiff }
       });
       setPatchId(created.patch.id);
-      await apiFetch("/api/patch/apply", {
+      await apiFetch("/patch/apply", {
         method: "POST",
         body: { patchId: created.patch.id }
       });
@@ -72,7 +72,7 @@ export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAss
     }
     setLoading(true);
     try {
-      await apiFetch("/api/patch/rollback", { method: "POST", body: { patchId } });
+      await apiFetch("/patch/rollback", { method: "POST", body: { patchId } });
       toast.show("Patch revertido");
       setPatchId(null);
       setDiffPreview(null);
@@ -84,7 +84,7 @@ export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAss
   }
 
   return (
-    <aside className="princy-assistant glass-panel luminous-border">
+    <aside className="princy-assistant ref-panel ref-glow-purple">
       <header className="princy-assistant__header">
         <Image src="/princy/chat-avatar.png" alt="" width={32} height={32} className="chat-msg__avatar" />
         <h3>PRINCY IA ASSISTANT</h3>
@@ -117,7 +117,7 @@ export function PrincyAssistantPanel({ projectId, filePath, content }: PrincyAss
       {diffPreview ? (
         <DiffViewer original={diffPreview.original} modified={diffPreview.modified} height="200px" />
       ) : null}
-      <GlowButton variant="cyan" className="princy-assistant__apply" onClick={() => toast.show("Sugestões aplicadas")}>
+      <GlowButton variant="violet" className="princy-assistant__apply" onClick={() => toast.show("Sugestões aplicadas")}>
         <RotateCcw size={14} /> Aplicar Sugestões
       </GlowButton>
       <div className="princy-assistant__ask">

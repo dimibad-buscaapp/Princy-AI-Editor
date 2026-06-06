@@ -28,6 +28,24 @@ export function registerPatchRoutes(app: Express) {
     response.status(201).json({ patch });
   }));
 
+  app.post("/patch/preview-id", auth, validateBody(z.object({ patchId: z.string() })), asyncHandler(async (request, response) => {
+    const patch = await prisma.patch.findUnique({
+      where: { id: request.body.patchId },
+      include: { workspace: true }
+    });
+    if (!patch) {
+      response.status(404).json({ error: "not_found" });
+      return;
+    }
+    const workspaceRoot = patch.workspace?.path ?? process.cwd();
+    const preview = await patchService.preview({
+      filePath: patch.filePath,
+      diff: patch.diff,
+      workspaceRoot
+    });
+    response.json({ preview, patch });
+  }));
+
   app.post("/patch/preview", auth, validateBody(createSchema), asyncHandler(async (request, response) => {
     const workspace = request.body.workspaceId
       ? await workspaceRepo.findById(request.body.workspaceId)

@@ -1,7 +1,5 @@
 import type { AuthUser, LoginRequest, LoginResponse, RefreshResponse } from "../types/auth";
-
-const gatewayUrl = process.env.NEXT_PUBLIC_GATEWAY_URL?.replace(/\/$/, "") ?? "";
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
+import { getClientApiBaseUrl, getClientGatewayUrl } from "./gateway-url";
 
 function buildErrorMessage(response: Response, defaultMessage: string) {
   if (response.status === 401 || response.status === 403) {
@@ -47,7 +45,7 @@ async function safeFetch<T>(url: string, options: RequestInit): Promise<T> {
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {
-  const url = `${gatewayUrl}/api/auth/login`;
+  const url = `${getClientGatewayUrl()}/api/auth/login`;
 
   return safeFetch<LoginResponse>(url, {
     method: "POST",
@@ -56,7 +54,7 @@ export async function login(email: string, password: string): Promise<LoginRespo
 }
 
 export async function refresh(refreshToken: string): Promise<RefreshResponse> {
-  const url = `${gatewayUrl}/api/auth/refresh`;
+  const url = `${getClientGatewayUrl()}/api/auth/refresh`;
 
   return safeFetch<RefreshResponse>(url, {
     method: "POST",
@@ -65,7 +63,7 @@ export async function refresh(refreshToken: string): Promise<RefreshResponse> {
 }
 
 export async function getMe(accessToken: string): Promise<AuthUser> {
-  const url = `${apiBaseUrl}/auth/me`;
+  const url = `${getClientApiBaseUrl()}/auth/me`;
 
   const response = await fetch(url, {
     method: "GET",
@@ -84,7 +82,7 @@ export async function getMe(accessToken: string): Promise<AuthUser> {
 
 export async function logout(): Promise<void> {
   try {
-    const url = `${gatewayUrl}/api/auth/logout`;
+    const url = `${getClientGatewayUrl()}/api/auth/logout`;
     await fetch(url, { method: "POST" });
   } catch {
     // Ignorar falhas de logout no servidor, a limpeza local é suficiente.

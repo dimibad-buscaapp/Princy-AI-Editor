@@ -113,6 +113,65 @@
   padding: 32px;
 }
 
+/* Configurações */
+.config-view {
+  padding: 20px;
+}
+
+.config-view__header {
+  padding: 20px 24px;
+  margin-bottom: 20px;
+}
+
+.config-view__header h1 {
+  font-family: var(--font-display);
+  margin: 0 0 8px;
+}
+
+.config-view__models {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.config-view__model-row {
+  display: grid;
+  grid-template-columns: 140px 1fr auto;
+  gap: 12px;
+  align-items: center;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--princy-border);
+}
+
+.config-view__model-row label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.config-view__model-row label small {
+  color: var(--princy-muted);
+  font-size: 0.68rem;
+}
+
+.config-view__model-row select {
+  background: rgba(5, 10, 25, 0.8);
+  border: 1px solid var(--princy-border);
+  color: var(--princy-text);
+  padding: 8px 10px;
+  border-radius: 8px;
+}
+
+.config-view__model-row--readonly span {
+  color: var(--princy-cyan);
+  font-weight: 600;
+}
+
+.config-view__error {
+  color: #f87171;
+  font-size: 0.85rem;
+}
+
 /* Responsive */
 @media (max-width: 1280px) {
   .home-hero {

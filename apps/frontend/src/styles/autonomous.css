@@ -67,3 +67,41 @@
 .auto-view__goal--completed span {
   color: var(--princy-cyan);
 }
+
+.auto-view__pipeline {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.auto-view__step {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  font-size: 0.85rem;
+}
+
+.auto-view__step--running {
+  border: 1px solid var(--princy-purple);
+  box-shadow: 0 0 12px rgba(112, 0, 255, 0.25);
+}
+
+.auto-view__step--done {
+  border: 1px solid rgba(74, 222, 128, 0.35);
+}
+
+.auto-view__step--failed {
+  border: 1px solid rgba(248, 113, 113, 0.45);
+}
+
+.auto-view__step small {
+  text-transform: uppercase;
+  font-size: 0.65rem;
+  color: var(--muted);
+}

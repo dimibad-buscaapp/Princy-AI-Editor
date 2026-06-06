@@ -2,6 +2,7 @@ import type { LucideIcon } from "lucide-react";
 import {
   Bot,
   Brain,
+  Store,
   FolderKanban,
   Home,
   MessageSquare,
@@ -10,7 +11,8 @@ import {
   Share2,
   Terminal,
   Workflow,
-  Zap
+  Zap,
+  Activity
 } from "lucide-react";
 
 export type NavItem = {
@@ -25,8 +27,10 @@ export const navItems: NavItem[] = [
   { label: "Chat Princy", href: "/chat", icon: MessageSquare, pageTitle: "CHAT PRINCY" },
   { label: "Editor", href: "/editor/demo", icon: Terminal, pageTitle: "EDITOR" },
   { label: "Swarm", href: "/swarm", icon: Network, pageTitle: "SWARM" },
+  { label: "Marketplace", href: "/marketplace", icon: Store, pageTitle: "MARKETPLACE" },
   { label: "Graph", href: "/graph", icon: Share2, pageTitle: "CONTEXT GRAPH" },
   { label: "Observability", href: "/observability", icon: Zap, pageTitle: "OBSERVABILITY" },
+  { label: "System", href: "/system", icon: Activity, pageTitle: "SYSTEM HEALTH" },
   { label: "Projetos", href: "/projetos", icon: FolderKanban, pageTitle: "PROJETOS" },
   { label: "Memória", href: "/memoria", icon: Brain, pageTitle: "MEMÓRIA" },
   { label: "Automações", href: "/automacoes", icon: Workflow, pageTitle: "AUTOMAÇÕES" },
@@ -41,4 +45,4 @@ export function getPageTitle(pathname: string) {
 }
 
 export const princyVersion = process.env.NEXT_PUBLIC_PRINCY_VERSION ?? "v2.5.0";
-export const chatModel = process.env.NEXT_PUBLIC_CHAT_MODEL ?? "qwen3:8b";
+export const chatModel = process.env.NEXT_PUBLIC_CHAT_MODEL ?? "qwen2.5:3b";

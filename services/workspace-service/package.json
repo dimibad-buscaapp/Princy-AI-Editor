@@ -11,9 +11,11 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "@princy/ai-client": "*",
     "@princy/core": "*",
     "@princy/database": "*",
     "@princy/event-bus": "*",
+    "@princy/model-router": "*",
     "@princy/service-kit": "*",
     "dotenv": "latest",
     "zod": "latest"

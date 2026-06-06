@@ -33,13 +33,13 @@ export function MemoryView() {
   useEffect(() => {
     void (async () => {
       try {
-        const data = await apiFetch<{ chunks: MemoryChunk[] }>(`/api/memory/project/${projectId}`);
+        const data = await apiFetch<{ chunks: MemoryChunk[] }>(`/memory/project/${projectId}`);
         setChunks(data.chunks ?? []);
       } catch {
         setChunks([]);
       }
       try {
-        const u = await apiFetch<UsageStats>("/api/memory/usage");
+        const u = await apiFetch<UsageStats>("/memory/usage");
         setUsage(u);
       } catch {
         setUsage(null);
@@ -49,7 +49,7 @@ export function MemoryView() {
 
   async function searchMemory() {
     if (!query.trim()) return;
-    const data = await apiFetch<{ results: Array<{ chunk: MemoryChunk; score?: number }> }>("/api/memory/search", {
+    const data = await apiFetch<{ results: Array<{ chunk: MemoryChunk; score?: number }> }>("/memory/search", {
       method: "POST",
       body: { query, scope: scope || undefined, projectId, mode: "hybrid" }
     });

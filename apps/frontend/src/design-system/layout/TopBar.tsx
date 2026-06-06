@@ -27,8 +27,10 @@ export function TopBar() {
     return () => window.removeEventListener("keydown", onKey);
   }, []);
 
+  const immersive = pathname.startsWith("/chat") || pathname.startsWith("/swarm") || pathname.startsWith("/editor");
+
   return (
-    <header className="princy-topbar topbar-glass">
+    <header className={`princy-topbar topbar-glass ${immersive ? "princy-topbar--immersive" : ""}`}>
       <span className="princy-topbar__title">{pageTitle}</span>
       <div className="princy-topbar__search">
         <Search size={16} strokeWidth={1.5} />

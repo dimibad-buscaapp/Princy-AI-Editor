@@ -72,7 +72,7 @@
   inset: 0;
   z-index: 9998;
   pointer-events: none;
-  padding: var(--topbar-height) 0 var(--statusbar-height) var(--sidebar-expanded);
+  padding: var(--topbar-height) 0 var(--statusbar-height) 160px;
 }
 
 .user-avatar--photo {

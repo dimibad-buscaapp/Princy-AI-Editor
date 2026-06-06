@@ -30,11 +30,15 @@ export function registerAutomationRoutes(app: Express) {
   }));
 
   app.post("/automation/approvals/:id/approve", auth, asyncHandler(async (request, response) => {
-    const approval = await approvals.approve(String(request.params.id));
-    if (approval.goalId) {
-      await goals.updateStatus(approval.goalId, "COMPLETED");
+    const approvalId = String(request.params.id);
+    const token = request.headers.authorization?.replace(/^Bearer\s+/i, "");
+    const pending = await prisma.approvalRequest.findUnique({ where: { id: approvalId } });
+    if (!pending?.goalId) {
+      response.status(404).json({ error: "Approval or goal not found" });
+      return;
     }
-    response.json({ approval });
+    const goal = await workflow.complete(pending.goalId, approvalId, token);
+    response.json({ approval: pending, goal });
   }));
 
   app.post("/automation/approvals/:id/reject", auth, asyncHandler(async (request, response) => {

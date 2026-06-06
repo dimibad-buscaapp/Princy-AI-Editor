@@ -22,7 +22,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   return (
     <motion.aside
       className="princy-sidebar"
-      animate={{ width: collapsed ? 72 : 240 }}
+      animate={{ width: collapsed ? 72 : 220 }}
       transition={{ type: "spring", stiffness: 280, damping: 28 }}
     >
       <div className="princy-sidebar__header">
@@ -59,7 +59,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
 
       <div className="princy-sidebar__footer">
         <div className="princy-sidebar__user">
-          <UserAvatar name={user?.name ?? user?.email} email={user?.email} size={36} />
+          <UserAvatar name={user?.name ?? user?.email ?? "Usuário"} email={user?.email} size={40} />
           {!collapsed ? (
             <div>
               <p className="princy-sidebar__username">{user?.name ?? "Usuário"}</p>

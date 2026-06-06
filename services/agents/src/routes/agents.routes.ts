@@ -8,10 +8,25 @@ import { AgentRouter } from "../orchestrator/agent-router.js";
 import { AgentExecutionEngine } from "../orchestrator/agent-execution-engine.js";
 import { AgentCoordinator } from "../orchestrator/agent-coordinator.js";
 import { SwarmCoordinator } from "../orchestrator/swarm-coordinator.js";
+import { resolveSwarmChatAgent } from "../agents/swarm-agents.js";
+import { getNeuralCore } from "../neural-core/neural-core.js";
 import { swarmRegistry } from "../swarm/swarm-registry.js";
+import { routeModel } from "@princy/model-router";
 
 const runSchema = z.object({
-  type: z.enum(["AUTO", "PLANNER", "CODER", "REVIEWER", "DEBUGGER", "ARCHITECT", "TERMINAL"]),
+  type: z.enum([
+    "AUTO",
+    "PLANNER",
+    "CODER",
+    "REVIEWER",
+    "DEBUGGER",
+    "ARCHITECT",
+    "TERMINAL",
+    "RESEARCHER",
+    "WRITER",
+    "MEMORY",
+    "CONTEXT_GRAPH"
+  ]),
   objective: z.string().min(1),
   context: z.string().optional()
 });
@@ -33,6 +48,21 @@ export function registerAgentsRoutes(app: Express) {
   const swarmCoordinator = new SwarmCoordinator();
   const auth = authenticate();
 
+  app.get("/health/neural", asyncHandler(async (_request, response) => {
+    response.json({
+      status: "online",
+      agents: swarmRegistry.getMetrics().activeAgents,
+      roles: swarmRegistry.getAgents().length,
+      models: {
+        chat: routeModel("CHAT"),
+        editor: routeModel("EDITOR_ASSISTANT"),
+        swarm: routeModel("ARCHITECT"),
+        autonomous: routeModel("AUTONOMOUS"),
+        embed: routeModel("MEMORY")
+      }
+    });
+  }));
+
   app.get("/agents/status", auth, asyncHandler(async (_request, response) => {
     response.json({ agents: swarmRegistry.getAgents() });
   }));
@@ -41,15 +71,26 @@ export function registerAgentsRoutes(app: Express) {
     response.json(swarmRegistry.getMetrics());
   }));
 
+  app.post("/agents/autonomous/run", auth, validateBody(swarmSchema), asyncHandler(async (request, response) => {
+    const { objective, context } = request.body;
+    const neural = getNeuralCore();
+    const result = await neural.runAutonomous(objective, context);
+    response.json(result);
+  }));
+
   app.post("/agents/run", auth, validateBody(runSchema), asyncHandler(async (request, response) => {
     const { type, objective, context } = request.body;
     const task = await prisma.task.create({
       data: { title: objective.slice(0, 120), status: "RUNNING", payload: { type, context } }
     });
-    const agent = router.resolve(type as AgentType);
-    const result = type === "AUTO"
-      ? await coordinator.runPipeline(objective, context)
-      : await engine.execute(agent, { objective, context }, task.id);
+    let result: unknown;
+    if (type === "AUTO") {
+      result = await coordinator.runPipeline(objective, context);
+    } else {
+      const swarmAgent = resolveSwarmChatAgent(type);
+      const agent = swarmAgent ?? router.resolve(type as AgentType);
+      result = await engine.execute(agent, { objective, context }, task.id);
+    }
     await prisma.task.update({
       where: { id: task.id },
       data: { status: "COMPLETED", result: result as object }
@@ -74,7 +115,13 @@ export function registerAgentsRoutes(app: Express) {
     writeSse(response, "status", { message: "connected" });
 
     const listener = (event: { type: string; name: string; payload: unknown }) => {
-      if (event.type === "agent" && (event.name.startsWith("swarm.") || event.name.startsWith("agent.run"))) {
+      if (
+        event.type === "agent" &&
+        (event.name.startsWith("swarm.") ||
+          event.name.startsWith("neural.") ||
+          event.name.startsWith("autonomous.") ||
+          event.name.startsWith("agent.run"))
+      ) {
         writeSse(response, "agent", event);
       }
     };

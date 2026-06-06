@@ -2,6 +2,17 @@ import { OllamaClient } from "@princy/ai-client";
 
 export type ModelIntent = "plan" | "code" | "review" | "debug" | "chat" | "embed";
 
+export type ModelTask =
+  | "CHAT"
+  | "INLINE_CHAT"
+  | "GHOST_TEXT"
+  | "EDITOR_ASSISTANT"
+  | "ARCHITECT"
+  | "AUTONOMOUS"
+  | "MEMORY";
+
+export type ModelSlot = "CHAT" | "EDITOR" | "SWARM" | "AUTONOMOUS" | "EMBED";
+
 export type ModelDefinition = {
   id: string;
   name: string;
@@ -9,13 +20,152 @@ export type ModelDefinition = {
   priority: number;
 };
 
+export type ModelRunMetric = {
+  modelId: string;
+  task: ModelTask;
+  ttftMs: number;
+  totalMs: number;
+  tokenCount: number;
+  tokensPerSec: number;
+  at: string;
+};
+
+export const TASK_DEFAULTS: Record<ModelTask, string> = {
+  CHAT: "qwen2.5:3b",
+  INLINE_CHAT: "qwen2.5:3b",
+  GHOST_TEXT: "qwen2.5:3b",
+  EDITOR_ASSISTANT: "qwen2.5:3b",
+  ARCHITECT: "deepseek-r1:8b",
+  AUTONOMOUS: "deepseek-r1:8b",
+  MEMORY: "nomic-embed-text"
+};
+
+const TASK_TO_SLOT: Record<ModelTask, ModelSlot> = {
+  CHAT: "CHAT",
+  INLINE_CHAT: "CHAT",
+  GHOST_TEXT: "EDITOR",
+  EDITOR_ASSISTANT: "EDITOR",
+  ARCHITECT: "SWARM",
+  AUTONOMOUS: "AUTONOMOUS",
+  MEMORY: "EMBED"
+};
+
+const INTENT_TO_TASK: Record<ModelIntent, ModelTask> = {
+  chat: "CHAT",
+  code: "EDITOR_ASSISTANT",
+  plan: "ARCHITECT",
+  review: "ARCHITECT",
+  debug: "ARCHITECT",
+  embed: "MEMORY"
+};
+
+function envModel(key: string, fallback: string) {
+  return process.env[key] ?? fallback;
+}
+
+function envFallbackForTask(task: ModelTask): string {
+  if (task === "MEMORY") {
+    return envModel("OLLAMA_EMBED_MODEL", envModel("DEFAULT_EMBEDDING_MODEL", TASK_DEFAULTS.MEMORY));
+  }
+  if (task === "ARCHITECT" || task === "AUTONOMOUS") {
+    return envModel("DEFAULT_REASONING_MODEL", TASK_DEFAULTS[task]);
+  }
+  return envModel("OLLAMA_CHAT_MODEL", envModel("DEFAULT_CHAT_MODEL", TASK_DEFAULTS.CHAT));
+}
+
+let slotOverrides: Partial<Record<ModelSlot, string>> = {};
+
+export function reloadOverrides(overrides: Partial<Record<ModelSlot, string>>) {
+  slotOverrides = { ...overrides };
+}
+
+export function getSlotOverrides() {
+  return { ...slotOverrides };
+}
+
+const COMPLEX_KEYWORDS = [
+  "architect", "design", "refactor", "analyze", "debug", "autonomous",
+  "arquitetura", "analisar", "refatorar", "complexo", "planejar"
+];
+
+export function isComplexChatMessage(message: string): boolean {
+  if (message.length > 400) return true;
+  const lower = message.toLowerCase();
+  return COMPLEX_KEYWORDS.some((k) => lower.includes(k));
+}
+
+export function routeChatModel(message: string, mode: "fast" | "deep" = "fast"): string {
+  const fast = envModel("CHAT_FAST_MODEL", envModel("OLLAMA_CHAT_MODEL", TASK_DEFAULTS.CHAT));
+  const deep = envModel("CHAT_DEEP_MODEL", envModel("DEFAULT_REASONING_MODEL", TASK_DEFAULTS.ARCHITECT));
+  if (mode === "deep" || isComplexChatMessage(message)) return deep;
+  return fast;
+}
+
+export function routeModel(task: ModelTask, overrides?: Partial<Record<ModelSlot, string>>) {
+  const slot = TASK_TO_SLOT[task];
+  const merged = { ...slotOverrides, ...overrides };
+  const override = merged[slot];
+  if (override) return override;
+  return TASK_DEFAULTS[task] ?? envFallbackForTask(task);
+}
+
+export function mapAgentTypeToTask(agentType: string): ModelTask {
+  switch (agentType) {
+    case "CODER":
+      return "EDITOR_ASSISTANT";
+    case "ARCHITECT":
+    case "PLANNER":
+    case "RESEARCHER":
+    case "CONTEXT_GRAPH":
+    case "REVIEWER":
+    case "DEBUGGER":
+      return "ARCHITECT";
+    case "AUTO":
+    case "TERMINAL":
+    case "WRITER":
+    case "MEMORY":
+    default:
+      return "CHAT";
+  }
+}
+
+function parseExtraModels(): ModelDefinition[] {
+  const raw = process.env.OLLAMA_EXTRA_MODELS ?? "";
+  if (!raw.trim()) return [];
+  return raw.split(",").map((id, i) => ({
+    id: id.trim(),
+    name: id.trim(),
+    intents: ["chat", "code"] as ModelIntent[],
+    priority: 10 + i
+  }));
+}
+
 export class ModelRegistry {
-  private readonly models: ModelDefinition[] = [
-    { id: "deepseek-coder", name: "DeepSeek Coder", intents: ["code", "debug"], priority: 1 },
-    { id: "qwen-coder", name: "Qwen Coder", intents: ["code", "plan"], priority: 2 },
-    { id: "codestral", name: "Codestral", intents: ["code", "review"], priority: 3 },
-    { id: "llama", name: "Llama", intents: ["chat", "plan"], priority: 4 }
-  ];
+  private readonly models: ModelDefinition[];
+
+  constructor() {
+    this.models = [
+      {
+        id: envModel("OLLAMA_CHAT_MODEL", envModel("DEFAULT_CHAT_MODEL", TASK_DEFAULTS.CHAT)),
+        name: "Qwen Chat",
+        intents: ["chat", "code"],
+        priority: 1
+      },
+      {
+        id: envModel("DEFAULT_REASONING_MODEL", TASK_DEFAULTS.ARCHITECT),
+        name: "DeepSeek Reasoning",
+        intents: ["plan", "review", "debug"],
+        priority: 1
+      },
+      {
+        id: envModel("OLLAMA_EMBED_MODEL", envModel("DEFAULT_EMBEDDING_MODEL", TASK_DEFAULTS.MEMORY)),
+        name: "Nomic Embed",
+        intents: ["embed"],
+        priority: 1
+      },
+      ...parseExtraModels()
+    ];
+  }
 
   list() {
     return this.models;
@@ -23,6 +173,10 @@ export class ModelRegistry {
 
   forIntent(intent: ModelIntent) {
     return this.models.filter((m) => m.intents.includes(intent)).sort((a, b) => a.priority - b.priority);
+  }
+
+  resolveModelId(intent: ModelIntent): string {
+    return routeModel(INTENT_TO_TASK[intent]);
   }
 }
 
@@ -33,16 +187,26 @@ export class AiRouter {
   ) {}
 
   private metrics = new Map<string, { latencyMs: number; failures: number }>();
+  private streamMetrics: ModelRunMetric[] = [];
 
-  route(intent: ModelIntent) {
+  route(intent: ModelIntent): ModelDefinition {
+    const modelId = routeModel(INTENT_TO_TASK[intent]);
     const candidates = this.registry.forIntent(intent);
     for (const model of candidates) {
+      if (model.id !== modelId) continue;
       const health = this.metrics.get(model.id);
-      if (!health || health.failures < 3) {
-        return model;
-      }
+      if (!health || health.failures < 3) return model;
     }
-    return candidates[0] ?? { id: process.env.OLLAMA_CHAT_MODEL ?? "qwen3-coder", name: "default", intents: [intent], priority: 99 };
+    const fallback = candidates.find((m) => m.id === modelId);
+    return fallback ?? { id: modelId, name: modelId, intents: [intent], priority: 99 };
+  }
+
+  resolveModelId(intent: ModelIntent) {
+    return routeModel(INTENT_TO_TASK[intent]);
+  }
+
+  routeTask(task: ModelTask) {
+    return routeModel(task);
   }
 
   async healthCheck() {
@@ -59,7 +223,49 @@ export class AiRouter {
     this.metrics.set(modelId, { ...current, failures: current.failures + 1 });
   }
 
+  recordStreamRun(metric: Omit<ModelRunMetric, "at"> & { at?: string }) {
+    const entry: ModelRunMetric = {
+      ...metric,
+      at: metric.at ?? new Date().toISOString()
+    };
+    this.streamMetrics = [entry, ...this.streamMetrics].slice(0, 200);
+    this.recordLatency(metric.modelId, metric.totalMs);
+  }
+
   getMetrics() {
     return Object.fromEntries(this.metrics);
   }
+
+  getStreamMetrics(limit = 50) {
+    return this.streamMetrics.slice(0, limit);
+  }
+
+  getStreamAggregates() {
+    const recent = this.streamMetrics.slice(0, 100);
+    if (!recent.length) {
+      return { ttftMs: 0, totalMs: 0, tokensPerSec: 0, runs: 0 };
+    }
+    const sum = recent.reduce(
+      (acc, m) => ({
+        ttftMs: acc.ttftMs + m.ttftMs,
+        totalMs: acc.totalMs + m.totalMs,
+        tokensPerSec: acc.tokensPerSec + m.tokensPerSec,
+        runs: acc.runs + 1
+      }),
+      { ttftMs: 0, totalMs: 0, tokensPerSec: 0, runs: 0 }
+    );
+    return {
+      ttftMs: Math.round(sum.ttftMs / sum.runs),
+      totalMs: Math.round(sum.totalMs / sum.runs),
+      tokensPerSec: Math.round((sum.tokensPerSec / sum.runs) * 10) / 10,
+      runs: sum.runs
+    };
+  }
+}
+
+let sharedRouter: AiRouter | null = null;
+
+export function getAiRouter() {
+  if (!sharedRouter) sharedRouter = new AiRouter();
+  return sharedRouter;
 }

@@ -1,0 +1,14 @@
+[
+  { "id": "react", "name": "React Agent", "description": "Componentes, hooks e padrões React.", "category": "Frontend", "capabilities": ["jsx", "hooks", "state"], "version": "0.1.0" },
+  { "id": "next", "name": "Next Agent", "description": "App Router, SSR e API routes Next.js.", "category": "Frontend", "capabilities": ["ssr", "routing", "api"], "version": "0.1.0" },
+  { "id": "node", "name": "Node Agent", "description": "APIs Node, Express e scripts.", "category": "Backend", "capabilities": ["express", "middleware", "scripts"], "version": "0.1.0" },
+  { "id": "prisma", "name": "Prisma Agent", "description": "Schemas, migrations e queries Prisma.", "category": "Database", "capabilities": ["schema", "migrate", "query"], "version": "0.1.0" },
+  { "id": "docker", "name": "Docker Agent", "description": "Dockerfile, compose e containers.", "category": "DevOps", "capabilities": ["dockerfile", "compose", "images"], "version": "0.1.0" },
+  { "id": "linux", "name": "Linux Agent", "description": "Shell, systemd e diagnóstico Linux.", "category": "DevOps", "capabilities": ["bash", "systemd", "logs"], "version": "0.1.0" },
+  { "id": "vscode", "name": "VSCode Agent", "description": "Extensões, settings e tasks VS Code.", "category": "IDE", "capabilities": ["extension", "tasks", "debug"], "version": "0.1.0" },
+  { "id": "wordpress", "name": "WordPress Agent", "description": "Temas, plugins e WP-CLI.", "category": "CMS", "capabilities": ["themes", "plugins", "wp-cli"], "version": "0.1.0" },
+  { "id": "laravel", "name": "Laravel Agent", "description": "Rotas, Eloquent e Artisan.", "category": "Backend", "capabilities": ["routes", "eloquent", "artisan"], "version": "0.1.0" },
+  { "id": "flutter", "name": "Flutter Agent", "description": "Widgets, state e builds mobile.", "category": "Mobile", "capabilities": ["widgets", "dart", "build"], "version": "0.1.0" },
+  { "id": "python", "name": "Python Agent", "description": "Scripts, FastAPI e data tooling.", "category": "Backend", "capabilities": ["fastapi", "scripts", "pytest"], "version": "0.1.0" },
+  { "id": "coordinator", "name": "Coordinator Agent", "description": "Orquestra tarefas multi-agente.", "category": "Swarm", "capabilities": ["planning", "routing", "review"], "version": "0.1.0" }
+]

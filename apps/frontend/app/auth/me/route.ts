@@ -1,5 +1,7 @@
+import { getGatewayUrl } from "../../../src/lib/gateway-url";
+
 export async function GET(request: Request) {
-  const response = await fetch("http://13.140.129.77:3407/api/auth/me", {
+  const response = await fetch(`${getGatewayUrl()}/api/auth/me`, {
     method: "GET",
     headers: {
       Authorization: request.headers.get("authorization") ?? "",

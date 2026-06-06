@@ -27,7 +27,7 @@ export class OllamaClient {
       options.chatModel ??
       process.env.OLLAMA_CHAT_MODEL ??
       process.env.DEFAULT_CHAT_MODEL ??
-      "qwen3:8b";
+      "qwen2.5:3b";
     this.timeoutMs = resolveTimeoutMs(options);
   }
 
@@ -60,22 +60,40 @@ export class OllamaClient {
     return validateVector(data.embedding);
   }
 
-  async chat(messages: { role: string; content: string }[], options?: { stream?: boolean }) {
+  async chat(
+    messages: { role: string; content: string }[],
+    options?: {
+      stream?: boolean;
+      model?: string;
+      think?: boolean;
+      keepAlive?: string;
+      ollamaOptions?: Record<string, unknown>;
+    }
+  ) {
     const stream = options?.stream ?? false;
+    const model = options?.model ?? this.chatModel;
+    const body: Record<string, unknown> = {
+      model,
+      messages,
+      stream,
+      keep_alive: options?.keepAlive ?? process.env.OLLAMA_KEEP_ALIVE ?? "30m"
+    };
+    if (options?.ollamaOptions && Object.keys(options.ollamaOptions).length > 0) {
+      body.options = options.ollamaOptions;
+    }
+    if (options?.think !== undefined) {
+      body.think = options.think;
+    }
     const response = await fetch(`${this.baseUrl}/api/chat`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        model: this.chatModel,
-        messages,
-        stream
-      }),
+      body: JSON.stringify(body),
       ...(stream ? {} : { signal: AbortSignal.timeout(this.timeoutMs) })
     });
     if (!response.ok) {
       const detail = await response.text().catch(() => "");
       throw new Error(
-        `Ollama chat failed: ${response.status} (model=${this.chatModel}, url=${this.baseUrl}/api/chat)${detail ? ` — ${detail.slice(0, 200)}` : ""}`
+        `Ollama chat failed: ${response.status} (model=${model}, url=${this.baseUrl}/api/chat)${detail ? ` — ${detail.slice(0, 200)}` : ""}`
       );
     }
     return response;

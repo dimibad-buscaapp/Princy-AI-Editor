@@ -3,6 +3,7 @@
 import { Loader2, Sparkles, X } from "lucide-react";
 import { useState } from "react";
 import { GlowButton } from "../../design-system/GlowButton";
+import { apiUrl } from "../../lib/api";
 import { getAccessToken } from "../../lib/token-storage";
 
 const ACTIONS = [
@@ -28,10 +29,9 @@ export function InlineChatWidget({ selection, filePath, onClose }: InlineChatWid
   async function ask() {
     setLoading(true);
     setResponse("");
-    const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
     const token = getAccessToken();
     try {
-      const res = await fetch(`${apiBase}/api/chat/stream`, {
+      const res = await fetch(apiUrl("/chat/stream"), {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

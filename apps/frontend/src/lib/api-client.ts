@@ -1,7 +1,7 @@
+import { apiUrl, getApiBase } from "./api";
 import { refresh } from "./auth-client";
 import { clearTokens, getAccessToken, getRefreshToken, setTokens } from "./token-storage";
 
-const apiBaseUrl = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
 const REFRESH_THRESHOLD_SECONDS = 30;
 
 type ApiRequestOptions = {
@@ -15,13 +15,11 @@ type ApiRequestOptions = {
 function buildUrl(path: string, query?: Record<string, string | number | boolean | null | undefined>): string {
   const isAbsolute = /^https?:\/\//i.test(path);
 
-  if (!isAbsolute && !apiBaseUrl) {
-    throw new Error("NEXT_PUBLIC_API_BASE_URL não está configurada.");
+  if (!isAbsolute && !getApiBase()) {
+    throw new Error("URL base da API não está disponível.");
   }
 
-  const url = isAbsolute
-    ? new URL(path)
-    : new URL(`${apiBaseUrl}${path.startsWith("/") ? "" : "/"}${path}`, apiBaseUrl);
+  const url = isAbsolute ? new URL(path) : new URL(apiUrl(path));
 
   if (query) {
     Object.entries(query).forEach(([key, value]) => {

@@ -1,7 +1,6 @@
 import type { Monaco } from "@monaco-editor/react";
+import { apiUrl } from "../../lib/api";
 import { getAccessToken } from "../../lib/token-storage";
-
-const apiBase = process.env.NEXT_PUBLIC_API_BASE_URL?.replace(/\/$/, "") ?? "";
 
 export function registerGhostTextProvider(monaco: Monaco, language: string) {
   monaco.languages.registerInlineCompletionsProvider(language, {
@@ -19,7 +18,7 @@ export function registerGhostTextProvider(monaco: Monaco, language: string) {
 
       try {
         const token = getAccessToken();
-        const res = await fetch(`${apiBase}/api/chat/complete`, {
+        const res = await fetch(apiUrl("/chat/complete"), {
           method: "POST",
           headers: {
             "Content-Type": "application/json",

@@ -17,7 +17,7 @@ function handleEventStream(request: Request, response: Response) {
     const localListener = (event: unknown) => send(event);
     eventBus.on("event", localListener);
 
-    let redisCleanup: (() => Promise<void>) | undefined;
+    let redisCleanup: (() => void | Promise<void>) | undefined;
     void subscribeRedisEvents((event) => send(event))
       .then((cleanup) => {
         redisCleanup = cleanup;

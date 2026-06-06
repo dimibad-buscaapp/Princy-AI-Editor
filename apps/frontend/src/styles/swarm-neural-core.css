@@ -1,0 +1,348 @@
+/* Princy Neural Core — Swarm visual layers */
+
+@keyframes brainPulse {
+  0%, 100% {
+    transform: translate(-50%, -50%) scale(1);
+    filter: drop-shadow(0 0 32px rgba(0, 255, 255, 0.5)) drop-shadow(0 0 64px rgba(139, 92, 246, 0.35));
+  }
+  50% {
+    transform: translate(-50%, -50%) scale(1.03);
+    filter: drop-shadow(0 0 48px rgba(0, 255, 255, 0.75)) drop-shadow(0 0 90px rgba(139, 92, 246, 0.55));
+  }
+}
+
+@keyframes energyGlow {
+  0%, 100% {
+    opacity: 0.55;
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    opacity: 0.85;
+    transform: translate(-50%, -50%) scale(1.08);
+  }
+}
+
+@keyframes electricFlow {
+  0% {
+    stroke-dashoffset: 120;
+    opacity: 0.35;
+  }
+  50% {
+    opacity: 0.9;
+  }
+  100% {
+    stroke-dashoffset: 0;
+    opacity: 0.35;
+  }
+}
+
+@keyframes orbitalRotation {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes particleTravel {
+  0% {
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes starTwinkle {
+  0%, 100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes floatParticle {
+  0%, 100% {
+    transform: translate(0, 0);
+    opacity: 0.3;
+  }
+  50% {
+    transform: translate(12px, -18px);
+    opacity: 0.8;
+  }
+}
+
+/* Stage container */
+.swarm-neural-stage {
+  position: absolute;
+  inset: 0;
+  isolation: isolate;
+  background: #000;
+}
+
+/* Particles layer */
+.neural-particles {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  overflow: hidden;
+}
+
+.neural-particles__nebula {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  pointer-events: none;
+}
+
+.neural-particles__nebula--blue {
+  width: 55%;
+  height: 45%;
+  left: 15%;
+  top: 20%;
+  background: radial-gradient(circle, rgba(0, 242, 255, 0.2), transparent 70%);
+  opacity: 0.22;
+}
+
+.neural-particles__nebula--violet {
+  width: 50%;
+  height: 50%;
+  right: 10%;
+  bottom: 15%;
+  background: radial-gradient(circle, rgba(139, 92, 246, 0.25), transparent 70%);
+  opacity: 0.2;
+}
+
+.neural-particles__nebula--center {
+  width: 40%;
+  height: 40%;
+  left: 30%;
+  top: 30%;
+  background: radial-gradient(circle, rgba(99, 102, 241, 0.18), transparent 70%);
+  opacity: 0.18;
+}
+
+.neural-particles__star {
+  position: absolute;
+  width: 2px;
+  height: 2px;
+  border-radius: 50%;
+  background: #fff;
+  animation: starTwinkle 3s ease-in-out infinite;
+}
+
+.neural-particles__float {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: rgba(0, 255, 255, 0.6);
+  box-shadow: 0 0 6px rgba(0, 255, 255, 0.8);
+  animation: floatParticle 6s ease-in-out infinite;
+}
+
+/* Orbit layer */
+.neural-orbit-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.neural-orbit-layer__ring {
+  transform-origin: 50% 50%;
+}
+
+.neural-orbit-layer__ring--slow {
+  animation: orbitalRotation 80s linear infinite;
+}
+
+.neural-orbit-layer__ring--mid {
+  animation: orbitalRotation 60s linear infinite reverse;
+}
+
+.neural-orbit-layer__ring--fast {
+  animation: orbitalRotation 40s linear infinite;
+}
+
+/* Energy field */
+.neural-energy-field {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  width: clamp(520px, 52vmin, 900px);
+  height: clamp(520px, 52vmin, 900px);
+  transform: translate(-50%, -50%);
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(0, 255, 255, 0.45), rgba(0, 0, 0, 0));
+  mix-blend-mode: screen;
+  z-index: 2;
+  pointer-events: none;
+  animation: energyGlow 5s ease-in-out infinite;
+}
+
+/* Neural core brain */
+.princy-neural-core {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 5;
+  pointer-events: none;
+  animation: brainPulse 4s ease-in-out infinite;
+}
+
+.princy-neural-core__svg {
+  display: block;
+  width: clamp(420px, 38vmin, 680px);
+  height: auto;
+  aspect-ratio: 1024 / 682;
+  overflow: visible;
+}
+
+.princy-neural-core__svg image {
+  pointer-events: none;
+}
+
+/* Neural links */
+.neural-links-layer {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 4;
+  pointer-events: none;
+}
+
+.neural-links-layer__path {
+  fill: none;
+  stroke-width: 0.18;
+  stroke-dasharray: 4 3;
+  animation: electricFlow 3s linear infinite;
+}
+
+.neural-links-layer__path--dim {
+  stroke-width: 0.1;
+  opacity: 0.35;
+  animation-duration: 4.5s;
+}
+
+.neural-links-layer__particle {
+  animation: particleTravel 3s ease-in-out infinite;
+}
+
+/* Agent orbital cards */
+.agent-orbital-card {
+  position: absolute;
+  transform: translate(-50%, -50%);
+  z-index: 6;
+  padding: 10px 12px;
+  min-width: 130px;
+  font-size: 0.68rem;
+  background: rgba(5, 10, 25, 0.75);
+  border: 1px solid rgba(139, 92, 246, 0.4);
+  backdrop-filter: blur(18px);
+  -webkit-backdrop-filter: blur(18px);
+  border-radius: 10px;
+  box-shadow: 0 0 25px rgba(99, 102, 241, 0.35);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+
+.agent-orbital-card:hover {
+  transform: translate(-50%, calc(-50% - 4px));
+  box-shadow: 0 0 35px rgba(99, 102, 241, 0.55), 0 0 15px rgba(0, 255, 255, 0.25);
+}
+
+.agent-orbital-card--compact {
+  min-width: 100px;
+  padding: 6px 8px;
+  font-size: 0.58rem;
+}
+
+.agent-orbital-card--featured {
+  min-width: 170px;
+  padding: 14px 16px;
+  box-shadow: 0 0 30px rgba(139, 92, 246, 0.45);
+}
+
+.agent-orbital-card--busy .agent-orbital-card__dot {
+  background: #f59e0b;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+.agent-orbital-card__head {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+
+.agent-orbital-card__icon {
+  flex-shrink: 0;
+  filter: drop-shadow(0 0 4px rgba(0, 255, 255, 0.6));
+}
+
+.agent-orbital-card h4 {
+  margin: 0;
+  font-size: 0.68rem;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+}
+
+.agent-orbital-card p {
+  margin: 2px 0;
+  color: var(--princy-muted);
+}
+
+.agent-orbital-card__online {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.6rem;
+  color: var(--princy-online);
+}
+
+.agent-orbital-card__dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--princy-online);
+  box-shadow: 0 0 4px var(--princy-online);
+}
+
+.agent-orbital-card__featured {
+  color: var(--princy-cyan) !important;
+}
+
+.swarm-view__ship {
+  position: absolute;
+  right: 8%;
+  bottom: 6%;
+  opacity: 0.55;
+  z-index: 3;
+  pointer-events: none;
+}
+
+@media (max-width: 1280px) {
+  .agent-orbital-card {
+    transform: translate(-50%, -50%) scale(0.92);
+  }
+
+  .agent-orbital-card:hover {
+    transform: translate(-50%, calc(-50% - 4px)) scale(0.92);
+  }
+
+  .princy-neural-core__svg {
+    width: clamp(380px, 36vmin, 520px);
+  }
+}

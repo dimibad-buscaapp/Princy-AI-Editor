@@ -1,12 +1,14 @@
 export type SwarmRole =
+  | "COORDINATOR"
   | "ARCHITECT"
   | "DEVELOPER"
-  | "RESEARCHER"
   | "TESTER"
+  | "REVIEWER"
+  | "RESEARCHER"
   | "DEVOPS"
   | "WRITER"
-  | "ANALYST"
-  | "COORDINATOR";
+  | "MEMORY"
+  | "CONTEXT_GRAPH";
 
 export type SwarmAgentLive = {
   id: SwarmRole;
@@ -22,17 +24,23 @@ export type SwarmAgentLive = {
   x: number;
   y: number;
   featured?: boolean;
+  compact?: boolean;
 };
 
+const CHAT_MODEL = process.env.OLLAMA_CHAT_MODEL ?? "qwen2.5:3b";
+const REASON_MODEL = process.env.DEFAULT_REASONING_MODEL ?? "deepseek-r1:8b";
+
 const DEFAULT_AGENTS: SwarmAgentLive[] = [
-  { id: "ARCHITECT", name: "ARQUITETO", role: "ARCHITECT", status: "online", model: "qwen3:8b", tasks: 142, success: 98.2, memory: "2.1MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 50, y: 8 },
-  { id: "ANALYST", name: "ANALISTA", role: "ANALYST", status: "online", model: "qwen3:8b", tasks: 98, success: 97.5, memory: "1.4MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 82, y: 22 },
-  { id: "RESEARCHER", name: "PESQUISADOR", role: "RESEARCHER", status: "online", model: "qwen3:8b", tasks: 156, success: 96.8, memory: "3.2MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 92, y: 46 },
-  { id: "WRITER", name: "ESCRITOR", role: "WRITER", status: "online", model: "qwen3:8b", tasks: 76, success: 99.1, memory: "0.9MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 78, y: 74 },
-  { id: "COORDINATOR", name: "COORDENADOR", role: "COORDINATOR", status: "online", model: "qwen3:8b", tasks: 256, success: 98.9, memory: "4.0MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 50, y: 90, featured: true },
-  { id: "DEVOPS", name: "DEVOPS", role: "DEVOPS", status: "online", model: "qwen3:8b", tasks: 112, success: 97.2, memory: "1.8MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 16, y: 74 },
-  { id: "TESTER", name: "TESTADOR", role: "TESTER", status: "online", model: "qwen3:8b", tasks: 89, success: 99.4, memory: "1.1MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 8, y: 46 },
-  { id: "DEVELOPER", name: "DESENVOLVEDOR", role: "DEVELOPER", status: "online", model: "qwen3:8b", tasks: 198, success: 98.0, memory: "2.8MB", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 18, y: 22 }
+  { id: "COORDINATOR", name: "COORDENADOR", role: "COORDINATOR", status: "online", model: REASON_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 50, y: 52, featured: true },
+  { id: "ARCHITECT", name: "ARQUITETO", role: "ARCHITECT", status: "online", model: REASON_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 50, y: 10 },
+  { id: "DEVELOPER", name: "DESENVOLVEDOR", role: "DEVELOPER", status: "online", model: CHAT_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 14, y: 22 },
+  { id: "TESTER", name: "TESTADOR", role: "TESTER", status: "online", model: CHAT_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 10, y: 50 },
+  { id: "REVIEWER", name: "REVISOR", role: "REVIEWER", status: "online", model: REASON_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 14, y: 78 },
+  { id: "RESEARCHER", name: "PESQUISADOR", role: "RESEARCHER", status: "online", model: REASON_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 86, y: 22 },
+  { id: "DEVOPS", name: "DEVOPS", role: "DEVOPS", status: "online", model: CHAT_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 86, y: 78 },
+  { id: "WRITER", name: "ESCRITOR", role: "WRITER", status: "online", model: CHAT_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 90, y: 50 },
+  { id: "MEMORY", name: "MEMÓRIA", role: "MEMORY", status: "online", model: "nomic-embed-text", tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 72, y: 12, compact: true },
+  { id: "CONTEXT_GRAPH", name: "GRAPH", role: "CONTEXT_GRAPH", status: "online", model: REASON_MODEL, tasks: 0, success: 0, memory: "—", logs: [], metrics: { tokens: 0, latencyMs: 0 }, x: 28, y: 12, compact: true }
 ];
 
 class SwarmRegistry {
@@ -79,13 +87,13 @@ class SwarmRegistry {
 
   getMetrics() {
     const uptimeSec = Math.floor((Date.now() - this.startedAt) / 1000);
-    const tasksToday = this.totalTasks + DEFAULT_AGENTS.reduce((s, a) => s + a.tasks, 0);
+    const active = this.getAgents().filter((a) => a.status === "busy").length;
     return {
-      activeAgents: `${this.getAgents().filter((a) => a.status !== "idle").length}/8`,
-      tasksToday,
-      successRate: this.runCount ? Math.round((this.successCount / this.runCount) * 1000) / 10 : 97.8,
-      avgTime: "2.4s",
-      tokens: this.totalTokens > 1_000_000 ? `${(this.totalTokens / 1_000_000).toFixed(1)}M` : `${Math.round(this.totalTokens / 1000)}K`,
+      activeAgents: `${Math.max(active, 1)}/10`,
+      tasksToday: this.totalTasks,
+      successRate: this.runCount ? Math.round((this.successCount / this.runCount) * 1000) / 10 : 0,
+      avgTime: this.runCount ? `${Math.round(2400 / Math.max(this.runCount, 1))}ms` : "—",
+      tokens: this.totalTokens > 1_000_000 ? `${(this.totalTokens / 1_000_000).toFixed(1)}M` : `${this.totalTokens}`,
       latencyMs: 2400,
       memory: "2.4M",
       uptime: `${Math.floor(uptimeSec / 3600)}h ${Math.floor((uptimeSec % 3600) / 60)}m`

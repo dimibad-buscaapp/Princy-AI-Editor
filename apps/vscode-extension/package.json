@@ -1,0 +1,114 @@
+{
+  "name": "princy-assistant",
+  "displayName": "Princy AI Assistant",
+  "description": "Princy AI coding assistant — chat, ghost text, inline actions, patch, swarm.",
+  "version": "0.1.0",
+  "publisher": "princy-ai",
+  "private": true,
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": ["AI", "Programming Languages", "Themes"],
+  "activationEvents": [
+    "onStartupFinished",
+    "workspaceContains:**/*"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "princy.signIn", "title": "Princy: Sign In", "category": "Princy" },
+      { "command": "princy.signOut", "title": "Princy: Sign Out", "category": "Princy" },
+      { "command": "princy.openChat", "title": "Princy: Open Chat", "category": "Princy" },
+      { "command": "princy.explainSelection", "title": "Princy: Explain Selection", "category": "Princy" },
+      { "command": "princy.refactorSelection", "title": "Princy: Refactor Selection", "category": "Princy" },
+      { "command": "princy.fixSelection", "title": "Princy: Fix Selection", "category": "Princy" },
+      { "command": "princy.generateTests", "title": "Princy: Generate Tests", "category": "Princy" },
+      { "command": "princy.askAboutSelection", "title": "Princy: Ask About Selection", "category": "Princy" },
+      { "command": "princy.previewPatch", "title": "Princy: Preview Patch", "category": "Princy" },
+      { "command": "princy.applyPatch", "title": "Princy: Apply Patch", "category": "Princy" },
+      { "command": "princy.rollbackPatch", "title": "Princy: Rollback Patch", "category": "Princy" },
+      { "command": "princy.explainTerminalError", "title": "Princy: Explain Terminal Error", "category": "Princy" },
+      { "command": "princy.fixTerminalError", "title": "Princy: Fix Terminal Error", "category": "Princy" },
+      { "command": "princy.openSwarm", "title": "Princy: Open Swarm", "category": "Princy" },
+      { "command": "princy.startAutonomous", "title": "Princy: Start Autonomous Mode", "category": "Princy" },
+      { "command": "princy.indexWorkspace", "title": "Princy: Index Workspace", "category": "Princy" },
+      { "command": "princy.openContextGraph", "title": "Princy: Open Context Graph", "category": "Princy" }
+    ],
+    "configuration": {
+      "title": "Princy AI",
+      "properties": {
+        "princy.endpoint": {
+          "type": "string",
+          "default": "http://13.140.129.77:3407/api",
+          "description": "Princy gateway API base URL"
+        },
+        "princy.model": {
+          "type": "string",
+          "default": "",
+          "description": "Read-only routed model display (managed by Princy router)"
+        },
+        "princy.enableGhostText": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable inline ghost text completions"
+        },
+        "princy.enableAutonomousMode": {
+          "type": "boolean",
+          "default": false,
+          "description": "Allow autonomous mode (requires explicit approval for patches)"
+        },
+        "princy.ghostTextDebounceMs": {
+          "type": "number",
+          "default": 500,
+          "description": "Debounce delay for ghost text (ms)"
+        }
+      }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "princy-ai",
+          "title": "Princy AI",
+          "icon": "media/princy-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "princy-ai": [
+        {
+          "type": "webview",
+          "id": "princy.chatView",
+          "name": "Chat"
+        },
+        {
+          "type": "webview",
+          "id": "princy.swarmView",
+          "name": "Swarm"
+        }
+      ]
+    },
+    "themes": [
+      {
+        "label": "Princy Dark Neural",
+        "uiTheme": "vs-dark",
+        "path": "./themes/princy-dark-neural.json"
+      }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "package": "npm run build && vsce package --no-dependencies",
+    "lint": "tsc --noEmit",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@princy/vscode-api-client": "*"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "latest",
+    "esbuild": "latest",
+    "typescript": "latest"
+  }
+}

@@ -1,14 +1,14 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { gatewayUrl } from "../../lib/api";
 import { princyVersion } from "./nav-items";
 
 export function StatusBar() {
   const [connected, setConnected] = useState(false);
 
   useEffect(() => {
-    const gateway = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://127.0.0.1:3407";
-    fetch(`${gateway}/health/live`)
+    fetch(gatewayUrl("/health/live"))
       .then((r) => setConnected(r.ok))
       .catch(() => setConnected(false));
   }, []);

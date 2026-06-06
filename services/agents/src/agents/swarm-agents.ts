@@ -1,7 +1,8 @@
 import { ArchitectAgent } from "./architect.agent.js";
 import { CoderAgent } from "./coder.agent.js";
+import { ContextGraphAgent } from "./context-graph.agent.js";
 import { DebuggerAgent } from "./debugger.agent.js";
-import { PlannerAgent } from "./planner.agent.js";
+import { MemoryAgent } from "./memory.agent.js";
 import { ReviewerAgent } from "./reviewer.agent.js";
 import { TerminalAgent } from "./terminal.agent.js";
 import { BaseAgent, type AgentContext, type AgentResult } from "./base.agent.js";
@@ -20,8 +21,8 @@ export class DevOpsAgent extends TerminalAgent {
   readonly swarmRole = "DEVOPS" as const;
 }
 
-export class AnalystAgent extends PlannerAgent {
-  readonly swarmRole = "ANALYST" as const;
+export class ReviewerSwarmAgent extends ReviewerAgent {
+  readonly swarmRole = "REVIEWER" as const;
 }
 
 export class WriterAgent extends BaseAgent {
@@ -31,7 +32,8 @@ export class WriterAgent extends BaseAgent {
   async run(ctx: AgentContext): Promise<AgentResult> {
     const output = await this.prompt(
       "You are a technical writer agent. Produce clear documentation.",
-      `Objective: ${ctx.objective}\nContext: ${ctx.context ?? ""}`
+      `Objective: ${ctx.objective}\nContext: ${ctx.context ?? ""}\nPrior: ${ctx.previousOutput ?? ""}`,
+      "chat"
     );
     return { output, metadata: { kind: "writer" } };
   }
@@ -42,26 +44,14 @@ export class ResearchAgent extends BaseAgent {
   readonly swarmRole = "RESEARCHER" as const;
 
   async run(ctx: AgentContext): Promise<AgentResult> {
-    const memoryUrl = process.env.MEMORY_SERVICE_URL ?? "http://127.0.0.1:3405";
-    let rag = "";
-    try {
-      const res = await fetch(`${memoryUrl}/memory/search`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ query: ctx.objective, limit: 5 })
-      });
-      if (res.ok) {
-        const data = (await res.json()) as { results?: { content: string }[] };
-        rag = data.results?.map((r) => r.content).join("\n") ?? "";
-      }
-    } catch {
-      // memory optional
-    }
+    const memory = new MemoryAgent();
+    const memResult = await memory.run(ctx);
     const output = await this.prompt(
       "You are a research agent. Summarize findings with sources from context.",
-      `Objective: ${ctx.objective}\nMemory: ${rag}\nContext: ${ctx.context ?? ""}`
+      `Objective: ${ctx.objective}\nMemory: ${memResult.output}\nContext: ${ctx.context ?? ""}`,
+      "plan"
     );
-    return { output, metadata: { kind: "research", ragHits: rag.length } };
+    return { output, metadata: { kind: "research", memoryHits: memResult.metadata?.hits } };
   }
 }
 
@@ -71,19 +61,35 @@ export class CoordinatorAgent extends BaseAgent {
 
   async run(ctx: AgentContext): Promise<AgentResult> {
     const output = await this.prompt(
-      "You are the swarm coordinator. Break the objective into steps for specialized agents.",
-      `Objective: ${ctx.objective}\nContext: ${ctx.context ?? ""}`
+      "You are the Princy Neural Core coordinator. Break the objective into steps for specialized agents.",
+      `Objective: ${ctx.objective}\nContext: ${ctx.context ?? ""}`,
+      "plan"
     );
     return { output, metadata: { kind: "coordinator" } };
   }
 }
 
+/** Full swarm pipeline with support agents */
 export const SWARM_PIPELINE: { role: SwarmRole; agent: BaseAgent }[] = [
+  { role: "COORDINATOR", agent: new CoordinatorAgent() },
+  { role: "RESEARCHER", agent: new ResearchAgent() },
+  { role: "MEMORY", agent: new MemoryAgent() },
+  { role: "CONTEXT_GRAPH", agent: new ContextGraphAgent() },
+  { role: "ARCHITECT", agent: new ArchitectAgent() },
+  { role: "DEVELOPER", agent: new DeveloperAgent() },
+  { role: "TESTER", agent: new TesterAgent() },
+  { role: "REVIEWER", agent: new ReviewerSwarmAgent() },
+  { role: "WRITER", agent: new WriterAgent() },
+  { role: "DEVOPS", agent: new DevOpsAgent() }
+];
+
+/** Official autonomous pipeline */
+export const AUTONOMOUS_PIPELINE: { role: SwarmRole; agent: BaseAgent }[] = [
   { role: "COORDINATOR", agent: new CoordinatorAgent() },
   { role: "ARCHITECT", agent: new ArchitectAgent() },
   { role: "DEVELOPER", agent: new DeveloperAgent() },
   { role: "TESTER", agent: new TesterAgent() },
-  { role: "ANALYST", agent: new AnalystAgent() },
+  { role: "REVIEWER", agent: new ReviewerSwarmAgent() },
   { role: "DEVOPS", agent: new DevOpsAgent() }
 ];
 
@@ -93,10 +99,23 @@ export function mapSwarmToAgentType(role: SwarmRole): AgentType {
     ARCHITECT: "ARCHITECT",
     DEVELOPER: "CODER",
     TESTER: "DEBUGGER",
-    ANALYST: "PLANNER",
+    REVIEWER: "REVIEWER",
     DEVOPS: "TERMINAL",
     RESEARCHER: "PLANNER",
-    WRITER: "REVIEWER"
+    WRITER: "REVIEWER",
+    MEMORY: "PLANNER",
+    CONTEXT_GRAPH: "ARCHITECT"
   };
   return map[role];
 }
+
+const SWARM_CHAT_AGENTS = new Map<SwarmRole, BaseAgent>(
+  SWARM_PIPELINE.map((step) => [step.role, step.agent])
+);
+
+/** Resolve swarm-specific agents for direct chat routing (not collapsed to 7 DB types). */
+export function resolveSwarmChatAgent(role: string): BaseAgent | null {
+  return SWARM_CHAT_AGENTS.get(role as SwarmRole) ?? null;
+}
+
+export const SWARM_CHAT_ROLES = [...SWARM_CHAT_AGENTS.keys()] as SwarmRole[];

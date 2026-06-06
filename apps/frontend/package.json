@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev -H 0.0.0.0 -p 3400",
-    "build": "next build",
+    "build": "node --import ../../packages/service-kit/load-env.mjs ../../node_modules/next/dist/bin/next build",
     "start": "node --import ../../packages/service-kit/load-env.mjs ../../node_modules/next/dist/bin/next start -H 0.0.0.0 -p 3400",
     "typecheck": "tsc --noEmit",
     "lint": "tsc --noEmit"

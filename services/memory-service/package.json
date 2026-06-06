@@ -16,6 +16,8 @@
     "@princy/core": "*",
     "@princy/database": "*",
     "@princy/event-bus": "*",
+    "@princy/memory": "*",
+    "@princy/model-router": "*",
     "@princy/service-kit": "*",
     "dotenv": "latest",
     "zod": "latest"

@@ -1,0 +1,110 @@
+/* PrincySidebar — 02-sidebar reference */
+.princy-sidebar {
+  display: flex;
+  flex-direction: column;
+  width: var(--sidebar-expanded);
+  min-width: var(--sidebar-expanded);
+  height: 100vh;
+  background: var(--princy-bg-sidebar);
+  border-right: 1px solid var(--princy-border);
+  border-radius: 0 12px 12px 0;
+  z-index: 10;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.princy-sidebar__header {
+  padding: 14px 12px 12px;
+  border-bottom: 1px solid rgba(110, 150, 255, 0.12);
+}
+
+.princy-sidebar__brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.princy-sidebar__logo {
+  border-radius: 50%;
+  box-shadow: 0 0 14px rgba(98, 42, 243, 0.5);
+}
+
+.princy-sidebar__name {
+  font-family: var(--font-display);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.princy-sidebar__nav {
+  flex: 1;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  overflow-y: auto;
+}
+
+.princy-sidebar__link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 12px;
+  border-radius: 10px;
+  color: #e2e8f0;
+  text-decoration: none;
+  font-size: 0.78rem;
+  font-weight: 500;
+  transition: background 0.15s, color 0.15s;
+}
+
+.princy-sidebar__link:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  text-decoration: none;
+}
+
+.princy-sidebar__link--active {
+  background: var(--princy-purple);
+  color: #fff;
+  box-shadow: 0 4px 16px rgba(98, 42, 243, 0.45);
+}
+
+.princy-sidebar__link svg {
+  flex-shrink: 0;
+}
+
+.princy-sidebar__footer {
+  padding: 12px 10px;
+  border-top: 1px solid rgba(110, 150, 255, 0.12);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.princy-sidebar__user {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.princy-sidebar__username {
+  margin: 0;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: #fff;
+  line-height: 1.2;
+}
+
+.princy-sidebar__email {
+  margin: 0;
+  font-size: 0.62rem;
+  color: var(--princy-muted);
+  line-height: 1.2;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 100px;
+}

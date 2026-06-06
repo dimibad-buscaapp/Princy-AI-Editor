@@ -1,0 +1,52 @@
+/* Reference-locked base — fidelidade às PNGs oficiais */
+
+.ref-panel {
+  background: var(--princy-panel);
+  backdrop-filter: blur(14px);
+  border: 1px solid var(--princy-border);
+  border-radius: 12px;
+}
+
+.ref-panel--strong {
+  background: var(--princy-panel-strong);
+  border-color: var(--princy-border-strong);
+}
+
+.ref-border {
+  border: 1px solid var(--princy-border);
+}
+
+.ref-glow-purple {
+  box-shadow: 0 0 20px rgba(98, 42, 243, 0.35);
+}
+
+.ref-glow-cyan {
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.28);
+}
+
+.neural-bg {
+  background:
+    radial-gradient(1px 1px at 20% 30%, rgba(255, 255, 255, 0.35), transparent),
+    radial-gradient(1px 1px at 60% 70%, rgba(255, 255, 255, 0.2), transparent),
+    radial-gradient(1px 1px at 80% 20%, rgba(255, 255, 255, 0.25), transparent),
+    radial-gradient(circle at 15% 20%, rgba(98, 42, 243, 0.12), transparent 42%),
+    radial-gradient(circle at 85% 65%, rgba(34, 211, 238, 0.08), transparent 38%),
+    var(--princy-bg);
+}
+
+.ref-shell--immersive .princy-shell__content {
+  padding: 0;
+  overflow: hidden;
+}
+
+.ref-shell--immersive .princy-topbar__search {
+  display: none;
+}
+
+.ref-shell--no-status .princy-statusbar {
+  display: none;
+}
+
+.ref-shell--minimal-top .princy-topbar__actions > *:not(.princy-topbar__title) {
+  display: none;
+}

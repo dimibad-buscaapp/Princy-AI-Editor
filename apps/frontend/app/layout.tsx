@@ -21,7 +21,11 @@ const inter = Inter({
 
 export const metadata: Metadata = {
   title: "Princy AI Editor",
-  description: "Interface neural para agentes, contexto, memória e automação."
+  description: "Interface neural para agentes, contexto, memória e automação.",
+  icons: {
+    icon: [{ url: "/favicon.ico" }, { url: "/icon.png", type: "image/png" }],
+    apple: "/apple-icon.png"
+  }
 };
 
 export default function RootLayout({

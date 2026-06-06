@@ -102,10 +102,51 @@ function rewritePath(path: string, route: ProxyRoute) {
   return `${route.rewritePrefix}${path.startsWith("/") ? path : `/${path}`}`;
 }
 
+function createRouteProxy(route: ProxyRoute, timeout: number) {
+  return createProxyMiddleware({
+    target: route.target.url,
+    changeOrigin: true,
+    proxyTimeout: timeout,
+    timeout,
+    pathRewrite: (path) => rewritePath(path, route),
+    on: {
+      proxyReq: (proxyRequest, request, response) => {
+        setGatewayHeaders(proxyRequest, request as Request, response as Response);
+      },
+      proxyRes: (proxyRes, request) => {
+        if (isEventStreamRequest(request as Request)) {
+          applyEventStreamProxyHeaders(proxyRes);
+        }
+        recordSuccess(route.target.key);
+      },
+      error: (error, _request, response) => {
+        recordFailure(route.target.key);
+        console.warn({
+          targetService: route.target.key,
+          message: error.message
+        }, "gateway proxy request failed");
+        if (!("writeHead" in response) || ("headersSent" in response && response.headersSent)) {
+          return;
+        }
+        response.writeHead(502, { "Content-Type": "application/json" });
+        response.end(
+          JSON.stringify({
+            error: "bad_gateway",
+            service: route.target.key,
+            message: error.message
+          })
+        );
+      }
+    }
+  });
+}
+
 export function registerProxyRoutes(app: Express, routes: ProxyRoute[]) {
-  const timeout = Number(process.env.GATEWAY_PROXY_TIMEOUT_MS ?? 300_000);
+  const defaultTimeout = Number(process.env.GATEWAY_PROXY_TIMEOUT_MS ?? 300_000);
 
   for (const route of routes) {
+    const streamProxy = createRouteProxy(route, 0);
+    const defaultProxy = createRouteProxy(route, defaultTimeout);
     app.use(route.path, (request: Request, response: Response, next) => {
       if (isCircuitOpen(route.target.key)) {
         response.status(503).json({
@@ -137,44 +178,9 @@ export function registerProxyRoutes(app: Express, routes: ProxyRoute[]) {
       next();
     });
 
-    app.use(
-      route.path,
-      createProxyMiddleware({
-        target: route.target.url,
-        changeOrigin: true,
-        proxyTimeout: timeout,
-        timeout,
-        pathRewrite: (path) => rewritePath(path, route),
-        on: {
-          proxyReq: (proxyRequest, request, response) => {
-            setGatewayHeaders(proxyRequest, request as Request, response as Response);
-          },
-          proxyRes: (proxyRes, request) => {
-            if (isEventStreamRequest(request as Request)) {
-              applyEventStreamProxyHeaders(proxyRes);
-            }
-            recordSuccess(route.target.key);
-          },
-          error: (error, _request, response) => {
-            recordFailure(route.target.key);
-            console.warn({
-              targetService: route.target.key,
-              message: error.message
-            }, "gateway proxy request failed");
-            if (!("writeHead" in response) || ("headersSent" in response && response.headersSent)) {
-              return;
-            }
-            response.writeHead(502, { "Content-Type": "application/json" });
-            response.end(
-              JSON.stringify({
-                error: "bad_gateway",
-                service: route.target.key,
-                message: error.message
-              })
-            );
-          }
-        }
-      })
-    );
+    app.use(route.path, (request: Request, response: Response, next) => {
+      const proxy = isEventStreamRequest(request) ? streamProxy : defaultProxy;
+      proxy(request, response, next);
+    });
   }
 }

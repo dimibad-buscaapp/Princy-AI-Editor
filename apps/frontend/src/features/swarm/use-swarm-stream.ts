@@ -1,7 +1,9 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
+import { apiUrl, eventsStreamUrl } from "../../lib/api";
 import { apiFetch } from "../../lib/api-client";
+import { normalizeSwarmAgent } from "./swarm-data";
 
 export type LiveAgent = {
   id: string;
@@ -13,6 +15,7 @@ export type LiveAgent = {
   x: number;
   y: number;
   featured?: boolean;
+  compact?: boolean;
 };
 
 export type SwarmMetrics = {
@@ -33,12 +36,15 @@ export function useSwarmStream() {
   const [pulse, setPulse] = useState(0);
 
   const refresh = useCallback(async () => {
+    if (process.env.NODE_ENV === "development") {
+      console.debug("[SWARM]", apiUrl("/agents/status"));
+    }
     try {
       const [statusRes, metricsRes] = await Promise.all([
-        apiFetch<{ agents: LiveAgent[] }>("/api/agents/status"),
-        apiFetch<SwarmMetrics>("/api/agents/metrics")
+        apiFetch<{ agents: LiveAgent[] }>("/agents/status"),
+        apiFetch<SwarmMetrics>("/agents/metrics")
       ]);
-      setAgents(statusRes.agents);
+      setAgents(statusRes.agents.map((a) => normalizeSwarmAgent(a)));
       setMetrics(metricsRes);
       const busy = statusRes.agents.filter((a) => a.status === "busy").length;
       setPulse(busy);
@@ -54,14 +60,18 @@ export function useSwarmStream() {
   }, [refresh]);
 
   useEffect(() => {
-    const gateway = process.env.NEXT_PUBLIC_GATEWAY_URL ?? "http://127.0.0.1:3407";
-    const source = new EventSource(`${gateway}/api/events/stream`);
+    const source = new EventSource(eventsStreamUrl());
     source.onmessage = (msg) => {
       try {
         const event = JSON.parse(msg.data) as { name?: string; payload?: { role?: string } };
-        if (event.name?.includes("run") || event.name?.includes("swarm")) {
+        const name = event.name ?? "";
+        const role = event.payload?.role;
+        const label = name.startsWith("neural.step")
+          ? `${role ?? "Agente"} — ${name.replace("neural.step.", "")}`
+          : name;
+        if (name.includes("run") || name.includes("swarm") || name.startsWith("neural.")) {
           setActivity((prev) => [
-            { text: event.name ?? "evento", time: "agora" },
+            { text: label, time: "agora" },
             ...prev
           ].slice(0, 8));
           setPulse((p) => p + 1);

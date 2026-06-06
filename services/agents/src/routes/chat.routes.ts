@@ -1,49 +1,43 @@
 import { authenticate, asyncHandler, validateBody } from "@princy/core";
-import type { Express, Response } from "express";
+import type { Express } from "express";
 import { z } from "zod";
 import { prisma } from "@princy/database";
 import { eventBus } from "@princy/event-bus";
+import { getCachedResponse, setCachedResponse } from "@princy/memory";
+import { mapAgentTypeToTask, routeChatModel, routeModel } from "@princy/model-router";
+import type { ModelTask } from "@princy/model-router";
+import {
+  startHeartbeat,
+  startSse,
+  streamOllamaToSse,
+  writeSse
+} from "../lib/chat-stream.js";
+import { compressChatContext } from "../lib/chat-context-compressor.js";
+import { getModelConfigService } from "../model-config/model-config.service.js";
+
+const agentTypeSchema = z.enum([
+  "AUTO",
+  "PLANNER",
+  "CODER",
+  "REVIEWER",
+  "DEBUGGER",
+  "ARCHITECT",
+  "TERMINAL",
+  "RESEARCHER",
+  "WRITER",
+  "MEMORY",
+  "CONTEXT_GRAPH"
+]);
 
 const chatSchema = z.object({
   conversationId: z.string().optional(),
   projectId: z.string().optional(),
   message: z.string().min(1),
-  agentType: z.enum(["AUTO", "PLANNER", "CODER", "REVIEWER", "DEBUGGER", "ARCHITECT", "TERMINAL"]).optional(),
+  agentType: agentTypeSchema.optional(),
   thinkingMode: z.boolean().optional(),
+  model: z.string().optional(),
   context: z.record(z.string(), z.unknown()).optional()
 });
-
-function writeSse(response: Response, event: string, data: unknown) {
-  response.write(`event: ${event}\n`);
-  response.write(`data: ${JSON.stringify(data)}\n\n`);
-}
-
-function startSse(response: Response) {
-  response.setHeader("Content-Type", "text/event-stream");
-  response.setHeader("Cache-Control", "no-cache");
-  response.setHeader("Connection", "keep-alive");
-  response.setHeader("X-Accel-Buffering", "no");
-  if (typeof response.flushHeaders === "function") {
-    response.flushHeaders();
-  }
-}
-
-function resolveChatTimeoutMs() {
-  return Number(
-    process.env.AGENT_TIMEOUT_MS ??
-      process.env.AGENTS_TIMEOUT_MS ??
-      process.env.OLLAMA_TIMEOUT_MS ??
-      300_000
-  );
-}
-
-function resolveOllamaBaseUrl() {
-  return (process.env.OLLAMA_BASE_URL ?? process.env.OLLAMA_URL ?? "http://127.0.0.1:11434").replace(/\/$/, "");
-}
-
-function resolveChatModel() {
-  return process.env.OLLAMA_CHAT_MODEL ?? process.env.DEFAULT_CHAT_MODEL ?? "qwen3:8b";
-}
 
 async function persistConversation(
   conversationId: string | undefined,
@@ -57,10 +51,7 @@ async function persistConversation(
 
   if (!conversation) {
     conversation = await prisma.conversation.create({
-      data: {
-        projectId,
-        title: message.slice(0, 80)
-      }
+      data: { projectId, title: message.slice(0, 80) }
     });
   }
 
@@ -72,134 +63,175 @@ async function persistConversation(
 }
 
 async function persistAssistantMessage(conversationId: string, content: string) {
-  await prisma.message.create({
-    data: {
-      conversationId,
-      role: "ASSISTANT",
-      content
-    }
-  });
+  await prisma.$transaction([
+    prisma.message.create({
+      data: { conversationId, role: "ASSISTANT", content }
+    }),
+    prisma.conversation.update({
+      where: { id: conversationId },
+      data: { updatedAt: new Date() }
+    })
+  ]);
   eventBus.publish({ type: "agent", name: "chat.completed", payload: { conversationId } });
+}
+
+function sectionForDate(date: Date): "today" | "yesterday" | "older" {
+  const now = new Date();
+  const startToday = new Date(now.getFullYear(), now.getMonth(), now.getDate());
+  const startYesterday = new Date(startToday);
+  startYesterday.setDate(startYesterday.getDate() - 1);
+  if (date >= startToday) return "today";
+  if (date >= startYesterday) return "yesterday";
+  return "older";
 }
 
 export function registerChatRoutes(app: Express) {
   const auth = authenticate();
 
+  app.get("/chat/conversations", auth, asyncHandler(async (_request, response) => {
+    const rows = await prisma.conversation.findMany({
+      orderBy: { updatedAt: "desc" },
+      take: 40,
+      select: { id: true, title: true, updatedAt: true }
+    });
+    response.json({
+      conversations: rows.map((row) => ({
+        id: row.id,
+        title: row.title,
+        section: sectionForDate(row.updatedAt),
+        time: row.updatedAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      }))
+    });
+  }));
+
+  app.get("/chat/conversations/:id/messages", auth, asyncHandler(async (request, response) => {
+    const id = String(request.params.id);
+    const messages = await prisma.message.findMany({
+      where: { conversationId: id },
+      orderBy: { createdAt: "asc" },
+      select: { id: true, role: true, content: true, createdAt: true }
+    });
+    response.json({
+      messages: messages.map((m) => ({
+        id: m.id,
+        role: m.role === "USER" ? "user" : "assistant",
+        content: m.content,
+        time: m.createdAt.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" })
+      }))
+    });
+  }));
+
   app.post("/chat/stream", auth, validateBody(chatSchema), asyncHandler(async (request, response) => {
-    const { conversationId, projectId, message, thinkingMode, context } = request.body;
+    const { conversationId, projectId, message, agentType, thinkingMode, model: modelOverride, context } =
+      request.body;
 
     startSse(response);
-    writeSse(response, "status", { message: "connected" });
+    const heartbeat = startHeartbeat(response);
+    writeSse(response, "status", { message: "connected", agentType: agentType ?? "AUTO" });
+    writeSse(response, "thinking", { content: "Carregando memória..." });
 
-    if (thinkingMode) {
-      writeSse(response, "thinking", { content: "Analyzing request and gathering context..." });
-    }
+    const routeType = agentType ?? "AUTO";
+    const task: ModelTask = thinkingMode
+      ? "ARCHITECT"
+      : context?.inlineChat
+        ? "INLINE_CHAT"
+        : mapAgentTypeToTask(routeType);
+    const useOverride = context?.forceModel === true && (modelOverride || typeof context?.model === "string");
+    const model = useOverride
+      ? (modelOverride ?? (context?.model as string))
+      : thinkingMode || routeType === "ARCHITECT"
+        ? routeModel("ARCHITECT")
+        : routeChatModel(message, process.env.CHAT_DEFAULT_MODE === "deep" ? "deep" : "fast");
 
-    const model = resolveChatModel();
-    const ollamaBaseUrl = resolveOllamaBaseUrl();
-    const timeoutMs = resolveChatTimeoutMs();
-    const controller = new AbortController();
-    const timeoutHandle = setTimeout(() => controller.abort(), timeoutMs);
-
+    const cached = await getCachedResponse(message, projectId);
     let assistantContent = "";
+    let streamMetrics = { ttftMs: 0, totalMs: 0, tokenCount: 0, tokensPerSec: 0, cacheHit: false, ragChunks: 0, historyMessages: 0 };
     let streamOk = false;
     let conversationIdForPersist: string | undefined = conversationId;
 
-    const persistPromise = persistConversation(conversationId, projectId, message, context)
-      .then((conversation) => {
-        conversationIdForPersist = conversation.id;
-      })
-      .catch((error) => {
-        console.warn({ error }, "chat persistence failed");
-      });
-
     try {
-      const chatResponse = await fetch(`${ollamaBaseUrl}/api/chat`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+      if (cached && !thinkingMode) {
+        const started = Date.now();
+        writeSse(response, "token", { content: cached.response });
+        assistantContent = cached.response;
+        streamMetrics = {
+          ttftMs: Date.now() - started,
+          totalMs: Date.now() - started,
+          tokenCount: cached.response.length,
+          tokensPerSec: 0,
+          cacheHit: true,
+          ragChunks: 0,
+          historyMessages: 0
+        };
+        streamOk = true;
+        writeSse(response, "done", {
+          ok: true,
+          agentType: routeType,
+          model: cached.model,
+          task,
+          metrics: streamMetrics,
+          conversationId: conversationIdForPersist,
+          cacheHit: true
+        });
+      } else {
+        const compressed = await compressChatContext({ conversationId, projectId, message });
+        streamMetrics.ragChunks = compressed.ragChunks;
+        streamMetrics.historyMessages = compressed.historyMessages;
+
+        if (thinkingMode) {
+          writeSse(response, "thinking", { content: "Raciocínio avançado com modelo de reasoning..." });
+        }
+
+        const result = await streamOllamaToSse(response, compressed.messages, model, undefined, { thinkingMode, task });
+        assistantContent = result.content;
+        streamMetrics = { ...result.metrics, cacheHit: false, ragChunks: compressed.ragChunks, historyMessages: compressed.historyMessages };
+        streamOk = true;
+        void setCachedResponse(message, assistantContent, model, projectId);
+        writeSse(response, "done", {
+          ok: true,
+          agentType: routeType,
           model,
-          stream: true,
-          messages: [
-            { role: "system", content: `You are Princy AI. Context: ${JSON.stringify(context ?? {})}` },
-            { role: "user", content: message }
-          ]
-        }),
-        signal: controller.signal
-      });
-
-      if (!chatResponse.ok) {
-        const detail = await chatResponse.text().catch(() => "");
-        throw new Error(
-          `Ollama chat failed: ${chatResponse.status} (model=${model})${detail ? ` — ${detail.slice(0, 200)}` : ""}`
-        );
+          task,
+          metrics: streamMetrics,
+          conversationId: conversationIdForPersist,
+          cacheHit: false
+        });
       }
-
-      if (!chatResponse.body) {
-        throw new Error("Ollama returned empty response body.");
-      }
-
-      const reader = chatResponse.body.getReader();
-      const decoder = new TextDecoder();
-      let pending = "";
-
-      while (true) {
-        const { done, value } = await reader.read();
-        if (done) {
-          break;
-        }
-
-        pending += decoder.decode(value, { stream: true });
-        const lines = pending.split("\n");
-        pending = lines.pop() ?? "";
-
-        for (const line of lines) {
-          if (!line.trim()) {
-            continue;
-          }
-          try {
-            const parsed = JSON.parse(line) as { message?: { content?: string } };
-            const token = parsed.message?.content ?? "";
-            if (token) {
-              assistantContent += token;
-              writeSse(response, "token", { content: token });
-            }
-          } catch {
-            assistantContent += line;
-            writeSse(response, "token", { content: line });
-          }
-        }
-      }
-
-      if (pending.trim()) {
-        try {
-          const parsed = JSON.parse(pending) as { message?: { content?: string } };
-          const token = parsed.message?.content ?? "";
-          if (token) {
-            assistantContent += token;
-            writeSse(response, "token", { content: token });
-          }
-        } catch {
-          assistantContent += pending;
-          writeSse(response, "token", { content: pending });
-        }
-      }
-
-      streamOk = true;
-      writeSse(response, "done", { ok: true });
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : "chat failed";
       writeSse(response, "error", { message: errorMessage });
       writeSse(response, "done", { ok: false });
     } finally {
-      clearTimeout(timeoutHandle);
-      await persistPromise;
-      if (streamOk && conversationIdForPersist && assistantContent) {
-        await persistAssistantMessage(conversationIdForPersist, assistantContent).catch((error) => {
-          console.warn({ error }, "assistant message persistence failed");
+      clearInterval(heartbeat);
+      response.end();
+      if (streamOk && assistantContent) {
+        void persistConversation(conversationId, projectId, message, context)
+          .then(async (conversation) => {
+            conversationIdForPersist = conversation.id;
+            await persistAssistantMessage(conversation.id, assistantContent);
+            const memoryUrl = process.env.MEMORY_SERVICE_URL ?? "http://127.0.0.1:3405";
+            fetch(`${memoryUrl}/memory/chat/summarize`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: request.headers.authorization ?? ""
+              },
+              body: JSON.stringify({ conversationId: conversation.id })
+            }).catch(() => undefined);
+          })
+          .catch((error) => {
+            console.warn({ error }, "chat persistence failed");
+          });
+        void getModelConfigService().recordMetric({
+          modelId: model,
+          task,
+          ttftMs: streamMetrics.ttftMs,
+          totalMs: streamMetrics.totalMs,
+          tokenCount: streamMetrics.tokenCount,
+          tokensPerSec: streamMetrics.tokensPerSec,
+          cacheHit: streamMetrics.cacheHit
         });
       }
-      response.end();
     }
   }));
 }

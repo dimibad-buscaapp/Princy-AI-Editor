@@ -1,7 +1,9 @@
+import { getGatewayUrl } from "../../../../src/lib/gateway-url";
+
 export async function POST(request: Request) {
   const body = await request.text();
 
-  const response = await fetch("http://13.140.129.77:3407/api/auth/refresh", {
+  const response = await fetch(`${getGatewayUrl()}/api/auth/refresh`, {
     method: "POST",
     headers: {
       "Content-Type": request.headers.get("content-type") ?? "application/json"
