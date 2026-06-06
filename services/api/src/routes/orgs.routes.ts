@@ -30,4 +30,33 @@ export function registerOrgsRoutes(app: Express) {
     const rows = await prisma.$queryRaw`SELECT * FROM "Organization" WHERE id = ${id}`;
     response.status(201).json({ org: (rows as unknown[])[0] });
   }));
+
+  app.post("/orgs/:orgId/invites", auth, validateBody(z.object({
+    email: z.string().email(),
+    role: z.string().default("developer")
+  })), asyncHandler(async (request, response) => {
+    const orgId = String(request.params.orgId);
+    const id = cuid("inv");
+    const token = cuid("tok");
+    const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60_000);
+    await prisma.$executeRaw`
+      INSERT INTO "OrgInvite" (id, "orgId", email, role, token, status, "expiresAt", "createdAt")
+      VALUES (${id}, ${orgId}, ${request.body.email}, ${request.body.role}, ${token}, 'pending', ${expiresAt}, NOW())
+    `;
+    response.status(201).json({ invite: { id, orgId, email: request.body.email, token, expiresAt } });
+  }));
+
+  app.get("/orgs/:orgId/billing", auth, asyncHandler(async (request, response) => {
+    const orgId = String(request.params.orgId);
+    const rows = await prisma.$queryRaw`SELECT * FROM "OrgBilling" WHERE "orgId" = ${orgId}`;
+    const billing = (rows as unknown[])[0] ?? {
+      orgId,
+      plan: "free",
+      status: "active",
+      seatsUsed: 1,
+      seatsLimit: 5,
+      placeholder: true
+    };
+    response.json({ billing });
+  }));
 }

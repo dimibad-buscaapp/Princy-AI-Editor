@@ -1,0 +1,24 @@
+CREATE TABLE IF NOT EXISTS "OrgInvite" (
+  id TEXT PRIMARY KEY,
+  "orgId" TEXT NOT NULL REFERENCES "Organization"(id) ON DELETE CASCADE,
+  email TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'developer',
+  token TEXT NOT NULL UNIQUE,
+  status TEXT NOT NULL DEFAULT 'pending',
+  "expiresAt" TIMESTAMP(3) NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS "OrgBilling" (
+  id TEXT PRIMARY KEY,
+  "orgId" TEXT NOT NULL UNIQUE REFERENCES "Organization"(id) ON DELETE CASCADE,
+  plan TEXT NOT NULL DEFAULT 'free',
+  status TEXT NOT NULL DEFAULT 'active',
+  "seatsUsed" INT NOT NULL DEFAULT 1,
+  "seatsLimit" INT NOT NULL DEFAULT 5,
+  metadata JSONB,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS "OrgInvite_orgId_idx" ON "OrgInvite"("orgId");

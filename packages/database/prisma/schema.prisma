@@ -173,6 +173,33 @@ model Group {
   @@unique([orgId, slug])
 }
 
+model OrgInvite {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  email     String
+  role      String       @default("developer")
+  token     String       @unique
+  status    String       @default("pending")
+  expiresAt DateTime
+  createdAt DateTime     @default(now())
+
+  @@index([orgId])
+}
+
+model OrgBilling {
+  id         String       @id @default(cuid())
+  orgId      String       @unique
+  org        Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  plan       String       @default("free")
+  status     String       @default("active")
+  seatsUsed  Int          @default(1)
+  seatsLimit Int          @default(5)
+  metadata   Json?
+  createdAt  DateTime     @default(now())
+  updatedAt  DateTime     @updatedAt
+}
+
 model Team {
   id           String        @id @default(cuid())
   orgId        String
