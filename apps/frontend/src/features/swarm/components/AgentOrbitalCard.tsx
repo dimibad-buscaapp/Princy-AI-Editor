@@ -15,11 +15,11 @@ type AgentCardData = {
   y?: number;
 };
 
-export function AgentOrbitalCard({ agent }: { agent: AgentCardData }) {
-  const busy = agent.status === "busy";
+export function AgentOrbitalCard({ agent, isCurrent = false }: { agent: AgentCardData; isCurrent?: boolean }) {
+  const busy = agent.status === "busy" || isCurrent;
   return (
     <motion.div
-      className={`agent-orbital-card ${agent.featured ? "agent-orbital-card--featured" : ""} ${agent.compact ? "agent-orbital-card--compact" : ""} ${busy ? "agent-orbital-card--busy" : ""}`}
+      className={`agent-orbital-card ${agent.featured ? "agent-orbital-card--featured" : ""} ${agent.compact ? "agent-orbital-card--compact" : ""} ${busy ? "agent-orbital-card--busy" : ""} ${isCurrent ? "agent-orbital-card--current" : ""}`}
       style={{ left: `${agent.x ?? 0}%`, top: `${agent.y ?? 0}%` }}
       initial={{ opacity: 0, scale: 0.92 }}
       animate={{ opacity: 1, scale: 1 }}

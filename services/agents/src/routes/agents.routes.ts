@@ -89,7 +89,7 @@ export function registerAgentsRoutes(app: Express) {
     } else {
       const swarmAgent = resolveSwarmChatAgent(type);
       const agent = swarmAgent ?? router.resolve(type as AgentType);
-      result = await engine.execute(agent, { objective, context }, task.id);
+      result = await engine.execute(agent, { objective, context }, { taskId: task.id });
     }
     await prisma.task.update({
       where: { id: task.id },

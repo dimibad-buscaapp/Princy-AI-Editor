@@ -54,6 +54,13 @@ enum MemoryScope {
   AGENT
 }
 
+enum AgentMemoryKind {
+  decision
+  error
+  preference
+  context
+}
+
 enum CodeMemoryKind {
   SYMBOL
   ROUTE
@@ -460,17 +467,24 @@ model CodeMemory {
 }
 
 model AgentMemory {
-  id         String   @id @default(cuid())
-  agentRole  String
-  taskId     String?
-  success    Boolean  @default(true)
-  durationMs Int?
-  decision   String?
-  metadata   Json?
-  createdAt  DateTime @default(now())
+  id            String           @id @default(cuid())
+  agentRole     String
+  kind          AgentMemoryKind  @default(decision)
+  projectId     String?
+  content       String?
+  recurrenceKey String?
+  taskId        String?
+  success       Boolean          @default(true)
+  durationMs    Int?
+  decision      String?
+  metadata      Json?
+  createdAt     DateTime         @default(now())
 
   @@index([agentRole])
   @@index([taskId])
+  @@index([projectId])
+  @@index([kind])
+  @@index([recurrenceKey])
 }
 
 model ChatCacheEntry {
@@ -489,6 +503,26 @@ model ChatCacheEntry {
 
   @@unique([queryHash, projectId])
   @@index([expiresAt])
+}
+
+model SwarmRun {
+  id           String          @id @default(cuid())
+  objective    String
+  context      String?
+  status       TaskStatus      @default(PENDING)
+  currentAgent SwarmAgentRole?
+  progress     Int             @default(0)
+  pipelineId   String          @unique
+  artifacts    Json?
+  startedAt    DateTime?
+  completedAt  DateTime?
+  durationMs   Int?
+  error        String?
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
 }
 
 model SwarmTask {

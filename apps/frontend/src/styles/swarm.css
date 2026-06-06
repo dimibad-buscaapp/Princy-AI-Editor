@@ -196,3 +196,101 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+
+.swarm-hud__step-card--active {
+  border-color: var(--princy-accent);
+  box-shadow: var(--princy-glow);
+}
+
+.swarm-hud__progress-wrap {
+  margin-bottom: 12px;
+  background: rgba(5, 10, 25, 0.6);
+  border-radius: 8px;
+  padding: 8px 10px;
+  border: 1px solid var(--princy-border);
+}
+
+.swarm-hud__progress-bar {
+  height: 4px;
+  background: linear-gradient(90deg, var(--princy-accent), var(--princy-violet));
+  border-radius: 4px;
+  margin-bottom: 6px;
+  transition: width 0.3s ease;
+}
+
+.swarm-hud__progress-label {
+  font-size: 0.72rem;
+  color: var(--princy-muted);
+}
+
+.swarm-hud__live-timer {
+  font-size: 0.68rem;
+  color: var(--princy-accent);
+  margin-left: 6px;
+}
+
+.swarm-hud__artifacts {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
+}
+
+.swarm-artifact__item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.68rem;
+  color: var(--princy-muted);
+  padding: 2px 0;
+}
+
+.swarm-queue {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--princy-border);
+}
+
+.swarm-queue__title {
+  margin: 0 0 8px;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--princy-muted);
+}
+
+.swarm-queue__list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.swarm-queue__item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 0;
+  border-bottom: 1px solid var(--princy-border);
+  font-size: 0.75rem;
+}
+
+.swarm-queue__objective {
+  flex: 1;
+  min-width: 120px;
+}
+
+.swarm-queue__empty {
+  color: var(--princy-muted);
+  font-size: 0.78rem;
+}
+
+.swarm-view__run-status {
+  margin-left: 12px;
+  font-size: 0.72rem;
+  color: var(--princy-accent);
+}
+
+.agent-orbital-card--current {
+  outline: 1px solid rgba(34, 211, 238, 0.55);
+  box-shadow: 0 0 18px rgba(34, 211, 238, 0.35);
+}

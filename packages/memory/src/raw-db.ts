@@ -121,10 +121,116 @@ export async function rawRecordAgentMemory(input: {
   success: boolean;
   durationMs?: number;
   decision?: string;
+  content?: string;
+  kind?: string;
+  projectId?: string;
+  recurrenceKey?: string;
+  metadata?: Record<string, unknown>;
 }) {
   const id = cuid();
   await prisma.$executeRaw`
-    INSERT INTO "AgentMemory" (id, "agentRole", "taskId", success, "durationMs", decision, "createdAt")
-    VALUES (${id}, ${input.agentRole}, ${input.taskId ?? null}, ${input.success}, ${input.durationMs ?? null}, ${input.decision ?? null}, NOW())
+    INSERT INTO "AgentMemory" (id, "agentRole", kind, "projectId", content, "recurrenceKey", "taskId", success, "durationMs", decision, metadata, "createdAt")
+    VALUES (
+      ${id}, ${input.agentRole}, ${(input.kind ?? "decision")}::"AgentMemoryKind",
+      ${input.projectId ?? null}, ${input.content ?? null}, ${input.recurrenceKey ?? null},
+      ${input.taskId ?? null}, ${input.success}, ${input.durationMs ?? null},
+      ${input.decision ?? null}, ${input.metadata ? JSON.stringify(input.metadata) : null}::jsonb, NOW()
+    )
+  `;
+  return id;
+}
+
+export type RawAgentMemoryRow = {
+  id: string;
+  agentRole: string;
+  kind: string;
+  projectId: string | null;
+  content: string | null;
+  recurrenceKey: string | null;
+  taskId: string | null;
+  success: boolean;
+  durationMs: number | null;
+  decision: string | null;
+  metadata: unknown;
+  createdAt: Date;
+};
+
+export async function rawGetAgentMemoryRow(id: string): Promise<RawAgentMemoryRow | null> {
+  const rows = await prisma.$queryRaw<RawAgentMemoryRow[]>`SELECT * FROM "AgentMemory" WHERE id = ${id} LIMIT 1`;
+  return rows[0] ?? null;
+}
+
+export async function rawListAgentMemory(
+  agentRole?: string,
+  options?: { kind?: string; projectId?: string; limit?: number }
+): Promise<RawAgentMemoryRow[]> {
+  const limit = options?.limit ?? 50;
+  if (agentRole && options?.kind && options?.projectId) {
+    return prisma.$queryRaw<RawAgentMemoryRow[]>`
+      SELECT * FROM "AgentMemory" WHERE "agentRole" = ${agentRole} AND kind = ${options.kind}::"AgentMemoryKind" AND "projectId" = ${options.projectId}
+      ORDER BY "createdAt" DESC LIMIT ${limit}
+    `;
+  }
+  if (agentRole && options?.kind) {
+    return prisma.$queryRaw<RawAgentMemoryRow[]>`
+      SELECT * FROM "AgentMemory" WHERE "agentRole" = ${agentRole} AND kind = ${options.kind}::"AgentMemoryKind"
+      ORDER BY "createdAt" DESC LIMIT ${limit}
+    `;
+  }
+  if (agentRole && options?.projectId) {
+    return prisma.$queryRaw<RawAgentMemoryRow[]>`
+      SELECT * FROM "AgentMemory" WHERE "agentRole" = ${agentRole} AND "projectId" = ${options.projectId}
+      ORDER BY "createdAt" DESC LIMIT ${limit}
+    `;
+  }
+  if (agentRole) {
+    return prisma.$queryRaw<RawAgentMemoryRow[]>`
+      SELECT * FROM "AgentMemory" WHERE "agentRole" = ${agentRole} ORDER BY "createdAt" DESC LIMIT ${limit}
+    `;
+  }
+  return prisma.$queryRaw<RawAgentMemoryRow[]>`
+    SELECT * FROM "AgentMemory" ORDER BY "createdAt" DESC LIMIT ${limit}
+  `;
+}
+
+export async function rawDeleteAgentMemory(id: string) {
+  await prisma.$executeRaw`DELETE FROM "AgentMemory" WHERE id = ${id}`;
+}
+
+async function resolveMemoryChunkProjectId(projectId?: string) {
+  if (!projectId) return null;
+  const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+    SELECT id FROM "Project" WHERE id = ${projectId} LIMIT 1
+  `;
+  return rows[0]?.id ?? null;
+}
+
+export async function rawCreateAgentMemoryChunk(input: {
+  agentMemoryId: string;
+  agentRole: string;
+  kind: string;
+  content: string;
+  projectId?: string;
+  title?: string;
+}) {
+  const id = cuid();
+  const chunkProjectId = await resolveMemoryChunkProjectId(input.projectId);
+  const tags = JSON.stringify([input.agentRole, input.kind]);
+  const metadata = JSON.stringify({
+    agentMemoryId: input.agentMemoryId,
+    agentRole: input.agentRole,
+    kind: input.kind,
+    projectId: input.projectId ?? null
+  });
+  await prisma.$executeRaw`
+    INSERT INTO "MemoryChunk" (id, scope, "projectId", title, content, tags, metadata, "createdAt", "updatedAt")
+    VALUES (${id}, 'AGENT'::"MemoryScope", ${chunkProjectId}, ${input.title ?? `${input.agentRole} memory`}, ${input.content}, ${tags}::jsonb, ${metadata}::jsonb, NOW(), NOW())
+  `;
+  return id;
+}
+
+export async function rawDeleteAgentMemoryChunk(agentMemoryId: string) {
+  await prisma.$executeRaw`
+    DELETE FROM "MemoryChunk" WHERE metadata->>'agentMemoryId' = ${agentMemoryId}
   `;
 }

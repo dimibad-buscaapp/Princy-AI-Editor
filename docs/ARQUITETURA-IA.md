@@ -111,6 +111,17 @@ Modelos extras via `OLLAMA_EXTRA_MODELS` (lista separada por vírgula).
 
 Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 
+### Swarm (Fase 34)
+
+| Método | Rota |
+|--------|------|
+| `POST` | `/api/swarm/run` |
+| `GET` | `/api/swarm/runs` |
+| `GET` | `/api/swarm/runs/:id` |
+| `POST` | `/api/swarm/runs/:id/cancel` |
+| `POST` | `/api/swarm/task` |
+| `GET` | `/api/swarm/tasks` |
+
 ### Agents
 
 | Método | Rota |
@@ -119,6 +130,9 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/agents/autonomous/run` |
 | `GET` | `/api/agents/status` |
 | `GET` | `/api/agents/metrics` |
+| `GET` | `/api/agents/:agentId/memory` |
+| `POST` | `/api/agents/:agentId/memory` |
+| `DELETE` | `/api/agents/:agentId/memory/:memoryId` |
 | `POST` | `/api/chat/complete` | *(deprecated alias)* |
 
 ## Eventos Redis

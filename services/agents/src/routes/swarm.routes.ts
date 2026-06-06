@@ -4,6 +4,8 @@ import { z } from "zod";
 import { prisma } from "@princy/database";
 import { recordAgentMemory } from "@princy/memory";
 import { AgentExecutionEngine } from "../orchestrator/agent-execution-engine.js";
+import { swarmOrchestrator } from "../orchestrator/swarm-orchestrator.js";
+import { buildTaskOutput } from "../swarm/swarm-artifacts.js";
 import { DeveloperAgent, resolveSwarmChatAgent, SWARM_PIPELINE } from "../agents/swarm-agents.js";
 import type { SwarmRole } from "../swarm/swarm-registry.js";
 import { swarmRegistry } from "../swarm/swarm-registry.js";
@@ -17,6 +19,13 @@ const createSchema = z.object({
   context: z.string().optional()
 });
 
+const runSchema = z.object({
+  objective: z.string().min(1),
+  context: z.string().optional(),
+  title: z.string().optional(),
+  projectId: z.string().optional()
+});
+
 const cancelFlags = new Map<string, boolean>();
 
 function cuid() {
@@ -26,6 +35,43 @@ function cuid() {
 export function registerSwarmRoutes(app: Express) {
   const auth = authenticate();
   const engine = new AgentExecutionEngine();
+
+  app.post("/swarm/run", auth, validateBody(runSchema), asyncHandler(async (request, response) => {
+    const { objective, context, title, projectId } = request.body;
+    const run = await swarmOrchestrator.startRun({ objective, context, title, projectId });
+    setImmediate(() => {
+      void swarmOrchestrator.executeRun(run.id).catch((err) => {
+        console.error("[swarm] executeRun failed", err);
+      });
+    });
+    response.status(201).json({ run });
+  }));
+
+  app.get("/swarm/runs", auth, asyncHandler(async (request, response) => {
+    const status = request.query.status ? String(request.query.status) : undefined;
+    const limit = request.query.limit ? Number(request.query.limit) : 50;
+    const runs = await swarmOrchestrator.listRuns({ status, limit });
+    response.json({ runs });
+  }));
+
+  app.get("/swarm/runs/:id", auth, asyncHandler(async (request, response) => {
+    const id = String(request.params.id);
+    const detail = await swarmOrchestrator.getRunDetail(id);
+    if (!detail) throw new HttpError(404, "not_found", "Run not found");
+    response.json(detail);
+  }));
+
+  app.post("/swarm/runs/:id/cancel", auth, asyncHandler(async (request, response) => {
+    const id = String(request.params.id);
+    const rows = await prisma.$queryRaw<Array<Record<string, unknown>>>`SELECT * FROM "SwarmRun" WHERE id = ${id} LIMIT 1`;
+    if (!rows[0]) throw new HttpError(404, "not_found", "Run not found");
+    swarmOrchestrator.cancelRun(id);
+    await prisma.$executeRaw`
+      UPDATE "SwarmRun" SET status = 'CANCELLED'::"TaskStatus", "completedAt" = NOW(), "updatedAt" = NOW() WHERE id = ${id}
+    `;
+    const updated = await prisma.$queryRaw<Array<Record<string, unknown>>>`SELECT * FROM "SwarmRun" WHERE id = ${id} LIMIT 1`;
+    response.json({ run: updated[0] });
+  }));
 
   app.post("/swarm/task", auth, validateBody(createSchema), asyncHandler(async (request, response) => {
     const { title, description, objective, context } = request.body;
@@ -85,10 +131,11 @@ export function registerSwarmRoutes(app: Express) {
     try {
       const step = SWARM_PIPELINE.find((s) => s.role === role);
       const agent = step?.agent ?? resolveSwarmChatAgent(role) ?? new DeveloperAgent();
-      const result = await engine.execute(agent, { objective, context }, id);
+      const result = await engine.execute(agent, { objective, context }, { taskId: id });
       const durationMs = Date.now() - started;
+      const output = buildTaskOutput(role as "COORDINATOR" | "ARCHITECT" | "DEVELOPER" | "TESTER" | "REVIEWER" | "DEVOPS", result.output);
       await prisma.$executeRaw`
-        UPDATE "SwarmTask" SET status = 'COMPLETED'::"TaskStatus", output = ${JSON.stringify({ text: result.output })}::jsonb, logs = ${JSON.stringify([{ at: new Date().toISOString(), message: "completed" }])}::jsonb, "updatedAt" = NOW()
+        UPDATE "SwarmTask" SET status = 'COMPLETED'::"TaskStatus", output = ${JSON.stringify(output)}::jsonb, logs = ${JSON.stringify([{ at: new Date().toISOString(), message: "completed" }])}::jsonb, "updatedAt" = NOW()
         WHERE id = ${id}
       `;
       swarmRegistry.recordRun(role, `${role} concluiu`, 1, durationMs, true);
@@ -99,7 +146,7 @@ export function registerSwarmRoutes(app: Express) {
       const durationMs = Date.now() - started;
       const message = error instanceof Error ? error.message : "failed";
       await prisma.$executeRaw`
-        UPDATE "SwarmTask" SET status = 'FAILED'::"TaskStatus", output = ${JSON.stringify({ error: message })}::jsonb, logs = ${JSON.stringify([{ at: new Date().toISOString(), message }])}::jsonb, "updatedAt" = NOW()
+        UPDATE "SwarmTask" SET status = 'FAILED'::"TaskStatus", output = ${JSON.stringify({ text: message, artifacts: [] })}::jsonb, logs = ${JSON.stringify([{ at: new Date().toISOString(), message }])}::jsonb, "updatedAt" = NOW()
         WHERE id = ${id}
       `;
       swarmRegistry.recordRun(role, `${role} falhou`, 0, durationMs, false);

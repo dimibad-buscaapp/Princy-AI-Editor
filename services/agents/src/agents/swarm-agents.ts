@@ -8,21 +8,67 @@ import { TerminalAgent } from "./terminal.agent.js";
 import { BaseAgent, type AgentContext, type AgentResult } from "./base.agent.js";
 import type { AgentType } from "@princy/database";
 import type { SwarmRole } from "../swarm/swarm-registry.js";
+import { ARTIFACT_PROMPT_SUFFIX, type SwarmAgentRole } from "../swarm/swarm-artifacts.js";
 
 export class DeveloperAgent extends CoderAgent {
   readonly swarmRole = "DEVELOPER" as const;
+
+  async run(ctx: AgentContext): Promise<AgentResult> {
+    const output = await this.prompt(
+      "You are a coding agent. Produce implementation code or patches. " + ARTIFACT_PROMPT_SUFFIX.DEVELOPER,
+      `Plan/Objective: ${ctx.objective}\nPrevious: ${ctx.previousOutput ?? ""}\nContext: ${ctx.context ?? ""}`
+    );
+    return { output, metadata: { kind: "code", role: "DEVELOPER" } };
+  }
 }
 
 export class TesterAgent extends DebuggerAgent {
   readonly swarmRole = "TESTER" as const;
+
+  async run(ctx: AgentContext): Promise<AgentResult> {
+    const output = await this.prompt(
+      "You are a testing agent. Generate tests and validation steps. " + ARTIFACT_PROMPT_SUFFIX.TESTER,
+      `Objective: ${ctx.objective}\nImplementation:\n${ctx.previousOutput ?? ""}\nContext: ${ctx.context ?? ""}`
+    );
+    return { output, metadata: { kind: "tests", role: "TESTER" } };
+  }
 }
 
 export class DevOpsAgent extends TerminalAgent {
   readonly swarmRole = "DEVOPS" as const;
+
+  async run(ctx: AgentContext): Promise<AgentResult> {
+    const output = await this.prompt(
+      "You are a DevOps agent. Propose safe deployment and operations steps. " + ARTIFACT_PROMPT_SUFFIX.DEVOPS,
+      `Objective: ${ctx.objective}\nPrior output:\n${ctx.previousOutput ?? ""}\nContext: ${ctx.context ?? ""}`
+    );
+    return { output, metadata: { kind: "devops", role: "DEVOPS" } };
+  }
 }
 
 export class ReviewerSwarmAgent extends ReviewerAgent {
   readonly swarmRole = "REVIEWER" as const;
+
+  async run(ctx: AgentContext): Promise<AgentResult> {
+    const output = await this.prompt(
+      "You are a code reviewer. List issues and suggested fixes. " + ARTIFACT_PROMPT_SUFFIX.REVIEWER,
+      `Code/Output to review:\n${ctx.previousOutput ?? ctx.objective}`
+    );
+    return { output, metadata: { review: true, role: "REVIEWER" } };
+  }
+}
+
+export class ArchitectSwarmAgent extends ArchitectAgent {
+  readonly swarmRole = "ARCHITECT" as const;
+
+  async run(ctx: AgentContext): Promise<AgentResult> {
+    const output = await this.prompt(
+      "You are a software architect. Describe components, boundaries, and affected files. " +
+        ARTIFACT_PROMPT_SUFFIX.ARCHITECT,
+      `Objective: ${ctx.objective}\nPlan:\n${ctx.previousOutput ?? ""}\nContext: ${ctx.context ?? ""}`
+    );
+    return { output, metadata: { kind: "architect", role: "ARCHITECT" } };
+  }
 }
 
 export class WriterAgent extends BaseAgent {
@@ -61,11 +107,12 @@ export class CoordinatorAgent extends BaseAgent {
 
   async run(ctx: AgentContext): Promise<AgentResult> {
     const output = await this.prompt(
-      "You are the Princy Neural Core coordinator. Break the objective into steps for specialized agents.",
+      "You are the Princy Neural Core coordinator. Break the objective into steps for specialized agents. " +
+        ARTIFACT_PROMPT_SUFFIX.COORDINATOR,
       `Objective: ${ctx.objective}\nContext: ${ctx.context ?? ""}`,
       "plan"
     );
-    return { output, metadata: { kind: "coordinator" } };
+    return { output, metadata: { kind: "coordinator", role: "COORDINATOR" } };
   }
 }
 
@@ -75,7 +122,7 @@ export const SWARM_PIPELINE: { role: SwarmRole; agent: BaseAgent }[] = [
   { role: "RESEARCHER", agent: new ResearchAgent() },
   { role: "MEMORY", agent: new MemoryAgent() },
   { role: "CONTEXT_GRAPH", agent: new ContextGraphAgent() },
-  { role: "ARCHITECT", agent: new ArchitectAgent() },
+  { role: "ARCHITECT", agent: new ArchitectSwarmAgent() },
   { role: "DEVELOPER", agent: new DeveloperAgent() },
   { role: "TESTER", agent: new TesterAgent() },
   { role: "REVIEWER", agent: new ReviewerSwarmAgent() },
@@ -83,15 +130,17 @@ export const SWARM_PIPELINE: { role: SwarmRole; agent: BaseAgent }[] = [
   { role: "DEVOPS", agent: new DevOpsAgent() }
 ];
 
-/** Official autonomous pipeline */
+/** Official autonomous / Phase 34 pipeline (6 agents) */
 export const AUTONOMOUS_PIPELINE: { role: SwarmRole; agent: BaseAgent }[] = [
   { role: "COORDINATOR", agent: new CoordinatorAgent() },
-  { role: "ARCHITECT", agent: new ArchitectAgent() },
+  { role: "ARCHITECT", agent: new ArchitectSwarmAgent() },
   { role: "DEVELOPER", agent: new DeveloperAgent() },
   { role: "TESTER", agent: new TesterAgent() },
   { role: "REVIEWER", agent: new ReviewerSwarmAgent() },
   { role: "DEVOPS", agent: new DevOpsAgent() }
 ];
+
+export const PHASE34_PIPELINE = AUTONOMOUS_PIPELINE;
 
 export function mapSwarmToAgentType(role: SwarmRole): AgentType {
   const map: Record<SwarmRole, AgentType> = {
@@ -119,3 +168,15 @@ export function resolveSwarmChatAgent(role: string): BaseAgent | null {
 }
 
 export const SWARM_CHAT_ROLES = [...SWARM_CHAT_AGENTS.keys()] as SwarmRole[];
+
+export function pipelineRoleToSwarmAgentRole(role: SwarmRole): SwarmAgentRole | null {
+  const allowed: SwarmAgentRole[] = [
+    "COORDINATOR",
+    "ARCHITECT",
+    "DEVELOPER",
+    "TESTER",
+    "REVIEWER",
+    "DEVOPS"
+  ];
+  return allowed.includes(role as SwarmAgentRole) ? (role as SwarmAgentRole) : null;
+}

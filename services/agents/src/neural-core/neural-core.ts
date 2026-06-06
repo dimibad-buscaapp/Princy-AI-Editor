@@ -63,7 +63,7 @@ export class NeuralCore {
         const result = await this.engine.execute(
           step.agent,
           { objective, context, previousOutput: previous },
-          taskId
+          { taskId }
         );
         previous = result.output;
         outputs[role] = result.output;

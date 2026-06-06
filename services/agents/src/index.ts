@@ -2,6 +2,7 @@ import "dotenv/config";
 import { createDatabaseReadinessCheck } from "@princy/core";
 import { prisma } from "@princy/database";
 import { startService } from "@princy/service-kit";
+import { registerAgentMemoryRoutes } from "./routes/agent-memory.routes.js";
 import { registerAgentsRoutes } from "./routes/agents.routes.js";
 import { registerChatRoutes } from "./routes/chat.routes.js";
 import { registerEventsRoutes } from "./routes/events.routes.js";
@@ -33,6 +34,7 @@ startService({
   port,
   routes: [
     registerAgentsRoutes,
+    registerAgentMemoryRoutes,
     registerChatRoutes,
     registerCompleteRoutes,
     registerCodeRoutes,
