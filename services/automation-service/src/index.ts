@@ -4,6 +4,7 @@ import { prisma } from "@princy/database";
 import { startService } from "@princy/service-kit";
 import { initRedisPublisher } from "@princy/event-bus";
 import { registerAutomationRoutes } from "./routes/automation.routes.js";
+import { registerAutonomousProjectRoutes } from "./routes/autonomous-projects.routes.js";
 
 void initRedisPublisher();
 
@@ -13,6 +14,6 @@ startService({
   name: "Automation Service",
   description: "Workflow automation and autonomous goals.",
   port,
-  routes: [registerAutomationRoutes],
+  routes: [registerAutomationRoutes, registerAutonomousProjectRoutes],
   readinessCheck: createDatabaseReadinessCheck(() => prisma.$queryRaw`SELECT 1`)
 });

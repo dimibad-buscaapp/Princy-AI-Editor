@@ -139,6 +139,17 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/agents/task-learning/classify` |
 | `POST` | `/api/agents/task-learning/record` |
 | `POST` | `/api/patch/reject` |
+
+### Autonomous Projects (Fase 38)
+
+| Método | Rota |
+|--------|------|
+| `POST` | `/api/autonomous/projects` |
+| `GET` | `/api/autonomous/projects` |
+| `GET` | `/api/autonomous/projects/:id` |
+| `POST` | `/api/autonomous/projects/:id/run` |
+| `POST` | `/api/autonomous/projects/:id/pause` |
+| `POST` | `/api/autonomous/projects/:id/approve` |
 | `POST` | `/api/chat/complete` | *(deprecated alias)* |
 
 ## Eventos Redis

@@ -577,6 +577,39 @@ model InstalledAgent {
   @@index([userId])
 }
 
+model AutonomousProject {
+  id               String   @id @default(cuid())
+  title            String
+  objective        String
+  description      String?
+  projectId        String?
+  status           TaskStatus @default(PENDING)
+  milestones       Json?
+  blockers         Json?
+  currentMilestone Int      @default(0)
+  metadata         Json?
+  runs             AutonomousProjectRun[]
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  @@index([status])
+  @@index([projectId])
+}
+
+model AutonomousProjectRun {
+  id          String            @id @default(cuid())
+  projectId   String
+  project     AutonomousProject @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  status      TaskStatus        @default(PENDING)
+  result      Json?
+  error       String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime          @default(now())
+
+  @@index([projectId])
+}
+
 model TaskPattern {
   id              String   @id @default(cuid())
   patternKey      String   @unique

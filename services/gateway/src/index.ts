@@ -34,7 +34,8 @@ const preRoutes: ServiceRouteRegistrar[] = [
       { path: "/api/patch", target: targets.workspace, rewritePrefix: "/patch" },
       { path: "/api/terminal", target: targets.workspace, rewritePrefix: "/terminal" },
       { path: "/api/mcp", target: targets.mcp, rewritePrefix: "/mcp" },
-      { path: "/api/automation", target: targets.automation, rewritePrefix: "/automation" }
+      { path: "/api/automation", target: targets.automation, rewritePrefix: "/automation" },
+      { path: "/api/autonomous", target: targets.automation, rewritePrefix: "/autonomous" }
     ]);
   }
 ];

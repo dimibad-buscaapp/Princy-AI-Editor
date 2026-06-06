@@ -71,13 +71,34 @@ export function AutonomousView() {
   );
   const [phase, setPhase] = useState<string>("idle");
 
+  const [projects, setProjects] = useState<Array<{ id: string; title: string; status: string; objective?: string }>>([]);
+
   async function loadGoals() {
     const data = await apiFetch<{ goals: Goal[] }>("/automation/goals");
     setGoals(data.goals ?? []);
   }
 
+  async function loadProjects() {
+    try {
+      const data = await apiFetch<{ projects: Array<{ id: string; title: string; status: string; objective?: string }> }>("/autonomous/projects");
+      setProjects(data.projects ?? []);
+    } catch {
+      setProjects([]);
+    }
+  }
+
+  async function createProject() {
+    if (!objective.trim()) return;
+    await apiFetch("/autonomous/projects", {
+      method: "POST",
+      body: { title: objective.slice(0, 80), objective }
+    });
+    await loadProjects();
+  }
+
   useEffect(() => {
     void loadGoals();
+    void loadProjects();
     void apiFetch<{ suggestions: TaskSuggestion[] }>("/agents/task-learning/suggestions")
       .then((d) => setSuggestions(d.suggestions ?? []))
       .catch(() => setSuggestions([]));
@@ -224,6 +245,9 @@ export function AutonomousView() {
         <GlowButton variant="violet" onClick={startAutonomous} disabled={running}>
           <Play size={14} /> {running ? "Executando..." : "Iniciar"}
         </GlowButton>
+        <GlowButton variant="cyan" onClick={() => void createProject()} disabled={running || !objective.trim()}>
+          Criar Projeto
+        </GlowButton>
       </div>
       {classification ? (
         <HolographicCard title="Task Learning">
@@ -270,6 +294,17 @@ export function AutonomousView() {
           </div>
         </HolographicCard>
       ) : null}
+      <HolographicCard title="Projetos Autônomos">
+        <ul className="auto-view__goals">
+          {projects.map((p) => (
+            <li key={p.id} className={`auto-view__goal auto-view__goal--${String(p.status).toLowerCase()}`}>
+              <strong>{p.title}</strong>
+              <span>{p.status}</span>
+            </li>
+          ))}
+          {projects.length === 0 ? <li>Nenhum projeto autônomo ainda.</li> : null}
+        </ul>
+      </HolographicCard>
       <HolographicCard title="Histórico de Objetivos">
         <ul className="auto-view__goals">
           {goals.map((g) => (
