@@ -186,18 +186,34 @@ model Project {
 }
 
 model Workspace {
-  id           String        @id @default(cuid())
+  id           String          @id @default(cuid())
   projectId    String
-  project      Project       @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  project      Project         @relation(fields: [projectId], references: [id], onDelete: Cascade)
   path         String
   memoryChunks MemoryChunk[]
   patches      Patch[]
   profile      WorkspaceProfile?
   codeMemories CodeMemory[]
-  createdAt    DateTime      @default(now())
-  updatedAt    DateTime      @updatedAt
+  locks        WorkspaceLock[]
+  createdAt    DateTime        @default(now())
+  updatedAt    DateTime        @updatedAt
 
   @@index([projectId])
+}
+
+model WorkspaceLock {
+  id          String    @id @default(cuid())
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  filePath    String
+  userId      String
+  userName    String?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  @@unique([workspaceId, filePath])
+  @@index([workspaceId])
+  @@index([expiresAt])
 }
 
 model Conversation {

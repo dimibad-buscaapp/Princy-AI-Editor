@@ -5,6 +5,7 @@ import { startService } from "@princy/service-kit";
 import { registerWorkspaceRoutes } from "./routes/workspace.routes.js";
 import { registerPatchRoutes } from "./routes/patch.routes.js";
 import { registerTerminalRoutes } from "./routes/terminal.routes.js";
+import { registerLocksRoutes } from "./routes/locks.routes.js";
 import { initRedisPublisher } from "@princy/event-bus";
 
 void initRedisPublisher();
@@ -15,6 +16,6 @@ startService({
   name: "Workspace Service",
   description: "Workspace files, sessions, and project state service.",
   port,
-  routes: [registerWorkspaceRoutes, registerPatchRoutes, registerTerminalRoutes],
+  routes: [registerWorkspaceRoutes, registerPatchRoutes, registerTerminalRoutes, registerLocksRoutes],
   readinessCheck: createDatabaseReadinessCheck(() => prisma.$queryRaw`SELECT 1`)
 });

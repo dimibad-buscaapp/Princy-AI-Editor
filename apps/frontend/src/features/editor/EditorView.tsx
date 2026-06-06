@@ -5,6 +5,7 @@ import { useMemo, useState } from "react";
 import { MonacoEditorPanel } from "../../components/editor/monaco-editor-panel";
 import { FileTree } from "./FileTree";
 import { editorSnippets, editorTree, openTabs, type EditorFile } from "./editor-files";
+import { EditorPresenceBadge } from "./EditorPresenceBadge";
 import { InlineChatWidget } from "./InlineChatWidget";
 import { PrincyAssistantPanel } from "./PrincyAssistantPanel";
 
@@ -65,6 +66,7 @@ export function EditorView({ projectId }: { projectId: string }) {
       </aside>
       <section className="princy-editor__main">
         <div className="princy-editor__tabs">
+          <EditorPresenceBadge workspaceId={projectId} filePath={activePath} />
           {tabs.map((tab) => (
             <button
               key={tab}

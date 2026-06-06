@@ -122,6 +122,16 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
 
+### Realtime Collaboration (Fase 42)
+
+| Método | Rota |
+|--------|------|
+| `POST` | `/api/workspace/locks` |
+| `DELETE` | `/api/workspace/locks` |
+| `GET` | `/api/workspace/locks` |
+| `POST` | `/api/workspace/presence` |
+| `GET` | `/api/workspace/presence` |
+
 ### Shared Memory (Fase 41)
 
 | Método | Rota |
