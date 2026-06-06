@@ -131,10 +131,46 @@ model Organization {
   slug      String   @unique
   ownerId   String
   teams     Team[]
+  invites   OrgInvite[]
+  billing   OrgBilling?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
   @@index([ownerId])
+}
+
+model Policy {
+  id         String   @id @default(cuid())
+  name       String
+  effect     String   @default("allow")
+  actions    Json
+  resources  Json
+  conditions Json?
+  orgId      String?
+  createdAt  DateTime @default(now())
+}
+
+model CustomRole {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  orgId     String
+  policies  Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, slug])
+}
+
+model Group {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String
+  orgId     String
+  roleIds   Json     @default("[]")
+  memberIds Json     @default("[]")
+  createdAt DateTime @default(now())
+
+  @@unique([orgId, slug])
 }
 
 model Team {

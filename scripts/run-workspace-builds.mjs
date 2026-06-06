@@ -4,6 +4,7 @@ const workspaces = [
   "@princy/service-kit",
   "@princy/core",
   "@princy/audit-kit",
+  "@princy/rbac-kit",
   "@princy/database",
   "@princy/ai-client",
   "@princy/event-bus",
