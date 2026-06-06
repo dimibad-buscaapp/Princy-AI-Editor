@@ -56,24 +56,33 @@ export function registerMarketplaceRoutes(app: Express) {
     response.json({ version: manifest.version, items });
   }));
 
-  app.get("/agents/store/agents", auth, asyncHandler(async (request, response) => {
-    const user = (request as AuthenticatedRequest).user;
+  async function storeHandler(storeName: string, itemType: string, userId: string) {
     const [manifest, store, installed] = await Promise.all([
       loadManifest(),
-      loadStore("agents"),
+      loadStore(storeName),
       prisma.$queryRaw<Array<{ itemId: string }>>`
-        SELECT "itemId" FROM "InstalledItem" WHERE "userId" = ${user.id} AND "itemType" = 'agent'
+        SELECT "itemId" FROM "InstalledItem" WHERE "userId" = ${userId} AND "itemType" = ${itemType}
       `
     ]);
     const installedIds = new Set(installed.map((i) => i.itemId));
-    const base = manifest.items.filter((i) => i.type === "agent");
+    const base = manifest.items.filter((i) => i.type === itemType);
     const merged = [...base, ...store.items.filter((s) => !base.some((b) => b.id === s.id))];
-    response.json({
+    return {
       store: store.store,
       version: store.version,
       featured: store.featured,
       items: merged.map((i) => ({ ...i, installed: installedIds.has(i.id) }))
-    });
+    };
+  }
+
+  app.get("/agents/store/agents", auth, asyncHandler(async (request, response) => {
+    const user = (request as AuthenticatedRequest).user;
+    response.json(await storeHandler("agents", "agent", user.id));
+  }));
+
+  app.get("/agents/store/templates", auth, asyncHandler(async (request, response) => {
+    const user = (request as AuthenticatedRequest).user;
+    response.json(await storeHandler("templates", "template", user.id));
   }));
 
   app.get("/agents/marketplace/:type", auth, asyncHandler(async (request, response) => {

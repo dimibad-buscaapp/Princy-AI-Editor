@@ -1,0 +1,9 @@
+{
+  "store": "templates",
+  "version": "1.0.0",
+  "featured": ["fullstack-monorepo"],
+  "items": [
+    { "id": "saas-starter", "type": "template", "name": "SaaS Starter", "description": "Auth + billing + dashboard.", "category": "SaaS", "capabilities": ["auth", "stripe"], "version": "0.1.0" },
+    { "id": "api-microservice", "type": "template", "name": "API Microservice", "description": "Express + Prisma + tests.", "category": "Backend", "capabilities": ["express", "jest"], "version": "0.1.0" }
+  ]
+}
