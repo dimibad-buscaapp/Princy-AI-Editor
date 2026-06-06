@@ -1,5 +1,5 @@
-import { ScaffoldPage } from "../../../src/design-system/ScaffoldPage";
+import { ProjetosView } from "../../../src/features/projetos/ProjetosView";
 
 export default function ProjetosPage() {
-  return <ScaffoldPage title="Projetos" subtitle="Gestão neural de workspaces e repositórios Princy." />;
+  return <ProjetosView />;
 }

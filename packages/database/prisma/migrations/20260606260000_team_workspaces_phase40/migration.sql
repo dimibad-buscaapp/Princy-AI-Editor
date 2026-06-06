@@ -1,0 +1,30 @@
+CREATE TABLE IF NOT EXISTS "Organization" (
+  id TEXT PRIMARY KEY,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL UNIQUE,
+  "ownerId" TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS "Team" (
+  id TEXT PRIMARY KEY,
+  "orgId" TEXT NOT NULL REFERENCES "Organization"(id) ON DELETE CASCADE,
+  name TEXT NOT NULL,
+  slug TEXT NOT NULL,
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+  "updatedAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+  UNIQUE("orgId", slug)
+);
+
+CREATE TABLE IF NOT EXISTS "TeamMember" (
+  id TEXT PRIMARY KEY,
+  "teamId" TEXT NOT NULL REFERENCES "Team"(id) ON DELETE CASCADE,
+  "userId" TEXT NOT NULL,
+  role TEXT NOT NULL DEFAULT 'developer',
+  "createdAt" TIMESTAMP(3) NOT NULL DEFAULT NOW(),
+  UNIQUE("teamId", "userId")
+);
+
+ALTER TABLE "Project" ADD COLUMN IF NOT EXISTS "teamId" TEXT;
+CREATE INDEX IF NOT EXISTS "Project_teamId_idx" ON "Project"("teamId");

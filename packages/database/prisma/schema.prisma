@@ -52,6 +52,7 @@ enum MemoryScope {
   CONVERSATION
   WORKSPACE
   AGENT
+  TEAM
 }
 
 enum AgentMemoryKind {
@@ -124,11 +125,49 @@ model User {
   updatedAt    DateTime      @updatedAt
 }
 
+model Organization {
+  id        String   @id @default(cuid())
+  name      String
+  slug      String   @unique
+  ownerId   String
+  teams     Team[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([ownerId])
+}
+
+model Team {
+  id        String       @id @default(cuid())
+  orgId     String
+  org       Organization @relation(fields: [orgId], references: [id], onDelete: Cascade)
+  name      String
+  slug      String
+  members   TeamMember[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+
+  @@unique([orgId, slug])
+}
+
+model TeamMember {
+  id        String   @id @default(cuid())
+  teamId    String
+  team      Team     @relation(fields: [teamId], references: [id], onDelete: Cascade)
+  userId    String
+  role      String   @default("developer")
+  createdAt DateTime @default(now())
+
+  @@unique([teamId, userId])
+  @@index([userId])
+}
+
 model Project {
   id            String         @id @default(cuid())
   name          String
   description   String?
   ownerId       String
+  teamId        String?
   owner         User           @relation(fields: [ownerId], references: [id])
   workspaces    Workspace[]
   conversations Conversation[]

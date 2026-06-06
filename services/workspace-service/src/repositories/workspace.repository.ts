@@ -11,8 +11,15 @@ export class WorkspaceRepository {
   }
 
   async assertProjectAccess(projectId: string, userId: string) {
-    const project = await prisma.project.findFirst({ where: { id: projectId, ownerId: userId } });
-    return Boolean(project);
+    const owned = await prisma.project.findFirst({ where: { id: projectId, ownerId: userId } });
+    if (owned) return true;
+    const teamAccess = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT p.id FROM "Project" p
+      JOIN "TeamMember" m ON m."teamId" = p."teamId"
+      WHERE p.id = ${projectId} AND m."userId" = ${userId}
+      LIMIT 1
+    `;
+    return teamAccess.length > 0;
   }
 
   async linkLocal(userId: string, localPath: string, projectId?: string) {
