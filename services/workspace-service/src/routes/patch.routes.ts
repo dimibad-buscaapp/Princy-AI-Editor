@@ -73,6 +73,11 @@ export function registerPatchRoutes(app: Express) {
     response.json({ patch });
   }));
 
+  app.post("/patch/reject", auth, validateBody(z.object({ patchId: z.string(), reason: z.string().optional() })), asyncHandler(async (request, response) => {
+    const patch = await patchService.reject(request.body.patchId, request.body.reason);
+    response.json({ patch });
+  }));
+
   app.get("/patch/history", auth, asyncHandler(async (request, response) => {
     const patchId = String(request.query.patchId ?? "");
     const history = await patchService.history(patchId || undefined);

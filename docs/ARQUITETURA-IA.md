@@ -133,6 +133,8 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `GET` | `/api/agents/:agentId/memory` |
 | `POST` | `/api/agents/:agentId/memory` |
 | `DELETE` | `/api/agents/:agentId/memory/:memoryId` |
+| `GET` | `/api/agents/self-improvement/stats` |
+| `POST` | `/api/patch/reject` |
 | `POST` | `/api/chat/complete` | *(deprecated alias)* |
 
 ## Eventos Redis

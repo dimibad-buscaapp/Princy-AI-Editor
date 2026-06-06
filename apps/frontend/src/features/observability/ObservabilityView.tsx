@@ -48,6 +48,16 @@ type RouterStats = {
   cacheHitRatio?: number;
 };
 
+type SelfImprovementStats = {
+  modelScores: Array<{ modelId: string; taskType: string; runs: number; successRate: number; avgLatencyMs: number; score: number }>;
+  patchStats: { applied: number; rejected: number; acceptRate: number; proposed: number };
+  taskStats: { total: number; completed: number; failed: number; successRate: number };
+  swarmStats: { total: number; completed: number; failed: number; successRate: number };
+  agentEfficiency: Array<{ agentRole: string; successRate: number; total: number }>;
+  recommendations: string[];
+  routerHints: Array<{ taskType: string; suggestedModel: string; reason: string }>;
+};
+
 export function ObservabilityView() {
   const [metricsRaw, setMetricsRaw] = useState("");
   const [parsed, setParsed] = useState<ParsedMetrics>({ requests: 0, errors: 0, latencyMs: 0, tokens: 0, queueDepth: 0 });
@@ -56,6 +66,7 @@ export function ObservabilityView() {
   const [activeModels, setActiveModels] = useState<HealthModels>({});
   const [cacheStats, setCacheStats] = useState<{ entries: number; totalHits: number } | null>(null);
   const [routerStats, setRouterStats] = useState<RouterStats | null>(null);
+  const [selfImprovement, setSelfImprovement] = useState<SelfImprovementStats | null>(null);
 
   useEffect(() => {
     void (async () => {
@@ -83,6 +94,12 @@ export function ObservabilityView() {
         setRouterStats(router);
       } catch {
         setRouterStats(null);
+      }
+      try {
+        const si = await apiFetch<SelfImprovementStats>("/agents/self-improvement/stats");
+        setSelfImprovement(si);
+      } catch {
+        setSelfImprovement(null);
       }
       try {
         const res = await fetch(gatewayUrl("/observability/metrics"));
@@ -139,6 +156,42 @@ export function ObservabilityView() {
             ))}
             {services.length === 0 ? <li>Verificando serviços...</li> : null}
           </ul>
+        </HolographicCard>
+        <HolographicCard title="Self Improvement">
+          {selfImprovement ? (
+            <>
+              <p>Taxa sucesso tarefas: {selfImprovement.taskStats.successRate}% ({selfImprovement.taskStats.completed}/{selfImprovement.taskStats.total})</p>
+              <p>Taxa sucesso swarm: {selfImprovement.swarmStats.successRate}% ({selfImprovement.swarmStats.completed}/{selfImprovement.swarmStats.total})</p>
+              <p>Patches aceitos: {selfImprovement.patchStats.acceptRate}% ({selfImprovement.patchStats.applied} aplicados, {selfImprovement.patchStats.rejected} rejeitados)</p>
+              <h4>Modelos (score)</h4>
+              <ul className="obs-view__services">
+                {(selfImprovement.modelScores ?? []).slice(0, 5).map((m) => (
+                  <li key={`${m.modelId}-${m.taskType}`}>
+                    <strong>{m.modelId}</strong> ({m.taskType}) — score {m.score} · {m.successRate}% · {m.avgLatencyMs}ms
+                  </li>
+                ))}
+                {!selfImprovement.modelScores?.length ? <li>Sem scores ainda.</li> : null}
+              </ul>
+              <h4>Agentes eficientes</h4>
+              <ul className="obs-view__services">
+                {(selfImprovement.agentEfficiency ?? []).slice(0, 4).map((a) => (
+                  <li key={a.agentRole}>{a.agentRole}: {a.successRate}% ({a.total} runs)</li>
+                ))}
+              </ul>
+              {(selfImprovement.recommendations ?? []).length > 0 ? (
+                <>
+                  <h4>Recomendações</h4>
+                  <ul className="obs-view__services">
+                    {selfImprovement.recommendations.map((r, i) => (
+                      <li key={i}>{r}</li>
+                    ))}
+                  </ul>
+                </>
+              ) : null}
+            </>
+          ) : (
+            <p>Carregando métricas de auto-melhoria...</p>
+          )}
         </HolographicCard>
         <HolographicCard title="Neural Router">
           <p>Total requisições: {routerStats?.totalRequests ?? 0}</p>

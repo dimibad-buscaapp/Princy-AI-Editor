@@ -1,6 +1,7 @@
 import { eventBus } from "@princy/event-bus";
 import { prisma } from "@princy/database";
 import { recordAgentMemory } from "@princy/memory";
+import { getModelRouter } from "@princy/shared";
 import type { BaseAgent, AgentContext } from "../agents/base.agent.js";
 
 export type ExecuteOptions = {
@@ -42,6 +43,7 @@ export class AgentExecutionEngine {
         await prisma.agent.update({ where: { id: agentId }, data: { status: "COMPLETED" } });
       }
 
+      getModelRouter().recordOutcome(agentRole, true, durationMs);
       void recordAgentMemory({
         agentRole,
         taskId: options?.taskId,
@@ -58,6 +60,22 @@ export class AgentExecutionEngine {
     } catch (error) {
       const durationMs = Date.now() - started;
       const message = error instanceof Error ? error.message : "Agent execution failed";
+
+      getModelRouter().recordOutcome(agentRole, false, durationMs);
+
+      if (agentId) {
+        await prisma.agentExecution.create({
+          data: {
+            agentId,
+            taskId: options?.taskId,
+            input: ctx as object,
+            output: { error: message } as object,
+            status: "FAILED",
+            durationMs
+          }
+        }).catch(() => undefined);
+        await prisma.agent.update({ where: { id: agentId }, data: { status: "FAILED" } }).catch(() => undefined);
+      }
 
       void recordAgentMemory({
         agentRole,

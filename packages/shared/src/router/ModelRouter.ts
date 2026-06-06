@@ -14,10 +14,13 @@ import type {
   SwarmRole
 } from "./RouteTypes.js";
 
+type OutcomeBucket = { success: number; failure: number; totalLatency: number };
+
 export class ModelRouter {
   private decisions: RouterMetricEvent[] = [];
   private cacheHits = 0;
   private cacheMisses = 0;
+  private outcomes = new Map<string, OutcomeBucket>();
 
   routeChat(_message: string): string {
     const model = modelForRequestType("chat_simple");
@@ -174,10 +177,32 @@ export class ModelRouter {
     };
   }
 
+  recordOutcome(taskKey: string, success: boolean, latencyMs: number): void {
+    const cur = this.outcomes.get(taskKey) ?? { success: 0, failure: 0, totalLatency: 0 };
+    if (success) cur.success += 1;
+    else cur.failure += 1;
+    cur.totalLatency += latencyMs;
+    this.outcomes.set(taskKey, cur);
+  }
+
+  getOutcomeScores(): Record<string, { successRate: number; runs: number; avgLatencyMs: number }> {
+    const result: Record<string, { successRate: number; runs: number; avgLatencyMs: number }> = {};
+    for (const [key, v] of this.outcomes) {
+      const runs = v.success + v.failure;
+      result[key] = {
+        successRate: runs > 0 ? v.success / runs : 0,
+        runs,
+        avgLatencyMs: runs > 0 ? Math.round(v.totalLatency / runs) : 0
+      };
+    }
+    return result;
+  }
+
   resetStats(): void {
     this.decisions = [];
     this.cacheHits = 0;
     this.cacheMisses = 0;
+    this.outcomes.clear();
   }
 }
 

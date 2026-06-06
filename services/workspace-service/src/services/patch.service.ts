@@ -55,6 +55,25 @@ export class PatchService {
     return updatedPatch;
   }
 
+  async reject(patchId: string, reason?: string) {
+    const patch = await prisma.patch.findUnique({ where: { id: patchId } });
+    if (!patch) {
+      throw new HttpError(404, "not_found", "Patch not found.");
+    }
+    if (patch.status === "APPLIED") {
+      throw new HttpError(400, "invalid_state", "Cannot reject an applied patch.");
+    }
+    const updated = await prisma.patch.update({
+      where: { id: patchId },
+      data: { status: "ROLLED_BACK" }
+    });
+    await prisma.patchHistory.create({
+      data: { patchId, action: "rejected", metadata: reason ? { reason } : undefined }
+    });
+    eventBus.publish({ type: "patch", name: "rejected", payload: { patchId } });
+    return updated;
+  }
+
   async rollback(patchId: string) {
     const patch = await prisma.patch.findUnique({ where: { id: patchId } });
     if (!patch?.backupPath) {
