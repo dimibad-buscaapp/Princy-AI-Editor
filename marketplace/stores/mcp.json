@@ -1,0 +1,9 @@
+{
+  "store": "mcp",
+  "version": "1.0.0",
+  "featured": ["filesystem"],
+  "items": [
+    { "id": "github", "type": "mcp", "name": "GitHub MCP", "description": "Issues, PRs e repos GitHub.", "category": "MCP", "capabilities": ["issues", "prs"], "version": "0.1.0" },
+    { "id": "postgres", "type": "mcp", "name": "Postgres MCP", "description": "Queries SQL read-only.", "category": "MCP", "capabilities": ["sql", "schema"], "version": "0.1.0" }
+  ]
+}
