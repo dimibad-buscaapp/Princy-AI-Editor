@@ -122,6 +122,15 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
 
+### Cloud Sync (Fase 39)
+
+| Método | Rota |
+|--------|------|
+| `POST` | `/api/sync/push` |
+| `GET` | `/api/sync/pull` |
+| `GET` | `/api/sync/status` |
+| `POST` | `/api/sync/queue` |
+
 ### Agents
 
 | Método | Rota |

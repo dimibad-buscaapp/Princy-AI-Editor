@@ -2,6 +2,7 @@
 
 import { BetaSettingsPanel } from "./BetaSettingsPanel";
 import { ModelosAtivosPanel } from "./ModelosAtivosPanel";
+import { SyncStatusPanel } from "./SyncStatusPanel";
 
 export function ConfiguracoesView() {
   return (
@@ -10,6 +11,7 @@ export function ConfiguracoesView() {
         <h1>Configurações</h1>
         <p>Preferências Beta locais e modelos ativos do ecossistema Princy.</p>
       </header>
+      <SyncStatusPanel />
       <BetaSettingsPanel />
       <ModelosAtivosPanel />
     </div>

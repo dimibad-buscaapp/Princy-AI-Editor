@@ -610,6 +610,39 @@ model AutonomousProjectRun {
   @@index([projectId])
 }
 
+model SyncState {
+  id            String   @id @default(cuid())
+  userId        String
+  entity        String
+  entityId      String
+  localVersion  DateTime
+  remoteVersion DateTime
+  checksum      String?
+  status        String   @default("synced")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  @@unique([userId, entity, entityId])
+  @@index([userId])
+}
+
+model SyncQueue {
+  id        String   @id @default(cuid())
+  userId    String
+  entity    String
+  entityId  String
+  operation String
+  payload   Json
+  attempts  Int      @default(0)
+  status    String   @default("pending")
+  error     String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, status])
+  @@index([createdAt])
+}
+
 model TaskPattern {
   id              String   @id @default(cuid())
   patternKey      String   @unique

@@ -22,6 +22,7 @@ const preRoutes: ServiceRouteRegistrar[] = [
       { path: "/api/chat/complete", target: targets.agents, rewritePrefix: "/chat/complete" },
       { path: "/api/code", target: targets.agents, rewritePrefix: "/code" },
       { path: "/api/projects", target: targets.api, rewritePrefix: "/projects" },
+      { path: "/api/sync", target: targets.api, rewritePrefix: "/sync" },
       { path: "/api/files", target: targets.workspace, rewritePrefix: "/workspace" },
       { path: "/api/workspace", target: targets.workspace, rewritePrefix: "/workspace" },
       { path: "/api/context", target: targets.context, rewritePrefix: "/context" },
