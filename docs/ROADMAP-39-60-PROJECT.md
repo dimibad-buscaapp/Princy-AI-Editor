@@ -8,9 +8,9 @@
 
 | Fase | Nome | Status | Commit | Data |
 |------|------|--------|--------|------|
-| 39 | Cloud Sync | done | _(pending commit)_ | 2026-06-06 |
-| 40 | Team Workspaces | pending | — | — |
-| 41 | Shared Memory | pending | — | — |
+| 39 | Cloud Sync | done | `eea2291` | 2026-06-06 |
+| 40 | Team Workspaces | done | `fedcff7` | 2026-06-06 |
+| 41 | Shared Memory | done | _(pending commit)_ | 2026-06-06 |
 | 42 | Realtime Collaboration | pending | — | — |
 | 43 | Project Permissions | pending | — | — |
 | 44 | Marketplace V2 | pending | — | — |
@@ -35,10 +35,10 @@
 
 | Métrica | Valor |
 |---------|-------|
-| Fases concluídas (39–60) | 1 / 22 |
-| Commits (39–60) | 1 |
-| Migrations novas | 1 |
-| Endpoints novos | 4 |
+| Fases concluídas (39–60) | 3 / 22 |
+| Commits (39–60) | 3 |
+| Migrations novas | 3 |
+| Endpoints novos | 6 |
 
 ## Checklist padrão (cada fase)
 

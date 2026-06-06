@@ -1,6 +1,6 @@
 import { z } from "zod";
 
-export const memoryScopeSchema = z.enum(["USER", "PROJECT", "CONVERSATION", "WORKSPACE"]);
+export const memoryScopeSchema = z.enum(["USER", "PROJECT", "CONVERSATION", "WORKSPACE", "TEAM", "AGENT"]);
 
 export const createMemorySchema = z.object({
   scope: memoryScopeSchema.default("PROJECT"),
@@ -8,6 +8,7 @@ export const createMemorySchema = z.object({
   userId: z.string().optional(),
   conversationId: z.string().optional(),
   workspaceId: z.string().optional(),
+  teamId: z.string().optional(),
   title: z.string().optional(),
   content: z.string().min(1),
   tags: z.array(z.string()).optional(),
@@ -33,6 +34,7 @@ export const searchMemorySchema = z.object({
   conversationId: z.string().optional(),
   userId: z.string().optional(),
   workspaceId: z.string().optional(),
+  teamId: z.string().optional(),
   limit: z.number().int().min(1).max(100).optional(),
   mode: z.enum(["text", "semantic", "hybrid"]).optional()
 });

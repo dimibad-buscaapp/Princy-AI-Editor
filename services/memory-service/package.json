@@ -13,6 +13,7 @@
   },
   "dependencies": {
     "@princy/ai-client": "*",
+    "@princy/audit-kit": "*",
     "@princy/core": "*",
     "@princy/database": "*",
     "@princy/event-bus": "*",

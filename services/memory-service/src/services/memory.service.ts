@@ -1,3 +1,4 @@
+import { recordAudit } from "@princy/audit-kit";
 import { HttpError } from "@princy/core";
 import type { MemoryScope } from "@princy/database";
 import { MemoryRepository, type CreateMemoryInput, type SearchMemoryInput } from "../repositories/memory.repository.js";
@@ -13,6 +14,15 @@ export class MemoryService {
     if (input.scope === "USER" && !input.userId) {
       input.userId = actorUserId;
     }
+    if ((input.scope as string) === "TEAM") {
+      if (!input.teamId) {
+        throw new HttpError(400, "validation_error", "teamId required for TEAM scope.");
+      }
+      const allowed = await this.repo.assertTeamAccess(input.teamId, actorUserId);
+      if (!allowed) {
+        throw new HttpError(403, "forbidden", "No access to team memory.");
+      }
+    }
     if (input.projectId) {
       const allowed = await this.repo.assertProjectAccess(input.projectId, actorUserId);
       if (!allowed) {
@@ -20,6 +30,15 @@ export class MemoryService {
       }
     }
     const chunk = await this.repo.create(input);
+    if ((input.scope as string) === "TEAM") {
+      void recordAudit({
+        actorId: actorUserId,
+        action: "memory.create",
+        entity: "MemoryChunk",
+        entityId: chunk.id,
+        metadata: { scope: "TEAM", teamId: input.teamId }
+      }).catch(() => undefined);
+    }
     if (process.env.MEMORY_AUTO_EMBED === "true") {
       try {
         await this.embeddingService.embedChunk(chunk.id);
@@ -76,6 +95,14 @@ export class MemoryService {
 
   async getConversationMemory(conversationId: string) {
     return this.repo.listByConversation(conversationId);
+  }
+
+  async getTeamMemory(teamId: string, actorUserId: string) {
+    const allowed = await this.repo.assertTeamAccess(teamId, actorUserId);
+    if (!allowed) {
+      throw new HttpError(403, "forbidden", "No access to team.");
+    }
+    return this.repo.listByTeam(teamId);
   }
 
   async getUsage() {

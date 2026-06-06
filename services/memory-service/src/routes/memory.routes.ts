@@ -69,6 +69,12 @@ export function registerMemoryRoutes(app: Express) {
     response.json({ chunks });
   }));
 
+  app.get("/memory/team/:teamId", auth, asyncHandler(async (request, response) => {
+    const user = (request as AuthenticatedRequest).user;
+    const chunks = await memoryService.getTeamMemory(String(request.params.teamId), user.id);
+    response.json({ chunks });
+  }));
+
   app.post("/memory/embed", auth, validateBody(embedMemorySchema), asyncHandler(async (request, response) => {
     const { chunkId, chunkIds, projectId } = request.body;
     if (chunkId) {

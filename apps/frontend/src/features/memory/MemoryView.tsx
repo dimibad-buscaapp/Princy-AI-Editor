@@ -47,7 +47,7 @@ type AgentMemoryResponse = {
   projectPreferences: Array<{ id: string; projectId: string | null; content: string; createdAt: string }>;
 };
 
-const SCOPES = ["USER", "PROJECT", "CONVERSATION", "WORKSPACE", "AGENT"] as const;
+const SCOPES = ["USER", "PROJECT", "CONVERSATION", "WORKSPACE", "TEAM", "AGENT"] as const;
 const AGENT_ROLES = ["COORDINATOR", "ARCHITECT", "DEVELOPER", "TESTER", "REVIEWER", "DEVOPS"] as const;
 const MEMORY_KINDS = ["", "decision", "error", "preference", "context"] as const;
 

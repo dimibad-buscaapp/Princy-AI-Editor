@@ -122,6 +122,13 @@ Auth opcional: `GATEWAY_API_KEY` (Bearer ou `X-Api-Key`).
 | `POST` | `/api/swarm/task` |
 | `GET` | `/api/swarm/tasks` |
 
+### Shared Memory (Fase 41)
+
+| Método | Rota |
+|--------|------|
+| `GET` | `/api/memory/team/:teamId` |
+| `POST` | `/api/memory/create` (scope `TEAM`) |
+
 ### Cloud Sync (Fase 39)
 
 | Método | Rota |

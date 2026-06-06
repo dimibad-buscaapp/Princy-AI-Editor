@@ -3,6 +3,7 @@ import { spawnSync } from "node:child_process";
 const workspaces = [
   "@princy/service-kit",
   "@princy/core",
+  "@princy/audit-kit",
   "@princy/database",
   "@princy/ai-client",
   "@princy/event-bus",

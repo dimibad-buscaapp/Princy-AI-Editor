@@ -4,6 +4,7 @@ export type CreateMemoryInput = {
   scope: MemoryScope;
   projectId?: string;
   userId?: string;
+  teamId?: string;
   conversationId?: string;
   workspaceId?: string;
   title?: string;
@@ -19,6 +20,7 @@ export type SearchMemoryInput = {
   conversationId?: string;
   userId?: string;
   workspaceId?: string;
+  teamId?: string;
   limit?: number;
   mode?: "text" | "semantic" | "hybrid";
 };
@@ -32,6 +34,7 @@ export class MemoryRepository {
         userId: input.userId,
         conversationId: input.conversationId,
         workspaceId: input.workspaceId,
+        teamId: input.teamId,
         title: input.title,
         content: input.content,
         tags: input.tags ?? undefined,
@@ -98,6 +101,7 @@ export class MemoryRepository {
       ...(input.conversationId ? { conversationId: input.conversationId } : {}),
       ...(input.userId ? { userId: input.userId } : {}),
       ...(input.workspaceId ? { workspaceId: input.workspaceId } : {}),
+      ...(input.teamId ? { teamId: input.teamId } : {}),
       OR: [
         { content: { contains: input.query, mode: "insensitive" } },
         { title: { contains: input.query, mode: "insensitive" } }
@@ -121,10 +125,25 @@ export class MemoryRepository {
     });
   }
 
+  async listByTeam(teamId: string, limit = 50) {
+    return prisma.$queryRaw`
+      SELECT * FROM "MemoryChunk"
+      WHERE "teamId" = ${teamId} AND scope = 'TEAM'::"MemoryScope"
+      ORDER BY "updatedAt" DESC LIMIT ${limit}
+    `;
+  }
+
   async assertProjectAccess(projectId: string, userId: string) {
     const project = await prisma.project.findFirst({
       where: { id: projectId, ownerId: userId }
     });
     return Boolean(project);
+  }
+
+  async assertTeamAccess(teamId: string, userId: string) {
+    const rows = await prisma.$queryRaw<Array<{ id: string }>>`
+      SELECT id FROM "TeamMember" WHERE "teamId" = ${teamId} AND "userId" = ${userId} LIMIT 1
+    `;
+    return rows.length > 0;
   }
 }
