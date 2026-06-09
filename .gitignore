@@ -23,3 +23,7 @@ Thumbs.db
 vscode-main/
 
 vscode-main/
+
+# Princy Code vendor
+apps/princy-code/vendor/vscode/
+

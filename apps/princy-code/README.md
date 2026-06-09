@@ -1,16 +1,52 @@
 # Princy Code (Code-OSS Custom IDE)
 
-Future custom IDE based on Code-OSS with Princy AI Assistant pre-installed.
+IDE desktop oficial baseada em **Code-OSS** com Princy AI built-in.
 
-## Status
+## Quick start
 
-Scaffold only — no `vscode` submodule checkout in this delivery. Use the VS Code extension (`apps/vscode-extension`) for Phase 1.
+```bash
+# 1. Init Code-OSS submodule (~2GB download)
+npm run princy-code:init-submodule
 
-## Future build steps
+# 2. Build extensions + patch vendor
+npm run build:vscode-extension
+npm run princy-code:patch
 
-1. Clone `microsoft/vscode` as a git submodule under `vendor/vscode`.
-2. Copy `product.json.template` to `vendor/vscode/product.json` and apply branding.
-3. Run `node scripts/patch-code-oss.mjs` to bundle the Princy extension.
-4. Build with `yarn` per upstream VS Code docs.
+# 3. Compile Code-OSS (Windows, 16GB RAM recommended)
+npm run princy-code:compile
 
-See [docs/PRINCY-CODE.md](../../docs/PRINCY-CODE.md) for the full roadmap.
+# 4. Build installer
+npm run princy-code:build:win    # → apps/princy-code/dist/Princy-Code-Setup.exe
+npm run princy-code:build:linux  # → apps/princy-code/dist/Princy-Code.AppImage
+```
+
+## Structure
+
+```
+apps/princy-code/
+  vendor/vscode/       # Code-OSS submodule
+  extensions/          # synced built-in extensions
+  config/              # princy-services.json, product.overrides.json
+  scripts/             # patch, sync, build
+  assets/              # welcome, icons
+  dist/                # installers
+```
+
+## Built-in extensions
+
+| Extension | Package |
+|-----------|---------|
+| princy-assistant | `apps/vscode-extension` |
+| princy-swarm | `apps/princy-swarm` |
+| princy-memory | `apps/princy-memory` |
+| princy-workspace | `apps/princy-workspace` |
+
+## Docs
+
+- [FASE-67-PRINCY-CODE-DESKTOP.md](../../docs/FASE-67-PRINCY-CODE-DESKTOP.md)
+- [FASE-67-CODE-OSS-STRATEGY.md](../../docs/FASE-67-CODE-OSS-STRATEGY.md)
+- [VSCODE_PIN.md](./VSCODE_PIN.md)
+
+## Legacy
+
+`apps/desktop` (Electron URL shell) is deprecated — use Princy Code IDE builds from this package.

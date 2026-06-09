@@ -286,6 +286,8 @@ export class PrincyClient {
       conversationId?: string;
       projectId?: string;
       agentType?: string;
+      thinkingMode?: boolean;
+      attachments?: Array<{ type: string; content: string; label?: string }>;
       onEvent: (event: ChatSseEvent) => void;
       signal?: AbortSignal;
     }
@@ -307,7 +309,9 @@ export class PrincyClient {
           message,
           conversationId: opts.conversationId,
           projectId: opts.projectId,
-          agentType: opts.agentType
+          agentType: opts.agentType,
+          thinkingMode: opts.thinkingMode,
+          attachments: opts.attachments
         }),
         signal: controller.signal
       });
@@ -339,5 +343,189 @@ export class PrincyClient {
 
   eventsStreamUrl(): string {
     return gatewayUrl(this.baseUrl, "/api/events/stream");
+  }
+
+  systemHealth() {
+    return this.request<Record<string, unknown>>("/api/system/health");
+  }
+
+  routerStats() {
+    return this.request<Record<string, unknown>>("/api/router/stats");
+  }
+
+  memoryProject(projectId: string) {
+    return this.request<{ chunks: unknown[] }>(`/api/memory/project/${encodeURIComponent(projectId)}`);
+  }
+
+  memoryUsage() {
+    return this.request<Record<string, unknown>>("/api/memory/usage");
+  }
+
+  marketplaceItems(type?: string) {
+    const query = type ? `?type=${encodeURIComponent(type)}` : "";
+    return this.request<{ items: unknown[] }>(`/api/agents/marketplace${query}`);
+  }
+
+  marketplaceAction(type: string, id: string, action: "install" | "uninstall") {
+    return this.request<unknown>(`/api/agents/marketplace/${type}/${id}/${action}`, {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  }
+
+  mcpServers() {
+    return this.request<{ servers?: unknown[]; items?: unknown[] }>("/api/mcp/servers");
+  }
+
+  mcpHealth() {
+    return this.request<Record<string, unknown>>("/api/mcp/health");
+  }
+
+  mcpTest(serverId: string) {
+    return this.request<{ ok: boolean; latencyMs?: number; message?: string }>(
+      `/api/mcp/servers/${encodeURIComponent(serverId)}/test`,
+      { method: "POST", body: JSON.stringify({}) }
+    );
+  }
+
+  mcpLogs(serverId: string, tail = 50) {
+    return this.request<{ lines: string[] }>(
+      `/api/mcp/servers/${encodeURIComponent(serverId)}/logs?tail=${tail}`
+    );
+  }
+
+  conversationsList(projectId?: string) {
+    const query = projectId ? `?projectId=${encodeURIComponent(projectId)}` : "";
+    return this.request<{ conversations: Array<{ id: string; title?: string; updatedAt?: string }> }>(
+      `/api/chat/conversations${query}`
+    );
+  }
+
+  conversationHistory(conversationId: string) {
+    return this.request<{ messages: ChatMessage[]; conversationId: string }>(
+      `/api/chat/conversations/${encodeURIComponent(conversationId)}`
+    );
+  }
+
+  conversationCreate(title?: string, projectId?: string) {
+    return this.request<{ conversation: { id: string; title?: string } }>("/api/chat/conversations", {
+      method: "POST",
+      body: JSON.stringify({ title, projectId })
+    });
+  }
+
+  memoryCreate(projectId: string, content: string, scope?: string, metadata?: Record<string, unknown>) {
+    return this.request<{ chunk: unknown }>("/api/memory/chunks", {
+      method: "POST",
+      body: JSON.stringify({ projectId, content, scope, metadata })
+    });
+  }
+
+  memoryUpdate(chunkId: string, content: string, metadata?: Record<string, unknown>) {
+    return this.request<{ chunk: unknown }>(`/api/memory/chunks/${encodeURIComponent(chunkId)}`, {
+      method: "PUT",
+      body: JSON.stringify({ content, metadata })
+    });
+  }
+
+  memoryDelete(chunkId: string) {
+    return this.request<{ ok: boolean }>(`/api/memory/chunks/${encodeURIComponent(chunkId)}`, {
+      method: "DELETE"
+    });
+  }
+
+  memorySearch(query: string, projectId?: string, scope?: string) {
+    return this.request<{ chunks: unknown[] }>("/api/memory/search", {
+      method: "POST",
+      body: JSON.stringify({ query, projectId, scope })
+    });
+  }
+
+  agentMemory(role: string) {
+    return this.request<{ items: unknown[] }>(`/api/agents/${encodeURIComponent(role)}/memory`);
+  }
+
+  workspaceDetect(opts: { workspaceId?: string; localPath?: string }) {
+    const query = new URLSearchParams();
+    if (opts.workspaceId) query.set("workspaceId", opts.workspaceId);
+    if (opts.localPath) query.set("localPath", opts.localPath);
+    return this.request<{ detect: Record<string, unknown> }>(`/api/workspace/detect?${query.toString()}`);
+  }
+
+  patchList(workspaceId?: string) {
+    const query = workspaceId ? `?workspaceId=${encodeURIComponent(workspaceId)}` : "";
+    return this.request<{ patches: Array<{ id: string; filePath: string; status: string; summary?: string }> }>(
+      `/api/patch/list${query}`
+    );
+  }
+
+  patchReject(patchId: string) {
+    return this.request<{ patch: unknown }>("/api/patch/reject", {
+      method: "POST",
+      body: JSON.stringify({ patchId })
+    });
+  }
+
+  refreshToken(refreshToken: string) {
+    return this.request<LoginResponse>("/api/auth/refresh", {
+      method: "POST",
+      body: JSON.stringify({ refreshToken }),
+      retryOn401: false
+    });
+  }
+
+  automationGoals() {
+    return this.request<{ goals: unknown[] }>("/api/automation/goals");
+  }
+
+  automationApprove(id: string) {
+    return this.request<unknown>(`/api/automation/approvals/${encodeURIComponent(id)}/approve`, {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  }
+
+  automationReject(id: string) {
+    return this.request<unknown>(`/api/automation/approvals/${encodeURIComponent(id)}/reject`, {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  }
+
+  autonomousProjects() {
+    return this.request<{ projects: unknown[] }>("/api/autonomous/projects");
+  }
+
+  autonomousCancel(runId: string) {
+    return this.request<{ ok: boolean }>(`/api/agents/autonomous/cancel/${encodeURIComponent(runId)}`, {
+      method: "POST",
+      body: JSON.stringify({})
+    });
+  }
+
+  terminalGenerateCommand(objective: string, context?: string) {
+    return this.request<{ command: string; explanation?: string }>("/api/terminal/generate-command", {
+      method: "POST",
+      body: JSON.stringify({ objective, context })
+    });
+  }
+
+  observabilityMetrics() {
+    return gatewayUrl(this.baseUrl, "/observability/metrics");
+  }
+
+  async fetchObservabilityMetrics(): Promise<Record<string, unknown>> {
+    const token = await this.resolveToken();
+    const url = this.observabilityMetrics();
+    const headers: Record<string, string> = {};
+    if (token) headers.Authorization = `Bearer ${token}`;
+    const response = await fetch(url, { headers });
+    if (!response.ok) throw await this.parseError(response);
+    const text = await response.text();
+    try {
+      return JSON.parse(text) as Record<string, unknown>;
+    } catch {
+      return { raw: text };
+    }
   }
 }

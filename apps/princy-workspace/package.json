@@ -1,0 +1,27 @@
+{
+  "name": "princy-workspace",
+  "displayName": "Princy Workspace Intelligence",
+  "description": "Princy Workspace — patches, diffs, index, rollback",
+  "version": "1.0.0",
+  "publisher": "princy-ai",
+  "private": true,
+  "engines": { "vscode": "^1.123.0" },
+  "extensionDependencies": ["princy-ai.princy-assistant"],
+  "categories": ["AI"],
+  "activationEvents": ["onStartupFinished"],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "commands": [
+      { "command": "princy-workspace.open", "title": "Princy Workspace: Open Panel", "category": "Princy" }
+    ]
+  },
+  "scripts": {
+    "build": "node esbuild.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.123.0",
+    "esbuild": "latest",
+    "typescript": "latest"
+  }
+}

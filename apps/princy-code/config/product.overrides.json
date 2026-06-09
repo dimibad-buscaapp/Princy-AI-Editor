@@ -1,0 +1,14 @@
+{
+  "enableTelemetry": false,
+  "quality": "stable",
+  "defaultChatAgent": {
+    "extensionId": "princy-ai.princy-assistant",
+    "chatExtensionId": "princy-ai.princy-assistant"
+  },
+  "defaultExtensions": [
+    "princy-ai.princy-assistant",
+    "princy-ai.princy-swarm",
+    "princy-ai.princy-memory",
+    "princy-ai.princy-workspace"
+  ]
+}

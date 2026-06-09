@@ -1,0 +1,26 @@
+{
+  "name": "@princy/princy-ui",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "node scripts/build-webviews.mjs && tsc --emitDeclarationOnly --declaration --outDir dist-types",
+    "build:webviews": "node scripts/build-webviews.mjs",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1"
+  },
+  "devDependencies": {
+    "@types/react": "^18.3.12",
+    "@types/react-dom": "^18.3.1",
+    "esbuild": "latest",
+    "typescript": "latest"
+  }
+}

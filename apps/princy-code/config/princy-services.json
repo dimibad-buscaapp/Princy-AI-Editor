@@ -1,0 +1,15 @@
+{
+  "PRINCY_FRONTEND_URL": "http://13.140.129.77:3400",
+  "PRINCY_GATEWAY_URL": "http://13.140.129.77:3407",
+  "PRINCY_API_URL": "http://13.140.129.77:3407",
+  "PRINCY_AGENTS_URL": "http://13.140.129.77:3402",
+  "PRINCY_WORKSPACE_URL": "http://13.140.129.77:3403",
+  "PRINCY_CONTEXT_URL": "http://13.140.129.77:3404",
+  "PRINCY_MEMORY_URL": "http://13.140.129.77:3405",
+  "PRINCY_AUTOMATION_URL": "http://13.140.129.77:3406",
+  "PRINCY_SCHEDULER_URL": "http://13.140.129.77:3409",
+  "PRINCY_MCP_URL": "http://13.140.129.77:3408",
+  "defaultGatewayApi": "http://13.140.129.77:3407/api",
+  "defaultTheme": "Princy Dark Neural",
+  "updateChannel": "latest"
+}

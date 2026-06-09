@@ -1,0 +1,86 @@
+name: Princy Code IDE Build
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+    paths:
+      - "apps/princy-code/**"
+      - "apps/vscode-extension/**"
+      - "apps/princy-swarm/**"
+      - "apps/princy-memory/**"
+      - "apps/princy-workspace/**"
+      - "packages/extension-shared/**"
+      - "packages/vscode-api-client/**"
+      - "packages/princy-ui/**"
+
+jobs:
+  build-extensions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+          cache: npm
+      - run: npm ci
+      - run: npm run build:vscode-extension
+      - run: npm run princy-code:sync
+
+  build-windows:
+    needs: build-extensions
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build:vscode-extension
+      - run: npm run princy-code:init-submodule
+      - run: npm run princy-code:patch
+      - name: Install vendor dependencies
+        run: npm ci
+        working-directory: apps/princy-code/vendor/vscode
+        env:
+          PYTHON: C:\hostedtoolcache\windows\Python\3.11.9\x64\python.exe
+          npm_config_python: C:\hostedtoolcache\windows\Python\3.11.9\x64\python.exe
+      - name: Compile Code-OSS
+        run: npm run princy-code:compile
+        env:
+          PYTHON: C:\hostedtoolcache\windows\Python\3.11.9\x64\python.exe
+          npm_config_python: C:\hostedtoolcache\windows\Python\3.11.9\x64\python.exe
+      - name: Build NSIS installer
+        run: npm run princy-code:build:win
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Princy-Code-Setup
+          path: apps/princy-code/dist/Princy-Code-Setup.exe
+          if-no-files-found: ignore
+
+  build-linux:
+    needs: build-extensions
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+      - run: npm ci
+      - run: npm run build:vscode-extension
+      - run: npm run princy-code:init-submodule
+      - run: npm run princy-code:patch
+      - run: npm run princy-code:build:linux
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: Princy-Code-AppImage
+          path: apps/princy-code/dist/*.AppImage
+          if-no-files-found: ignore

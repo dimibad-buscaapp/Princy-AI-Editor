@@ -1,0 +1,15 @@
+{
+  "name": "@princy/code",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Princy Code — Code-OSS custom IDE build",
+  "scripts": {
+    "init-submodule": "node scripts/init-vscode-submodule.mjs",
+    "sync-extensions": "node scripts/sync-extensions.mjs",
+    "patch": "node scripts/patch-code-oss.mjs",
+    "compile": "node scripts/patch-code-oss.mjs && node scripts/vscode-compile.mjs",
+    "build:win": "node scripts/build-win.mjs",
+    "build:linux": "node scripts/build-linux.mjs",
+    "build:portable": "node scripts/build-portable.mjs"
+  }
+}

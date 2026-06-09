@@ -16,5 +16,10 @@
   "darwinBundleIdentifier": "ai.princy.code",
   "linuxIconName": "princy-code",
   "urlProtocol": "princy-code",
-  "extensionAllowedProposedApi": ["princy-ai.princy-assistant"]
+  "extensionAllowedProposedApi": [
+    "princy-ai.princy-assistant",
+    "princy-ai.princy-swarm",
+    "princy-ai.princy-memory",
+    "princy-ai.princy-workspace"
+  ]
 }

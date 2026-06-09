@@ -1,18 +1,15 @@
 {
   "name": "princy-assistant",
   "displayName": "Princy AI Assistant",
-  "description": "Princy AI coding assistant — chat, ghost text, inline actions, patch, swarm.",
-  "version": "0.1.0",
+  "description": "Princy Code IDE — chat, ghost text, swarm, memory, workspace, marketplace, MCP, observability.",
+  "version": "1.0.0",
   "publisher": "princy-ai",
   "private": true,
   "engines": {
-    "vscode": "^1.85.0"
+    "vscode": "^1.123.0"
   },
   "categories": ["AI", "Programming Languages", "Themes"],
-  "activationEvents": [
-    "onStartupFinished",
-    "workspaceContains:**/*"
-  ],
+  "activationEvents": ["onStartupFinished", "workspaceContains:**/*"],
   "main": "./dist/extension.js",
   "contributes": {
     "commands": [
@@ -23,44 +20,186 @@
       { "command": "princy.refactorSelection", "title": "Princy: Refactor Selection", "category": "Princy" },
       { "command": "princy.fixSelection", "title": "Princy: Fix Selection", "category": "Princy" },
       { "command": "princy.generateTests", "title": "Princy: Generate Tests", "category": "Princy" },
+      { "command": "princy.documentSelection", "title": "Princy: Document Selection", "category": "Princy" },
       { "command": "princy.askAboutSelection", "title": "Princy: Ask About Selection", "category": "Princy" },
+      { "command": "princy.inlineEdit", "title": "Princy: Inline Edit", "category": "Princy" },
       { "command": "princy.previewPatch", "title": "Princy: Preview Patch", "category": "Princy" },
       { "command": "princy.applyPatch", "title": "Princy: Apply Patch", "category": "Princy" },
       { "command": "princy.rollbackPatch", "title": "Princy: Rollback Patch", "category": "Princy" },
       { "command": "princy.explainTerminalError", "title": "Princy: Explain Terminal Error", "category": "Princy" },
       { "command": "princy.fixTerminalError", "title": "Princy: Fix Terminal Error", "category": "Princy" },
       { "command": "princy.openSwarm", "title": "Princy: Open Swarm", "category": "Princy" },
+      { "command": "princy.openMemory", "title": "Princy: Open Memory", "category": "Princy" },
+      { "command": "princy.openMarketplace", "title": "Princy: Open Marketplace", "category": "Princy" },
+      { "command": "princy.openMcpCenter", "title": "Princy: Open MCP Center", "category": "Princy" },
+      { "command": "princy.openObservability", "title": "Princy: Open Observability", "category": "Princy" },
+      { "command": "princy.openWorkspace", "title": "Princy: Open Workspace Intelligence", "category": "Princy" },
       { "command": "princy.startAutonomous", "title": "Princy: Start Autonomous Mode", "category": "Princy" },
+      { "command": "princy.runAutonomousTask", "title": "Princy: Run Autonomous Task", "category": "Princy" },
       { "command": "princy.indexWorkspace", "title": "Princy: Index Workspace", "category": "Princy" },
-      { "command": "princy.openContextGraph", "title": "Princy: Open Context Graph", "category": "Princy" }
+      { "command": "princy.openContextGraph", "title": "Princy: Open Context Graph", "category": "Princy" },
+      { "command": "princy.optimizeSelection", "title": "Princy: Optimize Selection", "category": "Princy" },
+      { "command": "princy.securityReview", "title": "Princy: Security Review", "category": "Princy" },
+      { "command": "princy.performanceReview", "title": "Princy: Performance Review", "category": "Princy" },
+      { "command": "princy.quickChatSelection", "title": "Princy: Quick Chat on Selection", "category": "Princy" },
+      { "command": "princy.openInChat", "title": "Princy: Open in Chat", "category": "Princy" },
+      { "command": "princy.sendToSwarm", "title": "Princy: Send to Swarm", "category": "Princy" },
+      { "command": "princy.generateTerminalCommand", "title": "Princy: Generate Terminal Command", "category": "Princy" },
+      { "command": "princy.openSettings", "title": "Princy: Open Settings", "category": "Princy" },
+      { "command": "princy.openStartupHub", "title": "Princy: Open Startup Hub", "category": "Princy" },
+      { "command": "princy.openPatchPanel", "title": "Princy: Open Patch Panel", "category": "Princy" },
+      { "command": "princy.openAgentHud", "title": "Princy: Open Agent HUD", "category": "Princy" }
+    ],
+    "menus": {
+      "editor/context": [
+        { "command": "princy.explainSelection", "when": "editorHasSelection", "group": "princy@1" },
+        { "command": "princy.refactorSelection", "when": "editorHasSelection", "group": "princy@2" },
+        { "command": "princy.fixSelection", "when": "editorHasSelection", "group": "princy@3" },
+        { "command": "princy.generateTests", "when": "editorHasSelection", "group": "princy@4" },
+        { "command": "princy.documentSelection", "when": "editorHasSelection", "group": "princy@5" },
+        { "command": "princy.optimizeSelection", "when": "editorHasSelection", "group": "princy@6" },
+        { "command": "princy.securityReview", "when": "editorHasSelection", "group": "princy@7" },
+        { "command": "princy.performanceReview", "when": "editorHasSelection", "group": "princy@8" },
+        { "command": "princy.openInChat", "when": "editorHasSelection", "group": "princy@9" },
+        { "command": "princy.sendToSwarm", "when": "editorHasSelection", "group": "princy@10" },
+        { "command": "princy.quickChatSelection", "when": "editorHasSelection", "group": "princy@11" }
+      ]
+    },
+    "keybindings": [
+      {
+        "command": "princy.openChat",
+        "key": "ctrl+shift+p",
+        "mac": "cmd+shift+p",
+        "when": "false"
+      },
+      {
+        "command": "princy.explainSelection",
+        "key": "ctrl+k",
+        "mac": "cmd+k",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "princy.inlineEdit",
+        "key": "ctrl+shift+k",
+        "mac": "cmd+shift+k",
+        "when": "editorTextFocus"
+      },
+      {
+        "command": "princy.openSwarm",
+        "key": "ctrl+shift+s",
+        "mac": "cmd+shift+s"
+      },
+      {
+        "command": "princy.quickChatSelection",
+        "key": "ctrl+shift+l",
+        "mac": "cmd+shift+l",
+        "when": "editorTextFocus && editorHasSelection"
+      }
     ],
     "configuration": {
-      "title": "Princy AI",
+      "title": "Princy Code",
       "properties": {
         "princy.endpoint": {
           "type": "string",
           "default": "http://13.140.129.77:3407/api",
-          "description": "Princy gateway API base URL"
+          "description": "Gateway API base URL",
+          "order": 1
+        },
+        "princy.frontendUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3400",
+          "description": "Princy frontend URL",
+          "order": 2
+        },
+        "princy.agentsUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3402",
+          "description": "Neural Core / Agents URL",
+          "order": 3
+        },
+        "princy.workspaceUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3403",
+          "description": "Workspace service URL",
+          "order": 4
+        },
+        "princy.contextUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3404",
+          "description": "Context Graph service URL",
+          "order": 5
+        },
+        "princy.memoryUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3405",
+          "description": "Memory service URL",
+          "order": 6
+        },
+        "princy.automationUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3406",
+          "description": "Automation service URL",
+          "order": 7
+        },
+        "princy.schedulerUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3409",
+          "description": "Scheduler service URL",
+          "order": 8
+        },
+        "princy.mcpUrl": {
+          "type": "string",
+          "default": "http://13.140.129.77:3408",
+          "description": "MCP server URL",
+          "order": 9
+        },
+        "princy.defaultProjectId": {
+          "type": "string",
+          "default": "demo",
+          "description": "Default project ID for memory and context",
+          "order": 8
         },
         "princy.model": {
           "type": "string",
           "default": "",
-          "description": "Read-only routed model display (managed by Princy router)"
+          "description": "Read-only routed model (Neural Router)",
+          "order": 10
         },
         "princy.enableGhostText": {
           "type": "boolean",
           "default": true,
-          "description": "Enable inline ghost text completions"
+          "description": "Enable ghost text (Neural Router → qwen2.5:3b)",
+          "order": 11
         },
         "princy.enableAutonomousMode": {
           "type": "boolean",
           "default": false,
-          "description": "Allow autonomous mode (requires explicit approval for patches)"
+          "description": "Allow autonomous mode (requires patch approval)",
+          "order": 12
         },
         "princy.ghostTextDebounceMs": {
           "type": "number",
-          "default": 500,
-          "description": "Debounce delay for ghost text (ms)"
+          "default": 200,
+          "description": "Ghost text debounce (ms)",
+          "order": 13
+        },
+        "princy.chatAnimations": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable chat animations (typing, thinking, streaming cursor)",
+          "order": 14
+        },
+        "princy.motionEnabled": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable motion effects across panels",
+          "order": 15
+        },
+        "princy.swarmLiveUpdates": {
+          "type": "boolean",
+          "default": true,
+          "description": "Enable swarm SSE live updates",
+          "order": 16
         }
       }
     },
@@ -68,23 +207,21 @@
       "activitybar": [
         {
           "id": "princy-ai",
-          "title": "Princy AI",
+          "title": "Princy Code",
           "icon": "media/princy-icon.svg"
         }
       ]
     },
     "views": {
       "princy-ai": [
-        {
-          "type": "webview",
-          "id": "princy.chatView",
-          "name": "Chat"
-        },
-        {
-          "type": "webview",
-          "id": "princy.swarmView",
-          "name": "Swarm"
-        }
+        { "type": "webview", "id": "princy.chatView", "name": "Chat" },
+        { "type": "webview", "id": "princy.swarmView", "name": "Swarm" },
+        { "type": "webview", "id": "princy.memoryView", "name": "Memory" },
+        { "type": "webview", "id": "princy.workspaceView", "name": "Workspace" },
+        { "type": "webview", "id": "princy.marketplaceView", "name": "Marketplace" },
+        { "type": "webview", "id": "princy.mcpView", "name": "MCP" },
+        { "type": "webview", "id": "princy.observabilityView", "name": "Observability" },
+        { "type": "webview", "id": "princy.agentHudView", "name": "Agent HUD" }
       ]
     },
     "themes": [
@@ -100,13 +237,15 @@
     "watch": "node esbuild.mjs --watch",
     "package": "npm run build && vsce package --no-dependencies",
     "lint": "tsc --noEmit",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "prebuild": "npm run build:webviews -w @princy/princy-ui --if-present"
   },
   "dependencies": {
+    "@princy/extension-shared": "*",
     "@princy/vscode-api-client": "*"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
+    "@types/vscode": "^1.123.0",
     "@vscode/vsce": "latest",
     "esbuild": "latest",
     "typescript": "latest"
